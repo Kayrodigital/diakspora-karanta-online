@@ -46,12 +46,17 @@
   --color-ring: var(--ring);
 
   --color-cream: var(--cream);
+  --color-cream-2: var(--cream-2);
   --color-gold: var(--gold);
   --color-gold-soft: var(--gold-soft);
+  --color-gold-dark: var(--gold-dark);
   --color-anthracite: var(--anthracite);
   --color-deep-green: var(--deep-green);
+  --color-deep-green-hi: var(--deep-green-hi);
 
   --font-serif: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  --font-serif-alt: "Fraunces", "Cormorant Garamond", Georgia, serif;
+  --font-display-kid: "Baloo 2", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-arabic: "Amiri", "Scheherazade New", serif;
 }
@@ -59,13 +64,15 @@
 :root {
   --radius: 0.625rem;
 
-  /* Brand tokens */
-  --cream: oklch(0.972 0.018 85);          /* #f7f1e3-ish warm cream */
-  --gold: oklch(0.78 0.14 78);             /* doré / ambre */
-  --gold-soft: oklch(0.88 0.09 82);
-  --anthracite: oklch(0.24 0.012 260);     /* charbon */
-  --deep-green: oklch(0.35 0.07 155);      /* vert profond islamique */
-  --deep-green-hi: oklch(0.45 0.09 155);
+  /* Brand tokens — Diakspora Karanta design system */
+  --cream: #faf9f5;
+  --cream-2: #ece6d8;
+  --gold: #E5B95C;
+  --gold-soft: #f0d18a;
+  --gold-dark: #C9932F;
+  --anthracite: #2b2f36;
+  --deep-green: #1E5631;
+  --deep-green-hi: #4F8F5B;
 
   /* Semantic */
   --background: var(--cream);
@@ -91,8 +98,12 @@
   /* Rich effects */
   --gradient-hero: linear-gradient(140deg, var(--deep-green) 0%, oklch(0.28 0.06 155) 100%);
   --gradient-gold: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+  --gradient-hero: linear-gradient(140deg, var(--deep-green) 0%, #123a1f 100%);
+  --gradient-gold: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+  --gradient-lesson: linear-gradient(135deg, var(--deep-green) 0%, var(--deep-green-hi) 100%);
   --shadow-elegant: 0 20px 50px -20px color-mix(in oklab, var(--deep-green) 40%, transparent);
   --shadow-gold: 0 10px 30px -12px color-mix(in oklab, var(--gold) 55%, transparent);
+  --shadow-card: 0 6px 20px -12px color-mix(in oklab, var(--anthracite) 40%, transparent);
 }
 
 .dark {
