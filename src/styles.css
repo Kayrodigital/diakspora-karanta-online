@@ -98,8 +98,12 @@
   /* Rich effects */
   --gradient-hero: linear-gradient(140deg, var(--deep-green) 0%, oklch(0.28 0.06 155) 100%);
   --gradient-gold: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+  --gradient-hero: linear-gradient(140deg, var(--deep-green) 0%, #123a1f 100%);
+  --gradient-gold: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+  --gradient-lesson: linear-gradient(135deg, var(--deep-green) 0%, var(--deep-green-hi) 100%);
   --shadow-elegant: 0 20px 50px -20px color-mix(in oklab, var(--deep-green) 40%, transparent);
   --shadow-gold: 0 10px 30px -12px color-mix(in oklab, var(--gold) 55%, transparent);
+  --shadow-card: 0 6px 20px -12px color-mix(in oklab, var(--anthracite) 40%, transparent);
 }
 
 .dark {
