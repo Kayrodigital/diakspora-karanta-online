@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProfesseurRouteImport } from './routes/professeur'
 import { Route as ParentRouteImport } from './routes/parent'
 import { Route as EleveRouteImport } from './routes/eleve'
 import { Route as IndexRouteImport } from './routes/index'
 
+const ProfesseurRoute = ProfesseurRouteImport.update({
+  id: '/professeur',
+  path: '/professeur',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ParentRoute = ParentRouteImport.update({
   id: '/parent',
   path: '/parent',
@@ -33,34 +39,45 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/eleve': typeof EleveRoute
   '/parent': typeof ParentRoute
+  '/professeur': typeof ProfesseurRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/eleve': typeof EleveRoute
   '/parent': typeof ParentRoute
+  '/professeur': typeof ProfesseurRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/eleve': typeof EleveRoute
   '/parent': typeof ParentRoute
+  '/professeur': typeof ProfesseurRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/eleve' | '/parent'
+  fullPaths: '/' | '/eleve' | '/parent' | '/professeur'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/eleve' | '/parent'
-  id: '__root__' | '/' | '/eleve' | '/parent'
+  to: '/' | '/eleve' | '/parent' | '/professeur'
+  id: '__root__' | '/' | '/eleve' | '/parent' | '/professeur'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EleveRoute: typeof EleveRoute
   ParentRoute: typeof ParentRoute
+  ProfesseurRoute: typeof ProfesseurRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/professeur': {
+      id: '/professeur'
+      path: '/professeur'
+      fullPath: '/professeur'
+      preLoaderRoute: typeof ProfesseurRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/parent': {
       id: '/parent'
       path: '/parent'
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EleveRoute: EleveRoute,
   ParentRoute: ParentRoute,
+  ProfesseurRoute: ProfesseurRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
