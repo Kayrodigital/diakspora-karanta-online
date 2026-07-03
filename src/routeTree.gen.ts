@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ParentRouteImport } from './routes/parent'
 import { Route as EleveRouteImport } from './routes/eleve'
 import { Route as IndexRouteImport } from './routes/index'
 
+const ParentRoute = ParentRouteImport.update({
+  id: '/parent',
+  path: '/parent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EleveRoute = EleveRouteImport.update({
   id: '/eleve',
   path: '/eleve',
@@ -26,31 +32,42 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/eleve': typeof EleveRoute
+  '/parent': typeof ParentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/eleve': typeof EleveRoute
+  '/parent': typeof ParentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/eleve': typeof EleveRoute
+  '/parent': typeof ParentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/eleve'
+  fullPaths: '/' | '/eleve' | '/parent'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/eleve'
-  id: '__root__' | '/' | '/eleve'
+  to: '/' | '/eleve' | '/parent'
+  id: '__root__' | '/' | '/eleve' | '/parent'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EleveRoute: typeof EleveRoute
+  ParentRoute: typeof ParentRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/parent': {
+      id: '/parent'
+      path: '/parent'
+      fullPath: '/parent'
+      preLoaderRoute: typeof ParentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/eleve': {
       id: '/eleve'
       path: '/eleve'
@@ -71,6 +88,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EleveRoute: EleveRoute,
+  ParentRoute: ParentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
