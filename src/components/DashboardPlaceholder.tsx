@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 type Props = {
@@ -36,10 +36,7 @@ export function DashboardPlaceholder({
 
         <div className="mt-12 grid gap-4 sm:grid-cols-2">
           {sections.map((s) => (
-            <div
-              key={s}
-              className="rounded-xl border border-border bg-card p-6"
-            >
+            <div key={s} className="rounded-xl border border-border bg-card p-6">
               <div className="mb-3 h-1 w-10 rounded-full bg-[color:var(--gold)]" />
               <p className="font-serif text-lg">{s}</p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -54,9 +51,3 @@ export function DashboardPlaceholder({
     </div>
   );
 }
-
-// Route file also serves as a shared component — exported via named export above.
-// This file itself is not a route; see the sibling *.tsx files.
-export const Route = createFileRoute("/_placeholder-noop")({
-  component: () => null,
-});
