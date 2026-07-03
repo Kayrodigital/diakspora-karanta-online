@@ -52,6 +52,8 @@
   --color-deep-green: var(--deep-green);
 
   --font-serif: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  --font-serif-alt: "Fraunces", "Cormorant Garamond", Georgia, serif;
+  --font-display-kid: "Baloo 2", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-arabic: "Amiri", "Scheherazade New", serif;
 }
@@ -59,13 +61,15 @@
 :root {
   --radius: 0.625rem;
 
-  /* Brand tokens */
-  --cream: oklch(0.972 0.018 85);          /* #f7f1e3-ish warm cream */
-  --gold: oklch(0.78 0.14 78);             /* doré / ambre */
-  --gold-soft: oklch(0.88 0.09 82);
-  --anthracite: oklch(0.24 0.012 260);     /* charbon */
-  --deep-green: oklch(0.35 0.07 155);      /* vert profond islamique */
-  --deep-green-hi: oklch(0.45 0.09 155);
+  /* Brand tokens — Diakspora Karanta design system */
+  --cream: #faf9f5;
+  --cream-2: #ece6d8;
+  --gold: #E5B95C;
+  --gold-soft: #f0d18a;
+  --gold-dark: #C9932F;
+  --anthracite: #2b2f36;
+  --deep-green: #1E5631;
+  --deep-green-hi: #4F8F5B;
 
   /* Semantic */
   --background: var(--cream);
