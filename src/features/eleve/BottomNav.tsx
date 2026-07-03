@@ -1,10 +1,9 @@
-import { Home, BookOpen, NotebookPen, TrendingUp, User } from "lucide-react";
-import type { ComponentType, SVGProps } from "react";
+import { Home, BookOpen, NotebookPen, TrendingUp, User, type LucideIcon } from "lucide-react";
 
 type Item = {
   key: string;
   label: string;
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  icon: LucideIcon;
   active?: boolean;
 };
 
