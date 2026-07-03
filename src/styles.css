@@ -46,10 +46,13 @@
   --color-ring: var(--ring);
 
   --color-cream: var(--cream);
+  --color-cream-2: var(--cream-2);
   --color-gold: var(--gold);
   --color-gold-soft: var(--gold-soft);
+  --color-gold-dark: var(--gold-dark);
   --color-anthracite: var(--anthracite);
   --color-deep-green: var(--deep-green);
+  --color-deep-green-hi: var(--deep-green-hi);
 
   --font-serif: "Cormorant Garamond", "Playfair Display", Georgia, serif;
   --font-serif-alt: "Fraunces", "Cormorant Garamond", Georgia, serif;
