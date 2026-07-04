@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BookOpen, GraduationCap } from "lucide-react";
+import { Baby, BookOpen, GraduationCap } from "lucide-react";
 import type { ReactNode } from "react";
 
 export const Route = createFileRoute("/parcours")({
