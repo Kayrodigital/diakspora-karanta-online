@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RattrapageRouteImport } from './routes/rattrapage'
 import { Route as ProfesseurRouteImport } from './routes/professeur'
 import { Route as ParentRouteImport } from './routes/parent'
 import { Route as EleveRouteImport } from './routes/eleve'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
+const RattrapageRoute = RattrapageRouteImport.update({
+  id: '/rattrapage',
+  path: '/rattrapage',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfesseurRoute = ProfesseurRouteImport.update({
   id: '/professeur',
   path: '/professeur',
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/eleve': typeof EleveRoute
   '/parent': typeof ParentRoute
   '/professeur': typeof ProfesseurRoute
+  '/rattrapage': typeof RattrapageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/eleve': typeof EleveRoute
   '/parent': typeof ParentRoute
   '/professeur': typeof ProfesseurRoute
+  '/rattrapage': typeof RattrapageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,27 @@ export interface FileRoutesById {
   '/eleve': typeof EleveRoute
   '/parent': typeof ParentRoute
   '/professeur': typeof ProfesseurRoute
+  '/rattrapage': typeof RattrapageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/eleve' | '/parent' | '/professeur'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/eleve'
+    | '/parent'
+    | '/professeur'
+    | '/rattrapage'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/eleve' | '/parent' | '/professeur'
-  id: '__root__' | '/' | '/admin' | '/eleve' | '/parent' | '/professeur'
+  to: '/' | '/admin' | '/eleve' | '/parent' | '/professeur' | '/rattrapage'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/eleve'
+    | '/parent'
+    | '/professeur'
+    | '/rattrapage'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,10 +99,18 @@ export interface RootRouteChildren {
   EleveRoute: typeof EleveRoute
   ParentRoute: typeof ParentRoute
   ProfesseurRoute: typeof ProfesseurRoute
+  RattrapageRoute: typeof RattrapageRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/rattrapage': {
+      id: '/rattrapage'
+      path: '/rattrapage'
+      fullPath: '/rattrapage'
+      preLoaderRoute: typeof RattrapageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/professeur': {
       id: '/professeur'
       path: '/professeur'
@@ -125,6 +155,7 @@ const rootRouteChildren: RootRouteChildren = {
   EleveRoute: EleveRoute,
   ParentRoute: ParentRoute,
   ProfesseurRoute: ProfesseurRoute,
+  RattrapageRoute: RattrapageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
