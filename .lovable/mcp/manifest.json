@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "diakspora-karanta-mcp",
+      "version": "0.1.0",
+      "title": "Diakspora Karanta MCP"
+    },
+    "tools": [
+      {
+        "name": "get_student_today_lesson",
+        "title": "Get today's lesson",
+        "description": "Return the current student's lesson of the day (title, subtitle, duration) along with their first name and cohort.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_student_progress",
+        "title": "Get student progress",
+        "description": "Return the child student's Juzʾ ʿAmma learning path (each surah with its status) and the reviews scheduled for today.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_parent_weekly_summary",
+        "title": "Get parent's weekly summary",
+        "description": "Return the parent's overview: children, attendance status, weekly stats (lessons, minutes, memorized surahs, homework), and next scheduled step.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_teacher_cohort_overview",
+        "title": "Get teacher's cohort overview",
+        "description": "Return the teacher's cohort snapshot: student attendance breakdown, per-student summaries, homework awaiting grading, and next Zoom session.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
