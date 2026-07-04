@@ -101,9 +101,18 @@
   --gradient-hero: linear-gradient(140deg, var(--deep-green) 0%, #123a1f 100%);
   --gradient-gold: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
   --gradient-lesson: linear-gradient(135deg, var(--deep-green) 0%, var(--deep-green-hi) 100%);
+  --gradient-parcours-enfant: linear-gradient(135deg, var(--deep-green) 0%, var(--gold-dark) 100%);
+  --gradient-parcours-intermediaire: linear-gradient(135deg, var(--teal-deep) 0%, var(--teal-hi) 100%);
+  --gradient-parcours-avance: linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta-hi) 100%);
   --shadow-elegant: 0 20px 50px -20px color-mix(in oklab, var(--deep-green) 40%, transparent);
   --shadow-gold: 0 10px 30px -12px color-mix(in oklab, var(--gold) 55%, transparent);
   --shadow-card: 0 6px 20px -12px color-mix(in oklab, var(--anthracite) 40%, transparent);
+
+  /* Parcours accents (teal & terracotta) */
+  --teal-deep: oklch(0.4 0.09 185);
+  --teal-hi: oklch(0.55 0.1 175);
+  --terracotta: oklch(0.5 0.13 45);
+  --terracotta-hi: oklch(0.7 0.12 55);
 }
 
 .dark {
