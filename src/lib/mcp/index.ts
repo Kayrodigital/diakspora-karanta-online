@@ -1,12 +1,9 @@
 import { defineMcp } from "@lovable.dev/mcp-js";
-import { mcpPlugin as _mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 
 import getStudentTodayLesson from "./tools/get-student-today-lesson";
 import getStudentProgress from "./tools/get-student-progress";
 import getParentWeeklySummary from "./tools/get-parent-weekly-summary";
 import getTeacherCohortOverview from "./tools/get-teacher-cohort-overview";
-
-void _mcpPlugin; // ensure plugin subpath is resolvable
 
 export default defineMcp({
   name: "diakspora-karanta-mcp",
