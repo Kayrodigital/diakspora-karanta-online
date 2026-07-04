@@ -15,6 +15,7 @@ import { Route as ParentRouteImport } from './routes/parent'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LeconRouteImport } from './routes/lecon'
 import { Route as EleveRouteImport } from './routes/eleve'
+import { Route as DevoirRouteImport } from './routes/devoir'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
@@ -51,6 +52,11 @@ const EleveRoute = EleveRouteImport.update({
   path: '/eleve',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevoirRoute = DevoirRouteImport.update({
+  id: '/devoir',
+  path: '/devoir',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -83,6 +89,7 @@ const Char91DotmcpChar93InvokeToolToolRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/devoir': typeof DevoirRoute
   '/eleve': typeof EleveRoute
   '/lecon': typeof LeconRoute
   '/mcp': typeof McpRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/devoir': typeof DevoirRoute
   '/eleve': typeof EleveRoute
   '/lecon': typeof LeconRoute
   '/mcp': typeof McpRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/devoir': typeof DevoirRoute
   '/eleve': typeof EleveRoute
   '/lecon': typeof LeconRoute
   '/mcp': typeof McpRoute
@@ -125,6 +134,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/devoir'
     | '/eleve'
     | '/lecon'
     | '/mcp'
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/devoir'
     | '/eleve'
     | '/lecon'
     | '/mcp'
@@ -151,6 +162,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/devoir'
     | '/eleve'
     | '/lecon'
     | '/mcp'
@@ -165,6 +177,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  DevoirRoute: typeof DevoirRoute
   EleveRoute: typeof EleveRoute
   LeconRoute: typeof LeconRoute
   McpRoute: typeof McpRoute
@@ -220,6 +233,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EleveRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/devoir': {
+      id: '/devoir'
+      path: '/devoir'
+      fullPath: '/devoir'
+      preLoaderRoute: typeof DevoirRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -261,6 +281,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  DevoirRoute: DevoirRoute,
   EleveRoute: EleveRoute,
   LeconRoute: LeconRoute,
   McpRoute: McpRoute,
