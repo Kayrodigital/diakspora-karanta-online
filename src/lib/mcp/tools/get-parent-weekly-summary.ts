@@ -2,8 +2,10 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import {
   mockParent,
   mockChildren,
-  mockWeeklySummary,
+  mockWeekly,
   mockAttendance,
+  mockJuz,
+  mockRecommendations,
   mockNextStep,
 } from "../../../features/parent/mock-data";
 
@@ -25,7 +27,9 @@ export default defineTool({
       parent: mockParent,
       children: mockChildren,
       attendance: mockAttendance,
-      weeklySummary: mockWeeklySummary,
+      weeklySummary: mockWeekly,
+      juzAmma: mockJuz,
+      recommendations: mockRecommendations,
       nextStep: mockNextStep,
     },
   }),
