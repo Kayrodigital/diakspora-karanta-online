@@ -32,7 +32,7 @@ const paths: Path[] = [
     title: "Espace enfant",
     description:
       "Lecture arabe, Juzʾ ʿAmma et bases de la religion, dans un parcours adapté et chaleureux.",
-    visual: <span aria-hidden="true">🧒🏽</span>,
+    visual: <Baby size={28} aria-hidden="true" />,
     gradient: "var(--gradient-parcours-enfant)",
   },
   {
