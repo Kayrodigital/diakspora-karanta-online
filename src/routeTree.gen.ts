@@ -12,10 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RattrapageRouteImport } from './routes/rattrapage'
 import { Route as ProfesseurRouteImport } from './routes/professeur'
 import { Route as ParentRouteImport } from './routes/parent'
+import { Route as ParcoursRouteImport } from './routes/parcours'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LeconRouteImport } from './routes/lecon'
+import { Route as IntermediaireRouteImport } from './routes/intermediaire'
 import { Route as EleveRouteImport } from './routes/eleve'
 import { Route as DevoirRouteImport } from './routes/devoir'
+import { Route as AvanceRouteImport } from './routes/avance'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
@@ -37,6 +40,11 @@ const ParentRoute = ParentRouteImport.update({
   path: '/parent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ParcoursRoute = ParcoursRouteImport.update({
+  id: '/parcours',
+  path: '/parcours',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
@@ -47,6 +55,11 @@ const LeconRoute = LeconRouteImport.update({
   path: '/lecon',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IntermediaireRoute = IntermediaireRouteImport.update({
+  id: '/intermediaire',
+  path: '/intermediaire',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EleveRoute = EleveRouteImport.update({
   id: '/eleve',
   path: '/eleve',
@@ -55,6 +68,11 @@ const EleveRoute = EleveRouteImport.update({
 const DevoirRoute = DevoirRouteImport.update({
   id: '/devoir',
   path: '/devoir',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AvanceRoute = AvanceRouteImport.update({
+  id: '/avance',
+  path: '/avance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -89,10 +107,13 @@ const Char91DotmcpChar93InvokeToolToolRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/avance': typeof AvanceRoute
   '/devoir': typeof DevoirRoute
   '/eleve': typeof EleveRoute
+  '/intermediaire': typeof IntermediaireRoute
   '/lecon': typeof LeconRoute
   '/mcp': typeof McpRoute
+  '/parcours': typeof ParcoursRoute
   '/parent': typeof ParentRoute
   '/professeur': typeof ProfesseurRoute
   '/rattrapage': typeof RattrapageRoute
@@ -103,10 +124,13 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/avance': typeof AvanceRoute
   '/devoir': typeof DevoirRoute
   '/eleve': typeof EleveRoute
+  '/intermediaire': typeof IntermediaireRoute
   '/lecon': typeof LeconRoute
   '/mcp': typeof McpRoute
+  '/parcours': typeof ParcoursRoute
   '/parent': typeof ParentRoute
   '/professeur': typeof ProfesseurRoute
   '/rattrapage': typeof RattrapageRoute
@@ -118,10 +142,13 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/avance': typeof AvanceRoute
   '/devoir': typeof DevoirRoute
   '/eleve': typeof EleveRoute
+  '/intermediaire': typeof IntermediaireRoute
   '/lecon': typeof LeconRoute
   '/mcp': typeof McpRoute
+  '/parcours': typeof ParcoursRoute
   '/parent': typeof ParentRoute
   '/professeur': typeof ProfesseurRoute
   '/rattrapage': typeof RattrapageRoute
@@ -134,10 +161,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/avance'
     | '/devoir'
     | '/eleve'
+    | '/intermediaire'
     | '/lecon'
     | '/mcp'
+    | '/parcours'
     | '/parent'
     | '/professeur'
     | '/rattrapage'
@@ -148,10 +178,13 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/avance'
     | '/devoir'
     | '/eleve'
+    | '/intermediaire'
     | '/lecon'
     | '/mcp'
+    | '/parcours'
     | '/parent'
     | '/professeur'
     | '/rattrapage'
@@ -162,10 +195,13 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/avance'
     | '/devoir'
     | '/eleve'
+    | '/intermediaire'
     | '/lecon'
     | '/mcp'
+    | '/parcours'
     | '/parent'
     | '/professeur'
     | '/rattrapage'
@@ -177,10 +213,13 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AvanceRoute: typeof AvanceRoute
   DevoirRoute: typeof DevoirRoute
   EleveRoute: typeof EleveRoute
+  IntermediaireRoute: typeof IntermediaireRoute
   LeconRoute: typeof LeconRoute
   McpRoute: typeof McpRoute
+  ParcoursRoute: typeof ParcoursRoute
   ParentRoute: typeof ParentRoute
   ProfesseurRoute: typeof ProfesseurRoute
   RattrapageRoute: typeof RattrapageRoute
@@ -212,6 +251,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/parcours': {
+      id: '/parcours'
+      path: '/parcours'
+      fullPath: '/parcours'
+      preLoaderRoute: typeof ParcoursRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mcp': {
       id: '/mcp'
       path: '/mcp'
@@ -226,6 +272,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeconRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/intermediaire': {
+      id: '/intermediaire'
+      path: '/intermediaire'
+      fullPath: '/intermediaire'
+      preLoaderRoute: typeof IntermediaireRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/eleve': {
       id: '/eleve'
       path: '/eleve'
@@ -238,6 +291,13 @@ declare module '@tanstack/react-router' {
       path: '/devoir'
       fullPath: '/devoir'
       preLoaderRoute: typeof DevoirRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/avance': {
+      id: '/avance'
+      path: '/avance'
+      fullPath: '/avance'
+      preLoaderRoute: typeof AvanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -281,10 +341,13 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AvanceRoute: AvanceRoute,
   DevoirRoute: DevoirRoute,
   EleveRoute: EleveRoute,
+  IntermediaireRoute: IntermediaireRoute,
   LeconRoute: LeconRoute,
   McpRoute: McpRoute,
+  ParcoursRoute: ParcoursRoute,
   ParentRoute: ParentRoute,
   ProfesseurRoute: ProfesseurRoute,
   RattrapageRoute: RattrapageRoute,
