@@ -13,6 +13,7 @@ import { Route as RattrapageRouteImport } from './routes/rattrapage'
 import { Route as ProfesseurRouteImport } from './routes/professeur'
 import { Route as ParentRouteImport } from './routes/parent'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as LeconRouteImport } from './routes/lecon'
 import { Route as EleveRouteImport } from './routes/eleve'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -38,6 +39,11 @@ const ParentRoute = ParentRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeconRoute = LeconRouteImport.update({
+  id: '/lecon',
+  path: '/lecon',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EleveRoute = EleveRouteImport.update({
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/eleve': typeof EleveRoute
+  '/lecon': typeof LeconRoute
   '/mcp': typeof McpRoute
   '/parent': typeof ParentRoute
   '/professeur': typeof ProfesseurRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/eleve': typeof EleveRoute
+  '/lecon': typeof LeconRoute
   '/mcp': typeof McpRoute
   '/parent': typeof ParentRoute
   '/professeur': typeof ProfesseurRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/eleve': typeof EleveRoute
+  '/lecon': typeof LeconRoute
   '/mcp': typeof McpRoute
   '/parent': typeof ParentRoute
   '/professeur': typeof ProfesseurRoute
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/eleve'
+    | '/lecon'
     | '/mcp'
     | '/parent'
     | '/professeur'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/eleve'
+    | '/lecon'
     | '/mcp'
     | '/parent'
     | '/professeur'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/eleve'
+    | '/lecon'
     | '/mcp'
     | '/parent'
     | '/professeur'
@@ -154,6 +166,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   EleveRoute: typeof EleveRoute
+  LeconRoute: typeof LeconRoute
   McpRoute: typeof McpRoute
   ParentRoute: typeof ParentRoute
   ProfesseurRoute: typeof ProfesseurRoute
@@ -191,6 +204,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lecon': {
+      id: '/lecon'
+      path: '/lecon'
+      fullPath: '/lecon'
+      preLoaderRoute: typeof LeconRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/eleve': {
@@ -242,6 +262,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   EleveRoute: EleveRoute,
+  LeconRoute: LeconRoute,
   McpRoute: McpRoute,
   ParentRoute: ParentRoute,
   ProfesseurRoute: ProfesseurRoute,
