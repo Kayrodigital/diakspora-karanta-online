@@ -109,10 +109,10 @@
   --shadow-card: 0 6px 20px -12px color-mix(in oklab, var(--anthracite) 40%, transparent);
 
   /* Parcours accents (teal & terracotta) */
-  --teal-deep: oklch(0.4 0.09 185);
-  --teal-hi: oklch(0.55 0.1 175);
-  --terracotta: oklch(0.5 0.13 45);
-  --terracotta-hi: oklch(0.7 0.12 55);
+  --teal-deep: oklch(0.4 0.09 195);
+  --teal-hi: oklch(0.55 0.1 185);
+  --terracotta: oklch(0.5 0.12 45);
+  --terracotta-hi: oklch(0.75 0.11 60);
 }
 
 .dark {
