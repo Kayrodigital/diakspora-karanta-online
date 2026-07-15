@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, Image as ImageIcon, RotateCcw, Send, X } from "lucide-react";
 
-type Shot = { id: string; url: string };
+type Shot = { id: string; url: string; file: File };
 
-export function PhotoCapture({ onSend }: { onSend: (count: number) => void }) {
+export function PhotoCapture({ onSend }: { onSend: (files: File[]) => void | Promise<void> }) {
   const [shots, setShots] = useState<Shot[]>([]);
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
@@ -19,7 +19,7 @@ export function PhotoCapture({ onSend }: { onSend: (count: number) => void }) {
     if (!files) return;
     const next: Shot[] = [];
     for (const f of Array.from(files)) {
-      next.push({ id: crypto.randomUUID(), url: URL.createObjectURL(f) });
+      next.push({ id: crypto.randomUUID(), url: URL.createObjectURL(f), file: f });
     }
     setShots((prev) => [...prev, ...next]);
   }
@@ -145,7 +145,7 @@ export function PhotoCapture({ onSend }: { onSend: (count: number) => void }) {
             <button
               type="button"
               onClick={() => {
-                onSend(shots.length);
+                onSend(shots.map((s) => s.file));
                 reset();
               }}
               className="flex min-h-[52px] flex-[1.4] items-center justify-center gap-2 rounded-2xl bg-[color:var(--deep-green)] px-4 font-[family-name:var(--font-display-kid)] text-lg font-bold text-[color:var(--cream)] shadow-[var(--shadow-elegant)] transition active:scale-[0.98]"

@@ -13,7 +13,7 @@ function formatTime(s: number) {
   return `${m}:${sec}`;
 }
 
-export function AudioRecorder({ onSend }: { onSend: (durationSec: number) => void }) {
+export function AudioRecorder({ onSend }: { onSend: (blob: Blob | null, durationSec: number) => void | Promise<void> }) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [elapsed, setElapsed] = useState(0);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -25,6 +25,7 @@ export function AudioRecorder({ onSend }: { onSend: (durationSec: number) => voi
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioElRef = useRef<HTMLAudioElement | null>(null);
+  const blobRef = useRef<Blob | null>(null);
 
   function clearTimer() {
     if (timerRef.current) {
@@ -60,6 +61,7 @@ export function AudioRecorder({ onSend }: { onSend: (durationSec: number) => voi
       };
       rec.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: rec.mimeType || "audio/webm" });
+        blobRef.current = blob;
         const url = URL.createObjectURL(blob);
         setAudioUrl(url);
         stream.getTracks().forEach((t) => t.stop());
@@ -215,7 +217,7 @@ export function AudioRecorder({ onSend }: { onSend: (durationSec: number) => voi
             <button
               type="button"
               onClick={() => {
-                onSend(elapsed);
+                onSend(blobRef.current, elapsed);
                 reset();
               }}
               className="flex min-h-[52px] flex-[1.4] items-center justify-center gap-2 rounded-2xl bg-[color:var(--deep-green)] px-4 font-[family-name:var(--font-display-kid)] text-lg font-bold text-[color:var(--cream)] shadow-[var(--shadow-elegant)] transition active:scale-[0.98]"
