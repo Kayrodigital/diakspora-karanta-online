@@ -25,6 +25,7 @@ export function AudioRecorder({ onSend }: { onSend: (blob: Blob | null, duration
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioElRef = useRef<HTMLAudioElement | null>(null);
+  const blobRef = useRef<Blob | null>(null);
 
   function clearTimer() {
     if (timerRef.current) {
