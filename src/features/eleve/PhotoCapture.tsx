@@ -145,7 +145,7 @@ export function PhotoCapture({ onSend }: { onSend: (files: File[]) => void | Pro
             <button
               type="button"
               onClick={() => {
-                onSend(shots.length);
+                onSend(shots.map((s) => s.file));
                 reset();
               }}
               className="flex min-h-[52px] flex-[1.4] items-center justify-center gap-2 rounded-2xl bg-[color:var(--deep-green)] px-4 font-[family-name:var(--font-display-kid)] text-lg font-bold text-[color:var(--cream)] shadow-[var(--shadow-elegant)] transition active:scale-[0.98]"
