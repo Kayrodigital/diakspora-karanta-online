@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, Image as ImageIcon, RotateCcw, Send, X } from "lucide-react";
 
-type Shot = { id: string; url: string };
+type Shot = { id: string; url: string; file: File };
 
-export function PhotoCapture({ onSend }: { onSend: (count: number) => void }) {
+export function PhotoCapture({ onSend }: { onSend: (files: File[]) => void | Promise<void> }) {
   const [shots, setShots] = useState<Shot[]>([]);
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
@@ -19,7 +19,7 @@ export function PhotoCapture({ onSend }: { onSend: (count: number) => void }) {
     if (!files) return;
     const next: Shot[] = [];
     for (const f of Array.from(files)) {
-      next.push({ id: crypto.randomUUID(), url: URL.createObjectURL(f) });
+      next.push({ id: crypto.randomUUID(), url: URL.createObjectURL(f), file: f });
     }
     setShots((prev) => [...prev, ...next]);
   }
