@@ -61,6 +61,7 @@ export function AudioRecorder({ onSend }: { onSend: (blob: Blob | null, duration
       };
       rec.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: rec.mimeType || "audio/webm" });
+        blobRef.current = blob;
         const url = URL.createObjectURL(blob);
         setAudioUrl(url);
         stream.getTracks().forEach((t) => t.stop());
@@ -216,7 +217,7 @@ export function AudioRecorder({ onSend }: { onSend: (blob: Blob | null, duration
             <button
               type="button"
               onClick={() => {
-                onSend(elapsed);
+                onSend(blobRef.current, elapsed);
                 reset();
               }}
               className="flex min-h-[52px] flex-[1.4] items-center justify-center gap-2 rounded-2xl bg-[color:var(--deep-green)] px-4 font-[family-name:var(--font-display-kid)] text-lg font-bold text-[color:var(--cream)] shadow-[var(--shadow-elegant)] transition active:scale-[0.98]"
