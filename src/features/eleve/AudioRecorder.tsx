@@ -13,7 +13,7 @@ function formatTime(s: number) {
   return `${m}:${sec}`;
 }
 
-export function AudioRecorder({ onSend }: { onSend: (durationSec: number) => void }) {
+export function AudioRecorder({ onSend }: { onSend: (blob: Blob | null, durationSec: number) => void | Promise<void> }) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [elapsed, setElapsed] = useState(0);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
