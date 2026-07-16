@@ -6,7 +6,7 @@ import { z } from "zod";
 import { BottomNav } from "@/features/eleve/BottomNav";
 import { VideoPlayer } from "@/features/eleve/VideoPlayer";
 import { QuizQuestion } from "@/features/eleve/QuizQuestion";
-import { mockLecon } from "@/features/eleve/lecon-mock-data";
+import { mockLecon, type QuizQuestion as QuizQuestionType } from "@/features/eleve/lecon-mock-data";
 import { supabase } from "@/integrations/supabase/client";
 
 const searchSchema = z.object({ id: z.string().optional() });
@@ -22,13 +22,14 @@ export const Route = createFileRoute("/_authenticated/lecon")({
 type Phase = "video" | "quiz";
 
 async function loadLesson(id: string | undefined) {
-  let query = supabase.from("lessons").select("id, title, duration_minutes, video_url");
+  let query = supabase.from("lessons").select("id, title, duration_minutes, video_url, quiz_questions");
   if (id) query = query.eq("id", id);
   else query = query.order("order_index", { ascending: true });
   const { data, error } = await query.limit(1).maybeSingle();
   if (error) throw error;
   return data;
 }
+
 
 function LeconPage() {
   const { id } = Route.useSearch();
