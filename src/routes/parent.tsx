@@ -49,7 +49,7 @@ function ParentPage() {
 
   return (
     <div className="min-h-screen bg-[color:var(--cream)] text-foreground">
-      <div className="mx-auto max-w-md pb-28">
+      <div className="mx-auto w-full max-w-md md:max-w-3xl lg:max-w-5xl pb-28">
         {/* 1. Header */}
         <header className="px-5 pt-6">
           <div className="flex items-start justify-between gap-3">
@@ -91,7 +91,7 @@ function ParentPage() {
           <h2 className="font-serif text-xl text-foreground">
             Résumé de la semaine
           </h2>
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
             <WeeklyStatCard
               label="Leçons"
               value={mockWeekly.lessonsCompleted}
@@ -216,7 +216,7 @@ function ParentPage() {
         {/* 7. Quick access */}
         <section className="mt-8 px-5">
           <h2 className="font-serif text-xl text-foreground">Accès rapides</h2>
-          <div className="mt-4 grid grid-cols-1 gap-3">
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
             <QuickAccessCard
               icon={<CreditCard size={18} aria-hidden />}
               title="Paiement & abonnement"

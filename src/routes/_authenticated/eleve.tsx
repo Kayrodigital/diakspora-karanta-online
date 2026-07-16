@@ -80,7 +80,7 @@ function ElevePage() {
 
   return (
     <div className="min-h-screen bg-[color:var(--cream)] text-foreground">
-      <div className="mx-auto max-w-md pb-28">
+      <div className="mx-auto w-full max-w-md md:max-w-3xl lg:max-w-5xl pb-28">
         <header className="flex items-center gap-3 px-5 pt-6">
           <div
             aria-hidden
@@ -172,22 +172,24 @@ function ElevePage() {
             </span>
           </div>
 
-          <ol className="mt-5 flex flex-col gap-2">
+          <ol className="mt-5 grid gap-2 md:grid-cols-2 lg:grid-cols-3">
             {path.map((node, i) => (
               <LessonPathNode key={node.id} node={node} isLast={i === path.length - 1} />
             ))}
           </ol>
+
         </section>
 
         <section className="mt-8 px-5">
           <h2 className="font-[family-name:var(--font-display-kid)] text-xl font-bold">
             À réviser aujourd'hui
           </h2>
-          <div className="mt-4 flex flex-col gap-3">
+          <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {mockReviews.map((r) => (
               <ReviewCard key={r.id} review={r} />
             ))}
           </div>
+
         </section>
       </div>
 

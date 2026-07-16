@@ -6,7 +6,7 @@ import { z } from "zod";
 import { BottomNav } from "@/features/eleve/BottomNav";
 import { VideoPlayer } from "@/features/eleve/VideoPlayer";
 import { QuizQuestion } from "@/features/eleve/QuizQuestion";
-import { mockLecon } from "@/features/eleve/lecon-mock-data";
+import { mockLecon, type QuizQuestion as QuizQuestionType } from "@/features/eleve/lecon-mock-data";
 import { supabase } from "@/integrations/supabase/client";
 
 const searchSchema = z.object({ id: z.string().optional() });
@@ -22,13 +22,14 @@ export const Route = createFileRoute("/_authenticated/lecon")({
 type Phase = "video" | "quiz";
 
 async function loadLesson(id: string | undefined) {
-  let query = supabase.from("lessons").select("id, title, duration_minutes, video_url");
+  let query = supabase.from("lessons").select("id, title, duration_minutes, video_url, quiz_questions");
   if (id) query = query.eq("id", id);
   else query = query.order("order_index", { ascending: true });
   const { data, error } = await query.limit(1).maybeSingle();
   if (error) throw error;
   return data;
 }
+
 
 function LeconPage() {
   const { id } = Route.useSearch();
@@ -39,7 +40,16 @@ function LeconPage() {
     queryFn: () => loadLesson(id),
   });
 
-  const { questions, badgeEmoji, badgeName } = mockLecon;
+  const { badgeEmoji, badgeName } = mockLecon;
+  const lessonQuestions =
+    ((lesson as { quiz_questions?: unknown } | null)?.quiz_questions as
+      | QuizQuestionType[]
+      | null
+      | undefined) ?? null;
+
+  const questions: QuizQuestionType[] =
+    lessonQuestions && lessonQuestions.length > 0 ? lessonQuestions : mockLecon.questions;
+
   const [phase, setPhase] = useState<Phase>("video");
   const [videoEnded, setVideoEnded] = useState(false);
   const [qIndex, setQIndex] = useState(0);
@@ -110,7 +120,7 @@ function LeconPage() {
 
   return (
     <div className="min-h-screen bg-[color:var(--cream)] text-foreground">
-      <div className="mx-auto max-w-md pb-28">
+      <div className="mx-auto w-full max-w-md md:max-w-3xl lg:max-w-5xl pb-28">
         <header className="px-5 pt-6">
           <Link to="/eleve" className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
             ← Espace élève
