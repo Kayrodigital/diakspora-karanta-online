@@ -216,7 +216,7 @@ function ParentPage() {
         {/* 7. Quick access */}
         <section className="mt-8 px-5">
           <h2 className="font-serif text-xl text-foreground">Accès rapides</h2>
-          <div className="mt-4 grid grid-cols-1 gap-3">
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
             <QuickAccessCard
               icon={<CreditCard size={18} aria-hidden />}
               title="Paiement & abonnement"
