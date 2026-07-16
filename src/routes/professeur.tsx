@@ -217,7 +217,7 @@ function ProfesseurPage() {
             </span>
           </h2>
 
-          <div className="mt-4 flex flex-col gap-3">
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
             {mockHomework.map((h) => (
               <article
                 key={h.id}
