@@ -184,11 +184,12 @@ function ElevePage() {
           <h2 className="font-[family-name:var(--font-display-kid)] text-xl font-bold">
             À réviser aujourd'hui
           </h2>
-          <div className="mt-4 flex flex-col gap-3">
+          <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {mockReviews.map((r) => (
               <ReviewCard key={r.id} review={r} />
             ))}
           </div>
+
         </section>
       </div>
 
