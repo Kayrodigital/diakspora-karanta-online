@@ -126,6 +126,7 @@ export type Database = {
           duration_minutes: number | null
           id: string
           order_index: number | null
+          quiz_questions: Json | null
           title: string
           video_url: string | null
         }
@@ -134,6 +135,7 @@ export type Database = {
           duration_minutes?: number | null
           id?: string
           order_index?: number | null
+          quiz_questions?: Json | null
           title: string
           video_url?: string | null
         }
@@ -142,6 +144,7 @@ export type Database = {
           duration_minutes?: number | null
           id?: string
           order_index?: number | null
+          quiz_questions?: Json | null
           title?: string
           video_url?: string | null
         }
