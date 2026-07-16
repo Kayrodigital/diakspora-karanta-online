@@ -41,7 +41,12 @@ function LeconPage() {
   });
 
   const { badgeEmoji, badgeName } = mockLecon;
-  const lessonQuestions = (lesson?.quiz_questions as unknown as QuizQuestionType[] | null) ?? null;
+  const lessonQuestions =
+    ((lesson as { quiz_questions?: unknown } | null)?.quiz_questions as
+      | QuizQuestionType[]
+      | null
+      | undefined) ?? null;
+
   const questions: QuizQuestionType[] =
     lessonQuestions && lessonQuestions.length > 0 ? lessonQuestions : mockLecon.questions;
 
