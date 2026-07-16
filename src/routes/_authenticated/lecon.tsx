@@ -40,7 +40,11 @@ function LeconPage() {
     queryFn: () => loadLesson(id),
   });
 
-  const { questions, badgeEmoji, badgeName } = mockLecon;
+  const { badgeEmoji, badgeName } = mockLecon;
+  const lessonQuestions = (lesson?.quiz_questions as unknown as QuizQuestionType[] | null) ?? null;
+  const questions: QuizQuestionType[] =
+    lessonQuestions && lessonQuestions.length > 0 ? lessonQuestions : mockLecon.questions;
+
   const [phase, setPhase] = useState<Phase>("video");
   const [videoEnded, setVideoEnded] = useState(false);
   const [qIndex, setQIndex] = useState(0);
