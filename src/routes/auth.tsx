@@ -62,7 +62,7 @@ function AuthPage() {
 
   return (
     <div className="min-h-screen bg-[color:var(--cream)] px-5 py-10 text-foreground">
-      <div className="mx-auto max-w-md">
+      <div className="mx-auto w-full max-w-md md:max-w-2xl">
         <Link to="/" className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           ← Diakspora Karanta
         </Link>

@@ -43,7 +43,7 @@ function RattrapagePage() {
 
   return (
     <div className="min-h-screen bg-[color:var(--cream)] text-foreground">
-      <div className="mx-auto max-w-md pb-40">
+      <div className="mx-auto w-full max-w-md md:max-w-3xl lg:max-w-5xl pb-40">
         {/* Header */}
         <header className="px-5 pt-6">
           <Link
@@ -165,7 +165,7 @@ function RattrapagePage() {
         className="fixed inset-x-0 bottom-[64px] z-20 border-t border-[color:var(--cream-2)] bg-[color:var(--cream)]/95 px-5 py-3 backdrop-blur"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
       >
-        <div className="mx-auto max-w-md">
+        <div className="mx-auto w-full max-w-md md:max-w-2xl">
           <button
             type="button"
             disabled={!allDone}

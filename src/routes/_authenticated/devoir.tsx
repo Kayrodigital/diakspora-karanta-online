@@ -100,7 +100,7 @@ function DevoirPage() {
 
   return (
     <div className="min-h-screen bg-[color:var(--cream)] text-foreground">
-      <div className="mx-auto max-w-md pb-28">
+      <div className="mx-auto w-full max-w-md md:max-w-3xl lg:max-w-5xl pb-28">
         <header className="px-5 pt-6">
           <Link to="/eleve" className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
             ← Retour
