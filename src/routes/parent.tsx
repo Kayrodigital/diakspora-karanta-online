@@ -91,7 +91,7 @@ function ParentPage() {
           <h2 className="font-serif text-xl text-foreground">
             Résumé de la semaine
           </h2>
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
             <WeeklyStatCard
               label="Leçons"
               value={mockWeekly.lessonsCompleted}
