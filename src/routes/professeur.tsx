@@ -51,7 +51,7 @@ function ProfesseurPage() {
       lang={lang}
       className="min-h-screen bg-[color:var(--cream)] text-foreground"
     >
-      <div className="mx-auto max-w-md pb-10 md:max-w-2xl lg:max-w-3xl">
+      <div className="mx-auto w-full max-w-md pb-10 md:max-w-3xl lg:max-w-5xl">
         {/* 1. Header */}
         <header className="px-5 pt-6">
           <div className="flex justify-end">
