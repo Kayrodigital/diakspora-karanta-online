@@ -10,15 +10,23 @@
 - Les portails famille, professeur et administration refusent l'accès sans rôle actif.
 - Le profil contient seulement des données d'identité et ne constitue pas une source d'autorisation.
 
-## Mise en service sur le nouveau projet Diakspora
+## Projet Supabase de production
 
-1. Créer l'organisation Supabase `Diakspora` et le projet `diakspora-karanta`.
-2. Copier `.env.example` vers `.env.local` et renseigner uniquement les valeurs du nouveau projet.
-3. Lier le dépôt au projet :
+Le projet `Karanta` est actif dans l'organisation Supabase Diakspora :
+
+- référence : `tcbxscwgorxixlwyiico` ;
+- région : `eu-west-2` ;
+- tenant initial : `diakspora` ;
+- migrations de fondation appliquées le 12 septembre 2026.
+
+Pour travailler localement :
+
+1. Copier `.env.example` vers `.env.local` et renseigner uniquement les valeurs de ce projet.
+2. Lier le dépôt au projet :
 
    ```bash
    npx supabase login
-   npx supabase link --project-ref VOTRE_PROJECT_REF
+   npx supabase link --project-ref tcbxscwgorxixlwyiico
    ```
 
 4. Examiner les migrations puis les appliquer :
@@ -35,33 +43,14 @@
    npx supabase db advisors --linked
    ```
 
-6. Créer le premier compte depuis `/auth?portal=family` ou depuis Supabase Auth.
-7. Dans le SQL Editor, créer l'organisation Karanta et attribuer le rôle propriétaire au compte choisi.
+6. Créer le premier compte depuis Supabase Auth ou l'écran de connexion.
+7. Attribuer au compte choisi le rôle `owner` dans le tenant `diakspora`.
 
-## Amorçage de Diakspora dans Karanta
+## Attribution du premier propriétaire
 
 Remplacer `USER_UUID` par l'identifiant du premier administrateur Auth :
 
 ```sql
-WITH new_organization AS (
-  INSERT INTO public.organizations (
-    name,
-    slug,
-    created_by,
-    primary_color,
-    accent_color,
-    enabled_locales
-  )
-  VALUES (
-    'Diakspora',
-    'diakspora',
-    'USER_UUID'::uuid,
-    '#1E5631',
-    '#C9932F',
-    ARRAY['fr', 'ar', 'en']::text[]
-  )
-  RETURNING id
-)
 INSERT INTO public.organization_memberships (
   organization_id,
   user_id,
@@ -70,7 +59,8 @@ INSERT INTO public.organization_memberships (
   is_default
 )
 SELECT id, 'USER_UUID'::uuid, 'owner', 'active', true
-FROM new_organization;
+FROM public.organizations
+WHERE slug = 'diakspora';
 ```
 
 ## Variables d'environnement
