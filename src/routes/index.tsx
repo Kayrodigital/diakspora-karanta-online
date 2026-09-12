@@ -6,24 +6,19 @@ export const Route = createFileRoute("/")({
 
 const spaces = [
   {
-    to: "/eleve",
-    label: "Espace Élève",
-    desc: "Cours, quiz, révisions et suivi de progression.",
+    portal: "family",
+    label: "Familles & élèves",
+    desc: "Cours, directs, devoirs et suivi de tous les enfants depuis une entrée commune.",
   },
   {
-    to: "/parent",
-    label: "Espace Parent",
-    desc: "Suivi de régularité, alertes et communication avec les professeurs.",
+    portal: "teacher",
+    label: "Professeurs",
+    desc: "Classes, séances Zoom ou Meet, contenus, archives, présences et corrections.",
   },
   {
-    to: "/professeur",
-    label: "Espace Professeur",
-    desc: "Cohortes, sessions Zoom, corrections — interface bilingue FR / العربية.",
-  },
-  {
-    to: "/admin",
-    label: "Espace Admin",
-    desc: "Gestion des utilisateurs, cohortes, certificats et contenus.",
+    portal: "admin",
+    label: "Administration",
+    desc: "Inscriptions, utilisateurs, rôles, classes, publication et configuration de l’école.",
   },
 ] as const;
 
@@ -45,15 +40,14 @@ function Home() {
         />
         <div className="relative mx-auto max-w-5xl px-6 py-24 sm:py-32 text-center">
           <p className="mb-6 inline-block rounded-full border border-[color:var(--gold)]/40 px-4 py-1 text-xs uppercase tracking-[0.25em] text-[color:var(--gold-soft)]">
-            Académie en ligne · Diaspora francophone
+            École numérique · Mobile, tablette et ordinateur
           </p>
           <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl font-semibold text-[color:var(--cream)]">
             Diakspora <span className="text-[color:var(--gold)]">Karanta</span>
           </h1>
           <p className="mt-6 mx-auto max-w-2xl text-lg sm:text-xl leading-relaxed text-[color:var(--cream)]/85">
-            Bienvenue. Nous transmettons la langue arabe et les sciences islamiques
-            à vos enfants et à toute la famille, dans un cadre chaleureux, structuré
-            et pensé pour la vie moderne de la diaspora.
+            Les cours en direct, audios, vidéos, livres, exercices et replays sont enfin organisés
+            dans un seul espace, accessible à toute la famille.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-3">
             <span className="rounded-full bg-[color:var(--cream)]/10 px-4 py-2 text-sm text-[color:var(--cream)]/90 backdrop-blur">
@@ -72,19 +66,18 @@ function Home() {
       {/* Espaces */}
       <section className="mx-auto max-w-6xl px-6 py-20">
         <div className="mb-12 text-center">
-          <h2 className="font-serif text-3xl sm:text-4xl text-foreground">
-            Un espace dédié pour chacun
-          </h2>
+          <h2 className="font-serif text-3xl sm:text-4xl text-foreground">Choisir votre espace</h2>
           <p className="mt-3 text-muted-foreground">
-            La plateforme est en construction — voici les univers qui ouvriront bientôt.
+            Une seule connexion, puis Karanta affiche les fonctions autorisées pour votre rôle.
           </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-3">
           {spaces.map((s) => (
             <Link
-              key={s.to}
-              to={s.to}
+              key={s.portal}
+              to="/auth"
+              search={{ portal: s.portal }}
               className="group relative flex flex-col rounded-2xl border border-border bg-card p-8 transition-all hover:-translate-y-1 hover:border-[color:var(--gold)] hover:shadow-[var(--shadow-elegant)]"
             >
               <span

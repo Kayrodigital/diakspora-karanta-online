@@ -6,6 +6,7 @@ import { ReviewCard } from "@/features/eleve/ReviewCard";
 import { BottomNav } from "@/features/eleve/BottomNav";
 import { mockReviews, type SurahNode } from "@/features/eleve/mock-data";
 import { supabase } from "@/integrations/supabase/client";
+import { organizationTheme } from "@/lib/organization-theme";
 
 export const Route = createFileRoute("/_authenticated/eleve")({
   head: () => ({
@@ -27,14 +28,22 @@ function firstArabicChar(title: string): string {
   return m ? m[0] : title.charAt(0);
 }
 
-async function loadStudentData() {
+async function loadStudentData(organizationId: string) {
   const { data: userRes } = await supabase.auth.getUser();
   const uid = userRes.user!.id;
 
   const [{ data: profile }, { data: lessons }, { data: progress }] = await Promise.all([
     supabase.from("profiles").select("full_name, cohort_name").eq("id", uid).maybeSingle(),
-    supabase.from("lessons").select("id, title, duration_minutes, order_index").order("order_index", { ascending: true }),
-    supabase.from("progress").select("lesson_id, status").eq("user_id", uid),
+    supabase
+      .from("lessons")
+      .select("id, title, duration_minutes, order_index")
+      .eq("organization_id", organizationId)
+      .order("order_index", { ascending: true }),
+    supabase
+      .from("progress")
+      .select("lesson_id, status")
+      .eq("organization_id", organizationId)
+      .eq("user_id", uid),
   ]);
 
   const doneIds = new Set(
@@ -66,9 +75,10 @@ async function loadStudentData() {
 
 function ElevePage() {
   const navigate = useNavigate();
+  const { organization } = Route.useRouteContext();
   const { data } = useSuspenseQuery({
-    queryKey: ["eleve-dashboard"],
-    queryFn: loadStudentData,
+    queryKey: ["eleve-dashboard", organization.id],
+    queryFn: () => loadStudentData(organization.id),
   });
 
   const { firstName, cohort, path, nextLesson, doneCount } = data;
@@ -79,7 +89,10 @@ function ElevePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[color:var(--cream)] text-foreground">
+    <div
+      className="min-h-screen bg-[color:var(--cream)] text-foreground"
+      style={organizationTheme(organization)}
+    >
       <div className="mx-auto w-full max-w-md md:max-w-3xl lg:max-w-5xl pb-28">
         <header className="flex items-center gap-3 px-5 pt-6">
           <div
@@ -177,7 +190,6 @@ function ElevePage() {
               <LessonPathNode key={node.id} node={node} isLast={i === path.length - 1} />
             ))}
           </ol>
-
         </section>
 
         <section className="mt-8 px-5">
@@ -189,7 +201,6 @@ function ElevePage() {
               <ReviewCard key={r.id} review={r} />
             ))}
           </div>
-
         </section>
       </div>
 

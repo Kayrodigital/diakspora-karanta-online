@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { Video, ClipboardCheck } from "lucide-react";
 import { LanguageSwitcher } from "@/features/professeur/LanguageSwitcher";
@@ -16,15 +16,22 @@ import {
   mockNextSession,
   type AttendanceLevel,
 } from "@/features/professeur/mock-data";
+import { loadPortalAccess } from "@/lib/auth/portal-access";
+import { organizationTheme } from "@/lib/organization-theme";
 
 export const Route = createFileRoute("/professeur")({
+  ssr: false,
+  beforeLoad: async () => {
+    const access = await loadPortalAccess("teacher");
+    if (!access) throw redirect({ to: "/auth", search: { portal: "teacher" } });
+    return access;
+  },
   head: () => ({
     meta: [
       { title: "Espace Professeur — Diakspora Karanta" },
       {
         name: "description",
-        content:
-          "Suivi de cohorte, correction des devoirs et sessions Zoom pour les professeurs.",
+        content: "Suivi de cohorte, correction des devoirs et sessions Zoom pour les professeurs.",
       },
     ],
   }),
@@ -32,6 +39,7 @@ export const Route = createFileRoute("/professeur")({
 });
 
 function ProfesseurPage() {
+  const { organization } = Route.useRouteContext();
   const [lang, setLang] = useState<Lang>("ar");
   const [filter, setFilter] = useState<AttendanceLevel | null>(null);
   const dir = LANG_META[lang].dir;
@@ -50,6 +58,7 @@ function ProfesseurPage() {
       dir={dir}
       lang={lang}
       className="min-h-screen bg-[color:var(--cream)] text-foreground"
+      style={organizationTheme(organization)}
     >
       <div className="mx-auto w-full max-w-md pb-10 md:max-w-3xl lg:max-w-5xl">
         {/* 1. Header */}
@@ -75,9 +84,7 @@ function ProfesseurPage() {
             className="mt-3 inline-flex items-center gap-2 rounded-full border border-[color:var(--cream-2)] bg-card px-3 py-1.5 text-sm shadow-[var(--shadow-card)]"
             style={arabicStyle}
           >
-            <span className="text-[color:var(--gold-dark)]">
-              {t("cohort")} ·
-            </span>
+            <span className="text-[color:var(--gold-dark)]">{t("cohort")} ·</span>
             <span className="font-semibold text-foreground">
               {cohort.name} · {cohort.groupLabel}
             </span>
@@ -94,15 +101,9 @@ function ProfesseurPage() {
           </h2>
 
           <div className="mt-4 rounded-2xl border border-[color:var(--cream-2)] bg-card p-5 shadow-[var(--shadow-card)]">
-            <p
-              className="font-serif text-3xl text-[color:var(--deep-green)]"
-              style={arabicStyle}
-            >
+            <p className="font-serif text-3xl text-[color:var(--deep-green)]" style={arabicStyle}>
               {mockOverview.totalStudents}{" "}
-              <span
-                className="text-sm text-muted-foreground"
-                style={arabicStyle}
-              >
+              <span className="text-sm text-muted-foreground" style={arabicStyle}>
                 {t("overview_students")}
               </span>
             </p>
@@ -141,10 +142,7 @@ function ProfesseurPage() {
                       className="mx-auto mb-1 block h-2.5 w-2.5 rounded-full"
                       style={{ background: palette.dot }}
                     />
-                    <p
-                      className="font-serif text-xl"
-                      style={{ color: palette.fg }}
-                    >
+                    <p className="font-serif text-xl" style={{ color: palette.fg }}>
                       {count}
                     </p>
                     <p
@@ -193,9 +191,7 @@ function ProfesseurPage() {
             style={isRtl ? { fontFamily: "var(--font-arabic)", fontSize: "1.35rem" } : undefined}
           >
             {t("students_title")}{" "}
-            <span className="text-sm text-muted-foreground">
-              ({filteredStudents.length})
-            </span>
+            <span className="text-sm text-muted-foreground">({filteredStudents.length})</span>
           </h2>
 
           <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -212,9 +208,7 @@ function ProfesseurPage() {
             style={isRtl ? { fontFamily: "var(--font-arabic)", fontSize: "1.35rem" } : undefined}
           >
             {t("homework_title")}{" "}
-            <span className="text-sm text-muted-foreground">
-              ({mockHomework.length})
-            </span>
+            <span className="text-sm text-muted-foreground">({mockHomework.length})</span>
           </h2>
 
           <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -228,8 +222,7 @@ function ProfesseurPage() {
                     aria-hidden
                     className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[color:var(--deep-green)]"
                     style={{
-                      background:
-                        "color-mix(in oklab, var(--deep-green) 10%, var(--cream))",
+                      background: "color-mix(in oklab, var(--deep-green) 10%, var(--cream))",
                     }}
                   >
                     <ClipboardCheck size={20} />
@@ -238,9 +231,7 @@ function ProfesseurPage() {
                     <p
                       className="font-serif text-base text-foreground"
                       style={
-                        isRtl
-                          ? { fontFamily: "var(--font-arabic)", fontSize: "1.1rem" }
-                          : undefined
+                        isRtl ? { fontFamily: "var(--font-arabic)", fontSize: "1.1rem" } : undefined
                       }
                     >
                       {h.studentFirstName} · {h.lessonTitle}

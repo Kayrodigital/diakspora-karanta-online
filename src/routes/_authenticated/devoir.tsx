@@ -6,6 +6,7 @@ import { PhotoCapture } from "@/features/eleve/PhotoCapture";
 import { AudioRecorder } from "@/features/eleve/AudioRecorder";
 import { BottomNav } from "@/features/eleve/BottomNav";
 import { supabase } from "@/integrations/supabase/client";
+import { organizationTheme } from "@/lib/organization-theme";
 
 export const Route = createFileRoute("/_authenticated/devoir")({
   head: () => ({
@@ -16,23 +17,24 @@ export const Route = createFileRoute("/_authenticated/devoir")({
 
 type Tab = "photo" | "audio";
 
-async function fetchHistory() {
+async function fetchHistory(organizationId: string) {
   const { data: userRes } = await supabase.auth.getUser();
   const uid = userRes.user?.id;
   if (!uid) return [];
   const { data } = await supabase
     .from("homework_submissions")
     .select("id, type, status, created_at, feedback_text")
+    .eq("organization_id", organizationId)
     .eq("user_id", uid)
     .order("created_at", { ascending: false })
     .limit(10);
   return data ?? [];
 }
 
-async function uploadFile(file: Blob, ext: string): Promise<string> {
+async function uploadFile(organizationId: string, file: Blob, ext: string): Promise<string> {
   const { data: userRes } = await supabase.auth.getUser();
   const uid = userRes.user!.id;
-  const path = `${uid}/${crypto.randomUUID()}.${ext}`;
+  const path = `${organizationId}/${uid}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage.from("homework").upload(path, file, {
     contentType: file.type || undefined,
     upsert: false,
@@ -41,10 +43,11 @@ async function uploadFile(file: Blob, ext: string): Promise<string> {
   return path;
 }
 
-async function insertSubmission(fileUrl: string, type: "photo" | "audio") {
+async function insertSubmission(organizationId: string, fileUrl: string, type: "photo" | "audio") {
   const { data: userRes } = await supabase.auth.getUser();
   const uid = userRes.user!.id;
   const { error } = await supabase.from("homework_submissions").insert({
+    organization_id: organizationId,
     user_id: uid,
     type,
     file_url: fileUrl,
@@ -54,11 +57,15 @@ async function insertSubmission(fileUrl: string, type: "photo" | "audio") {
 }
 
 function DevoirPage() {
+  const { organization } = Route.useRouteContext();
   const [tab, setTab] = useState<Tab>("photo");
   const [sent, setSent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const qc = useQueryClient();
-  const { data: history } = useQuery({ queryKey: ["homework-history"], queryFn: fetchHistory });
+  const { data: history } = useQuery({
+    queryKey: ["homework-history", organization.id],
+    queryFn: () => fetchHistory(organization.id),
+  });
 
   useEffect(() => {
     if (!sent) return;
@@ -71,11 +78,11 @@ function DevoirPage() {
     try {
       for (const f of files) {
         const ext = f.name.split(".").pop() || "jpg";
-        const path = await uploadFile(f, ext);
-        await insertSubmission(path, "photo");
+        const path = await uploadFile(organization.id, f, ext);
+        await insertSubmission(organization.id, path, "photo");
       }
       setSent(`${files.length} photo(s) envoyée(s) 🌟`);
-      qc.invalidateQueries({ queryKey: ["homework-history"] });
+      qc.invalidateQueries({ queryKey: ["homework-history", organization.id] });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erreur d'envoi");
     }
@@ -89,20 +96,26 @@ function DevoirPage() {
         return;
       }
       const ext = (blob.type.split("/")[1] || "webm").split(";")[0];
-      const path = await uploadFile(blob, ext);
-      await insertSubmission(path, "audio");
+      const path = await uploadFile(organization.id, blob, ext);
+      await insertSubmission(organization.id, path, "audio");
       setSent("Audio envoyé 🌟");
-      qc.invalidateQueries({ queryKey: ["homework-history"] });
+      qc.invalidateQueries({ queryKey: ["homework-history", organization.id] });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erreur d'envoi");
     }
   }
 
   return (
-    <div className="min-h-screen bg-[color:var(--cream)] text-foreground">
+    <div
+      className="min-h-screen bg-[color:var(--cream)] text-foreground"
+      style={organizationTheme(organization)}
+    >
       <div className="mx-auto w-full max-w-md md:max-w-3xl lg:max-w-5xl pb-28">
         <header className="px-5 pt-6">
-          <Link to="/eleve" className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <Link
+            to="/eleve"
+            className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground"
+          >
             ← Retour
           </Link>
           <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.22em] text-[color:var(--gold-dark)]">
@@ -113,7 +126,10 @@ function DevoirPage() {
           </h1>
         </header>
 
-        <div role="tablist" className="mx-5 mt-5 grid grid-cols-2 rounded-2xl bg-[color:var(--cream-2)] p-1">
+        <div
+          role="tablist"
+          className="mx-5 mt-5 grid grid-cols-2 rounded-2xl bg-[color:var(--cream-2)] p-1"
+        >
           {(["photo", "audio"] as const).map((t) => (
             <button
               key={t}
@@ -121,7 +137,9 @@ function DevoirPage() {
               aria-selected={tab === t}
               onClick={() => setTab(t)}
               className={`flex min-h-[44px] items-center justify-center gap-2 rounded-xl font-[family-name:var(--font-display-kid)] font-bold ${
-                tab === t ? "bg-[color:var(--deep-green)] text-[color:var(--cream)]" : "text-[color:var(--anthracite)]"
+                tab === t
+                  ? "bg-[color:var(--deep-green)] text-[color:var(--cream)]"
+                  : "text-[color:var(--anthracite)]"
               }`}
             >
               {t === "photo" ? <Camera size={18} /> : <Mic size={18} />}
@@ -194,7 +212,9 @@ function DevoirPage() {
               })}
             </ul>
           ) : (
-            <p className="mt-3 text-sm text-muted-foreground">Aucun devoir envoyé pour l'instant.</p>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Aucun devoir envoyé pour l'instant.
+            </p>
           )}
         </section>
       </div>

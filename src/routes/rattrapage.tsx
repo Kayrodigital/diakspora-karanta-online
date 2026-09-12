@@ -1,21 +1,26 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Download, Camera, Check } from "lucide-react";
 import { BottomNav } from "@/features/eleve/BottomNav";
-import {
-  RattrapageStepCard,
-  type StepStatus,
-} from "@/features/eleve/RattrapageStepCard";
+import { RattrapageStepCard, type StepStatus } from "@/features/eleve/RattrapageStepCard";
 import { mockRattrapage } from "@/features/eleve/rattrapage-mock-data";
+import { loadPortalAccess } from "@/lib/auth/portal-access";
+import { organizationTheme } from "@/lib/organization-theme";
 
 export const Route = createFileRoute("/rattrapage")({
+  ssr: false,
+  beforeLoad: async () => {
+    const access = await loadPortalAccess("family");
+    if (!access) throw redirect({ to: "/auth", search: { portal: "family" } });
+    if (access.membership.role !== "learner") throw redirect({ to: "/parent" });
+    return access;
+  },
   head: () => ({
     meta: [
       { title: "Rattrapage — Diakspora Karanta" },
       {
         name: "description",
-        content:
-          "Reprends tranquillement ta leçon manquée, à ton rythme, étape par étape.",
+        content: "Reprends tranquillement ta leçon manquée, à ton rythme, étape par étape.",
       },
     ],
   }),
@@ -23,6 +28,7 @@ export const Route = createFileRoute("/rattrapage")({
 });
 
 function RattrapagePage() {
+  const { organization } = Route.useRouteContext();
   const { lessonTitle, steps, quiz, encouragement } = mockRattrapage;
 
   // Mock: first two steps already done.
@@ -31,18 +37,17 @@ function RattrapagePage() {
     [steps[1].id]: true,
   });
 
-  const currentIndex = useMemo(
-    () => steps.findIndex((s) => !completed[s.id]),
-    [steps, completed],
-  );
+  const currentIndex = useMemo(() => steps.findIndex((s) => !completed[s.id]), [steps, completed]);
   const doneCount = steps.filter((s) => completed[s.id]).length;
   const allDone = doneCount === steps.length;
 
-  const complete = (id: string) =>
-    setCompleted((prev) => ({ ...prev, [id]: true }));
+  const complete = (id: string) => setCompleted((prev) => ({ ...prev, [id]: true }));
 
   return (
-    <div className="min-h-screen bg-[color:var(--cream)] text-foreground">
+    <div
+      className="min-h-screen bg-[color:var(--cream)] text-foreground"
+      style={organizationTheme(organization)}
+    >
       <div className="mx-auto w-full max-w-md md:max-w-3xl lg:max-w-5xl pb-40">
         {/* Header */}
         <header className="px-5 pt-6">
@@ -55,9 +60,7 @@ function RattrapagePage() {
           <h1 className="mt-3 font-[family-name:var(--font-display-kid)] text-2xl font-bold leading-tight text-foreground">
             {lessonTitle}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            À ton rythme, une étape à la fois.
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">À ton rythme, une étape à la fois.</p>
         </header>
 
         {/* Progress */}
@@ -111,12 +114,7 @@ function RattrapagePage() {
 
             if (step.kind === "pdf") {
               return (
-                <RattrapageStepCard
-                  key={step.id}
-                  step={step}
-                  index={i}
-                  status={status}
-                >
+                <RattrapageStepCard key={step.id} step={step} index={i} status={status}>
                   <button
                     type="button"
                     onClick={() => complete(step.id)}
@@ -131,28 +129,15 @@ function RattrapagePage() {
 
             if (step.kind === "quiz") {
               return (
-                <RattrapageStepCard
-                  key={step.id}
-                  step={step}
-                  index={i}
-                  status={status}
-                >
-                  <QuizFlow
-                    questions={quiz}
-                    onDone={() => complete(step.id)}
-                  />
+                <RattrapageStepCard key={step.id} step={step} index={i} status={status}>
+                  <QuizFlow questions={quiz} onDone={() => complete(step.id)} />
                 </RattrapageStepCard>
               );
             }
 
             // homework
             return (
-              <RattrapageStepCard
-                key={step.id}
-                step={step}
-                index={i}
-                status={status}
-              >
+              <RattrapageStepCard key={step.id} step={step} index={i} status={status}>
                 <HomeworkForm onDone={() => complete(step.id)} />
               </RattrapageStepCard>
             );
@@ -178,9 +163,7 @@ function RattrapagePage() {
             {allDone && <Check size={20} strokeWidth={3} aria-hidden />}
             Valider et continuer
           </button>
-          <p className="mt-2 text-center text-xs text-muted-foreground">
-            {encouragement}
-          </p>
+          <p className="mt-2 text-center text-xs text-muted-foreground">{encouragement}</p>
         </div>
       </div>
 
@@ -275,10 +258,7 @@ function HomeworkForm({ onDone }: { onDone: () => void }) {
 
   return (
     <div>
-      <label
-        htmlFor="homework-text"
-        className="text-xs font-medium text-muted-foreground"
-      >
+      <label htmlFor="homework-text" className="text-xs font-medium text-muted-foreground">
         Écris ta phrase :
       </label>
       <textarea

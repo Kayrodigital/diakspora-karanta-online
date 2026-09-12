@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   BookOpen,
@@ -25,8 +25,17 @@ import {
   mockRecommendations,
   mockNextStep,
 } from "@/features/parent/mock-data";
+import { loadPortalAccess } from "@/lib/auth/portal-access";
+import { organizationTheme } from "@/lib/organization-theme";
 
 export const Route = createFileRoute("/parent")({
+  ssr: false,
+  beforeLoad: async () => {
+    const access = await loadPortalAccess("family");
+    if (!access) throw redirect({ to: "/auth", search: { portal: "family" } });
+    if (access.membership.role !== "parent") throw redirect({ to: "/eleve" });
+    return access;
+  },
   head: () => ({
     meta: [
       { title: "Espace Parent — Diakspora Karanta" },
@@ -41,14 +50,17 @@ export const Route = createFileRoute("/parent")({
 });
 
 function ParentPage() {
+  const { organization } = Route.useRouteContext();
   const [activeChildId, setActiveChildId] = useState(mockChildren[0].id);
-  const activeChild =
-    mockChildren.find((c) => c.id === activeChildId) ?? mockChildren[0];
+  const activeChild = mockChildren.find((c) => c.id === activeChildId) ?? mockChildren[0];
 
   const juzPct = Math.round((mockJuz.done / mockJuz.total) * 100);
 
   return (
-    <div className="min-h-screen bg-[color:var(--cream)] text-foreground">
+    <div
+      className="min-h-screen bg-[color:var(--cream)] text-foreground"
+      style={organizationTheme(organization)}
+    >
       <div className="mx-auto w-full max-w-md md:max-w-3xl lg:max-w-5xl pb-28">
         {/* 1. Header */}
         <header className="px-5 pt-6">
@@ -88,9 +100,7 @@ function ParentPage() {
 
         {/* 3. Weekly summary */}
         <section className="mt-8 px-5">
-          <h2 className="font-serif text-xl text-foreground">
-            Résumé de la semaine
-          </h2>
+          <h2 className="font-serif text-xl text-foreground">Résumé de la semaine</h2>
           <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
             <WeeklyStatCard
               label="Leçons"
@@ -123,9 +133,7 @@ function ParentPage() {
                 <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[color:var(--gold-dark)]">
                   Progression
                 </p>
-                <h2 className="mt-1 font-serif text-xl text-foreground">
-                  Juzʾ ʿAmma
-                </h2>
+                <h2 className="mt-1 font-serif text-xl text-foreground">Juzʾ ʿAmma</h2>
               </div>
               <p className="font-serif text-lg text-[color:var(--deep-green)]">
                 {mockJuz.done}/{mockJuz.total}{" "}
@@ -164,9 +172,7 @@ function ParentPage() {
 
         {/* 5. Recommendations */}
         <section className="mt-8 px-5">
-          <h2 className="font-serif text-xl text-foreground">
-            Ce que vous pouvez faire
-          </h2>
+          <h2 className="font-serif text-xl text-foreground">Ce que vous pouvez faire</h2>
           <p className="mt-1 text-xs text-muted-foreground">
             Quelques suggestions bienveillantes pour accompagner {activeChild.firstName}.
           </p>
@@ -191,9 +197,7 @@ function ParentPage() {
             <p className="mt-2 font-serif text-xl leading-tight">
               {mockNextStep.zoomDate} · {mockNextStep.zoomTime}
             </p>
-            <p className="mt-1 text-sm text-[color:var(--cream)]/80">
-              {mockNextStep.zoomTopic}
-            </p>
+            <p className="mt-1 text-sm text-[color:var(--cream)]/80">{mockNextStep.zoomTopic}</p>
             <a
               href={mockNextStep.zoomUrl ?? "#"}
               className="mt-4 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[color:var(--gold)] px-5 font-semibold text-[color:var(--anthracite)] shadow-[var(--shadow-gold)] transition hover:bg-[color:var(--gold-soft)]"
@@ -265,9 +269,7 @@ function QuickAccessCard({
         {icon}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block font-serif text-base text-foreground">
-          {title}
-        </span>
+        <span className="block font-serif text-base text-foreground">{title}</span>
         <span className="block text-xs text-muted-foreground">{subtitle}</span>
       </span>
       <ChevronRight size={18} className="text-muted-foreground" aria-hidden />

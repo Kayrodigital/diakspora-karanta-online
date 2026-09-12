@@ -9,62 +9,31 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as RattrapageRouteImport } from './routes/rattrapage'
-import { Route as ProfesseurRouteImport } from './routes/professeur'
-import { Route as ParentRouteImport } from './routes/parent'
-import { Route as ParcoursRouteImport } from './routes/parcours'
-import { Route as McpRouteImport } from './routes/mcp'
-import { Route as IntermediaireRouteImport } from './routes/intermediaire'
-import { Route as AvanceRouteImport } from './routes/avance'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedLeconRouteImport } from './routes/_authenticated/lecon'
-import { Route as AuthenticatedEleveRouteImport } from './routes/_authenticated/eleve'
-import { Route as AuthenticatedDevoirRouteImport } from './routes/_authenticated/devoir'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AvanceRouteImport } from './routes/avance'
+import { Route as IntermediaireRouteImport } from './routes/intermediaire'
+import { Route as McpRouteImport } from './routes/mcp'
+import { Route as ParcoursRouteImport } from './routes/parcours'
+import { Route as ParentRouteImport } from './routes/parent'
+import { Route as ProfesseurRouteImport } from './routes/professeur'
+import { Route as RattrapageRouteImport } from './routes/rattrapage'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AuthenticatedDevoirRouteImport } from './routes/_authenticated/devoir'
+import { Route as AuthenticatedEleveRouteImport } from './routes/_authenticated/eleve'
+import { Route as AuthenticatedLeconRouteImport } from './routes/_authenticated/lecon'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
-const RattrapageRoute = RattrapageRouteImport.update({
-  id: '/rattrapage',
-  path: '/rattrapage',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProfesseurRoute = ProfesseurRouteImport.update({
-  id: '/professeur',
-  path: '/professeur',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ParentRoute = ParentRouteImport.update({
-  id: '/parent',
-  path: '/parent',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ParcoursRoute = ParcoursRouteImport.update({
-  id: '/parcours',
-  path: '/parcours',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IntermediaireRoute = IntermediaireRouteImport.update({
-  id: '/intermediaire',
-  path: '/intermediaire',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AvanceRoute = AvanceRouteImport.update({
-  id: '/avance',
-  path: '/avance',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -72,18 +41,61 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AvanceRoute = AvanceRouteImport.update({
+  id: '/avance',
+  path: '/avance',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedLeconRoute = AuthenticatedLeconRouteImport.update({
-  id: '/lecon',
-  path: '/lecon',
+const IntermediaireRoute = IntermediaireRouteImport.update({
+  id: '/intermediaire',
+  path: '/intermediaire',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParcoursRoute = ParcoursRouteImport.update({
+  id: '/parcours',
+  path: '/parcours',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParentRoute = ParentRouteImport.update({
+  id: '/parent',
+  path: '/parent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfesseurRoute = ProfesseurRouteImport.update({
+  id: '/professeur',
+  path: '/professeur',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RattrapageRoute = RattrapageRouteImport.update({
+  id: '/rattrapage',
+  path: '/rattrapage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedDevoirRoute = AuthenticatedDevoirRouteImport.update({
+  id: '/devoir',
+  path: '/devoir',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedEleveRoute = AuthenticatedEleveRouteImport.update({
@@ -91,23 +103,11 @@ const AuthenticatedEleveRoute = AuthenticatedEleveRouteImport.update({
   path: '/eleve',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedDevoirRoute = AuthenticatedDevoirRouteImport.update({
-  id: '/devoir',
-  path: '/devoir',
+const AuthenticatedLeconRoute = AuthenticatedLeconRouteImport.update({
+  id: '/lecon',
+  path: '/lecon',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -248,67 +248,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/rattrapage': {
-      id: '/rattrapage'
-      path: '/rattrapage'
-      fullPath: '/rattrapage'
-      preLoaderRoute: typeof RattrapageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/professeur': {
-      id: '/professeur'
-      path: '/professeur'
-      fullPath: '/professeur'
-      preLoaderRoute: typeof ProfesseurRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/parent': {
-      id: '/parent'
-      path: '/parent'
-      fullPath: '/parent'
-      preLoaderRoute: typeof ParentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/parcours': {
-      id: '/parcours'
-      path: '/parcours'
-      fullPath: '/parcours'
-      preLoaderRoute: typeof ParcoursRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/intermediaire': {
-      id: '/intermediaire'
-      path: '/intermediaire'
-      fullPath: '/intermediaire'
-      preLoaderRoute: typeof IntermediaireRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/avance': {
-      id: '/avance'
-      path: '/avance'
-      fullPath: '/avance'
-      preLoaderRoute: typeof AvanceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -318,18 +262,88 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/lecon': {
-      id: '/_authenticated/lecon'
-      path: '/lecon'
-      fullPath: '/lecon'
-      preLoaderRoute: typeof AuthenticatedLeconRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/avance': {
+      id: '/avance'
+      path: '/avance'
+      fullPath: '/avance'
+      preLoaderRoute: typeof AvanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intermediaire': {
+      id: '/intermediaire'
+      path: '/intermediaire'
+      fullPath: '/intermediaire'
+      preLoaderRoute: typeof IntermediaireRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parcours': {
+      id: '/parcours'
+      path: '/parcours'
+      fullPath: '/parcours'
+      preLoaderRoute: typeof ParcoursRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parent': {
+      id: '/parent'
+      path: '/parent'
+      fullPath: '/parent'
+      preLoaderRoute: typeof ParentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/professeur': {
+      id: '/professeur'
+      path: '/professeur'
+      fullPath: '/professeur'
+      preLoaderRoute: typeof ProfesseurRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rattrapage': {
+      id: '/rattrapage'
+      path: '/rattrapage'
+      fullPath: '/rattrapage'
+      preLoaderRoute: typeof RattrapageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/devoir': {
+      id: '/_authenticated/devoir'
+      path: '/devoir'
+      fullPath: '/devoir'
+      preLoaderRoute: typeof AuthenticatedDevoirRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/eleve': {
@@ -339,26 +353,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEleveRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/devoir': {
-      id: '/_authenticated/devoir'
-      path: '/devoir'
-      fullPath: '/devoir'
-      preLoaderRoute: typeof AuthenticatedDevoirRouteImport
+    '/_authenticated/lecon': {
+      id: '/_authenticated/lecon'
+      path: '/lecon'
+      fullPath: '/lecon'
+      preLoaderRoute: typeof AuthenticatedLeconRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.mcp/list-tools': {
-      id: '/.mcp/list-tools'
-      path: '/.mcp/list-tools'
-      fullPath: '/.mcp/list-tools'
-      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'

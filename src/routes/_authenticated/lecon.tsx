@@ -8,6 +8,7 @@ import { VideoPlayer } from "@/features/eleve/VideoPlayer";
 import { QuizQuestion } from "@/features/eleve/QuizQuestion";
 import { mockLecon, type QuizQuestion as QuizQuestionType } from "@/features/eleve/lecon-mock-data";
 import { supabase } from "@/integrations/supabase/client";
+import { organizationTheme } from "@/lib/organization-theme";
 
 const searchSchema = z.object({ id: z.string().optional() });
 
@@ -21,8 +22,11 @@ export const Route = createFileRoute("/_authenticated/lecon")({
 
 type Phase = "video" | "quiz";
 
-async function loadLesson(id: string | undefined) {
-  let query = supabase.from("lessons").select("id, title, duration_minutes, video_url, quiz_questions");
+async function loadLesson(organizationId: string, id: string | undefined) {
+  let query = supabase
+    .from("lessons")
+    .select("id, title, duration_minutes, video_url, quiz_questions")
+    .eq("organization_id", organizationId);
   if (id) query = query.eq("id", id);
   else query = query.order("order_index", { ascending: true });
   const { data, error } = await query.limit(1).maybeSingle();
@@ -30,22 +34,20 @@ async function loadLesson(id: string | undefined) {
   return data;
 }
 
-
 function LeconPage() {
   const { id } = Route.useSearch();
+  const { organization } = Route.useRouteContext();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { data: lesson } = useSuspenseQuery({
-    queryKey: ["lesson", id ?? "first"],
-    queryFn: () => loadLesson(id),
+    queryKey: ["lesson", organization.id, id ?? "first"],
+    queryFn: () => loadLesson(organization.id, id),
   });
 
   const { badgeEmoji, badgeName } = mockLecon;
   const lessonQuestions =
     ((lesson as { quiz_questions?: unknown } | null)?.quiz_questions as
-      | QuizQuestionType[]
-      | null
-      | undefined) ?? null;
+      QuizQuestionType[] | null | undefined) ?? null;
 
   const questions: QuizQuestionType[] =
     lessonQuestions && lessonQuestions.length > 0 ? lessonQuestions : mockLecon.questions;
@@ -66,6 +68,7 @@ function LeconPage() {
       if (!uid) return;
       const score = Math.round((finalCorrect / questions.length) * 100);
       await supabase.from("quiz_results").insert({
+        organization_id: organization.id,
         user_id: uid,
         lesson_id: lesson.id,
         score,
@@ -74,6 +77,7 @@ function LeconPage() {
       const { data: existing } = await supabase
         .from("progress")
         .select("id")
+        .eq("organization_id", organization.id)
         .eq("user_id", uid)
         .eq("lesson_id", lesson.id)
         .maybeSingle();
@@ -84,13 +88,14 @@ function LeconPage() {
           .eq("id", existing.id);
       } else {
         await supabase.from("progress").insert({
+          organization_id: organization.id,
           user_id: uid,
           lesson_id: lesson.id,
           status: "completed",
           completed_at: new Date().toISOString(),
         });
       }
-      qc.invalidateQueries({ queryKey: ["eleve-dashboard"] });
+      qc.invalidateQueries({ queryKey: ["eleve-dashboard", organization.id] });
     } finally {
       setSaving(false);
     }
@@ -119,10 +124,16 @@ function LeconPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[color:var(--cream)] text-foreground">
+    <div
+      className="min-h-screen bg-[color:var(--cream)] text-foreground"
+      style={organizationTheme(organization)}
+    >
       <div className="mx-auto w-full max-w-md md:max-w-3xl lg:max-w-5xl pb-28">
         <header className="px-5 pt-6">
-          <Link to="/eleve" className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <Link
+            to="/eleve"
+            className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground"
+          >
             ← Espace élève
           </Link>
           <h1 className="mt-3 font-[family-name:var(--font-display-kid)] text-2xl font-bold leading-tight">

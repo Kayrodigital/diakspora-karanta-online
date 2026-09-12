@@ -1,21 +1,13 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { loadPortalAccess } from "@/lib/auth/portal-access";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth" });
-    // Role check: only 'eleve' access this subtree for now.
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", data.user.id)
-      .maybeSingle();
-    if (!profile || profile.role !== "eleve") {
-      throw redirect({ to: "/" });
-    }
-    return { user: data.user, role: profile.role };
+    const access = await loadPortalAccess("family");
+    if (!access) throw redirect({ to: "/auth", search: { portal: "family" } });
+    if (access.membership.role !== "learner") throw redirect({ to: "/parent" });
+    return access;
   },
   component: () => <Outlet />,
 });

@@ -1,4 +1,74 @@
 
+-- Historical Lovable migrations originally assumed these tables already existed
+-- in a remote project. Keep the history reproducible for a brand-new Supabase
+-- project by creating the legacy tables before applying their grants/policies.
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name text,
+  role text NOT NULL DEFAULT 'eleve',
+  parent_id uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  cohort_name text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.lessons (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  duration_minutes integer,
+  order_index integer,
+  video_url text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.progress (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE,
+  lesson_id uuid REFERENCES public.lessons(id) ON DELETE CASCADE,
+  status text,
+  completed_at timestamptz,
+  UNIQUE (user_id, lesson_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.quiz_results (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE,
+  lesson_id uuid REFERENCES public.lessons(id) ON DELETE CASCADE,
+  score integer,
+  completed_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.homework_submissions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE,
+  lesson_id uuid REFERENCES public.lessons(id) ON DELETE SET NULL,
+  type text,
+  file_url text,
+  feedback_text text,
+  status text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.cohorts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  teacher_id uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.attendance (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE,
+  session_date date,
+  status text
+);
+
+CREATE TABLE IF NOT EXISTS public.regularity_score (
+  user_id uuid PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,
+  score integer,
+  level text,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
 -- 1. GRANTS for existing tables (Data API access)
 GRANT SELECT, INSERT, UPDATE ON public.profiles TO authenticated;
 GRANT ALL ON public.profiles TO service_role;
