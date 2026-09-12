@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { PedagogicalAdmin } from "@/features/admin/PedagogicalAdmin";
+import { AdminWorkspace } from "@/features/admin/AdminWorkspace";
 import { loadPortalAccess } from "@/lib/auth/portal-access";
 import { organizationTheme } from "@/lib/organization-theme";
 
@@ -23,7 +23,7 @@ function AdminPage() {
   const { organization, user } = Route.useRouteContext();
   return (
     <div style={organizationTheme(organization)}>
-      <PedagogicalAdmin organization={organization} userId={user.id} />
+      <AdminWorkspace organization={organization} userId={user.id} />
     </div>
   );
 }

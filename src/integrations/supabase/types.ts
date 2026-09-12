@@ -655,6 +655,123 @@ export type Database = {
           },
         ];
       };
+      learner_cohort_memberships: {
+        Row: {
+          cohort_id: string;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          joined_at: string;
+          learner_id: string;
+          organization_id: string;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          cohort_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          joined_at?: string;
+          learner_id: string;
+          organization_id: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          cohort_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          joined_at?: string;
+          learner_id?: string;
+          organization_id?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "learner_cohort_memberships_cohort_id_fkey";
+            columns: ["cohort_id"];
+            isOneToOne: false;
+            referencedRelation: "cohorts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "learner_cohort_memberships_learner_id_fkey";
+            columns: ["learner_id"];
+            isOneToOne: false;
+            referencedRelation: "learner_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "learner_cohort_memberships_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      learner_profiles: {
+        Row: {
+          access_mode: string;
+          birth_date: string | null;
+          created_at: string;
+          created_by: string | null;
+          email: string | null;
+          full_name: string;
+          guardian_user_id: string | null;
+          id: string;
+          organization_id: string;
+          phone: string | null;
+          preferred_name: string | null;
+          status: string;
+          updated_at: string;
+          user_id: string | null;
+        };
+        Insert: {
+          access_mode?: string;
+          birth_date?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          email?: string | null;
+          full_name: string;
+          guardian_user_id?: string | null;
+          id?: string;
+          organization_id: string;
+          phone?: string | null;
+          preferred_name?: string | null;
+          status?: string;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Update: {
+          access_mode?: string;
+          birth_date?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          email?: string | null;
+          full_name?: string;
+          guardian_user_id?: string | null;
+          id?: string;
+          organization_id?: string;
+          phone?: string | null;
+          preferred_name?: string | null;
+          status?: string;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "learner_profiles_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       lesson_resources: {
         Row: {
           allow_download: boolean;
@@ -955,6 +1072,69 @@ export type Database = {
           },
         ];
       };
+      organization_invitations: {
+        Row: {
+          accepted_at: string | null;
+          cohort_id: string | null;
+          created_at: string;
+          email: string;
+          expires_at: string;
+          full_name: string;
+          id: string;
+          invited_by: string;
+          organization_id: string;
+          role: string;
+          status: string;
+          updated_at: string;
+          user_id: string | null;
+        };
+        Insert: {
+          accepted_at?: string | null;
+          cohort_id?: string | null;
+          created_at?: string;
+          email: string;
+          expires_at?: string;
+          full_name: string;
+          id?: string;
+          invited_by: string;
+          organization_id: string;
+          role: string;
+          status?: string;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Update: {
+          accepted_at?: string | null;
+          cohort_id?: string | null;
+          created_at?: string;
+          email?: string;
+          expires_at?: string;
+          full_name?: string;
+          id?: string;
+          invited_by?: string;
+          organization_id?: string;
+          role?: string;
+          status?: string;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "organization_invitations_cohort_id_fkey";
+            columns: ["cohort_id"];
+            isOneToOne: false;
+            referencedRelation: "cohorts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "organization_invitations_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       organization_memberships: {
         Row: {
           created_at: string;
@@ -1073,6 +1253,7 @@ export type Database = {
           avatar_url: string | null;
           cohort_name: string | null;
           created_at: string;
+          email: string | null;
           full_name: string | null;
           id: string;
           locale: string;
@@ -1086,6 +1267,7 @@ export type Database = {
           avatar_url?: string | null;
           cohort_name?: string | null;
           created_at?: string;
+          email?: string | null;
           full_name?: string | null;
           id: string;
           locale?: string;
@@ -1099,6 +1281,7 @@ export type Database = {
           avatar_url?: string | null;
           cohort_name?: string | null;
           created_at?: string;
+          email?: string | null;
           full_name?: string | null;
           id?: string;
           locale?: string;
@@ -1150,6 +1333,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "lessons";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "progress_lesson_same_organization";
+            columns: ["lesson_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id", "organization_id"];
           },
           {
             foreignKeyName: "progress_organization_id_fkey";
@@ -1645,6 +1835,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      accept_my_organization_invitations: { Args: never; Returns: number };
       submit_quiz_attempt: {
         Args: { p_answers: Json; p_quiz_id: string };
         Returns: {

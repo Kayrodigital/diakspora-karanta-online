@@ -44,6 +44,7 @@ type CreationKind = LearningItemInput["kind"];
 type Props = {
   organization: OrganizationBrand;
   userId: string;
+  embedded?: boolean;
 };
 
 const creationLabels: Record<CreationKind, { title: string; description: string }> = {
@@ -745,7 +746,7 @@ function DashboardLoading() {
   );
 }
 
-export function PedagogicalAdmin({ organization, userId }: Props) {
+export function PedagogicalAdmin({ organization, userId, embedded = false }: Props) {
   const queryClient = useQueryClient();
   const [creationKind, setCreationKind] = useState<CreationKind | null>(null);
   const queryKey = ["pedagogical-admin", organization.id] as const;
@@ -767,32 +768,42 @@ export function PedagogicalAdmin({ organization, userId }: Props) {
   });
 
   return (
-    <main className="min-h-screen bg-[color:var(--cream)] text-foreground">
-      <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
-        <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--gold-dark)]">
-              <Headphones size={16} aria-hidden />
-              Administration · {organization.name}
+    <main
+      className={
+        embedded ? "text-foreground" : "min-h-screen bg-[color:var(--cream)] text-foreground"
+      }
+    >
+      <div
+        className={
+          embedded ? "w-full" : "mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8"
+        }
+      >
+        {!embedded && (
+          <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--gold-dark)]">
+                <Headphones size={16} aria-hidden />
+                Administration · {organization.name}
+              </div>
+              <h1 className="mt-2 font-serif text-4xl font-semibold leading-tight sm:text-5xl">
+                Centre pédagogique
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
+                Organisez les enseignements, les classes et les rendez-vous depuis un seul endroit.
+              </p>
             </div>
-            <h1 className="mt-2 font-serif text-4xl font-semibold leading-tight sm:text-5xl">
-              Centre pédagogique
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
-              Organisez les enseignements, les classes et les rendez-vous depuis un seul endroit.
-            </p>
-          </div>
-          <Button
-            size="lg"
-            className="min-h-12 rounded-xl sm:min-w-40"
-            onClick={() => setCreationKind("course")}
-          >
-            <Plus aria-hidden />
-            Nouveau cours
-          </Button>
-        </header>
+            <Button
+              size="lg"
+              className="min-h-12 rounded-xl sm:min-w-40"
+              onClick={() => setCreationKind("course")}
+            >
+              <Plus aria-hidden />
+              Nouveau cours
+            </Button>
+          </header>
+        )}
 
-        <div className="mt-8">
+        <div className={embedded ? "" : "mt-8"}>
           {dashboard.isPending ? (
             <DashboardLoading />
           ) : dashboard.isError ? (

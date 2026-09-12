@@ -34,7 +34,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
@@ -83,7 +83,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Diakspora Karanta : académie en ligne d'arabe et de sciences islamiques pour la diaspora francophone. Enfants, adultes débutants et public avancé.",
       },
-      { property: "og:title", content: "Diakspora Karanta — Académie d'arabe et sciences islamiques" },
+      {
+        property: "og:title",
+        content: "Diakspora Karanta — Académie d'arabe et sciences islamiques",
+      },
       {
         property: "og:description",
         content:
@@ -91,12 +94,35 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Diakspora Karanta — Académie d'arabe et sciences islamiques" },
-      { name: "description", content: "Diakspora Karanta : académie en ligne d'arabe et de sciences islamiques pour la diaspora francophone. Enfants, adultes débutants et public avancé." },
-      { property: "og:description", content: "Diakspora Karanta : académie en ligne d'arabe et de sciences islamiques pour la diaspora francophone. Enfants, adultes débutants et public avancé." },
-      { name: "twitter:description", content: "Diakspora Karanta : académie en ligne d'arabe et de sciences islamiques pour la diaspora francophone. Enfants, adultes débutants et public avancé." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8f12ff8f-2250-4bca-aa1a-ebe43576f716/id-preview-8a8fdc28--ea8f04d8-d111-4e74-a185-0b6f05c6ca48.lovable.app-1783197212665.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8f12ff8f-2250-4bca-aa1a-ebe43576f716/id-preview-8a8fdc28--ea8f04d8-d111-4e74-a185-0b6f05c6ca48.lovable.app-1783197212665.png" },
+      {
+        name: "twitter:title",
+        content: "Diakspora Karanta — Académie d'arabe et sciences islamiques",
+      },
+      {
+        name: "description",
+        content:
+          "Diakspora Karanta : académie en ligne d'arabe et de sciences islamiques pour la diaspora francophone. Enfants, adultes débutants et public avancé.",
+      },
+      {
+        property: "og:description",
+        content:
+          "Diakspora Karanta : académie en ligne d'arabe et de sciences islamiques pour la diaspora francophone. Enfants, adultes débutants et public avancé.",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Diakspora Karanta : académie en ligne d'arabe et de sciences islamiques pour la diaspora francophone. Enfants, adultes débutants et public avancé.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8f12ff8f-2250-4bca-aa1a-ebe43576f716/id-preview-8a8fdc28--ea8f04d8-d111-4e74-a185-0b6f05c6ca48.lovable.app-1783197212665.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8f12ff8f-2250-4bca-aa1a-ebe43576f716/id-preview-8a8fdc28--ea8f04d8-d111-4e74-a185-0b6f05c6ca48.lovable.app-1783197212665.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

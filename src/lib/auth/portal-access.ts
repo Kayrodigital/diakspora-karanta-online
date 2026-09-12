@@ -49,7 +49,7 @@ function isOrganizationRole(value: string): value is OrganizationRole {
 }
 
 function orderMemberships(memberships: Membership[]): Membership[] {
-  return memberships.toSorted((left, right) => Number(right.is_default) - Number(left.is_default));
+  return [...memberships].sort((left, right) => Number(right.is_default) - Number(left.is_default));
 }
 
 async function loadActiveMemberships(): Promise<{
@@ -62,6 +62,9 @@ async function loadActiveMemberships(): Promise<{
   } = await supabase.auth.getUser();
 
   if (userError || !user) return null;
+
+  // Keep the back-office invitation status in sync on the user's first authenticated visit.
+  await supabase.rpc("accept_my_organization_invitations");
 
   const { data: rawMemberships, error: membershipsError } = await supabase
     .from("organization_memberships")
