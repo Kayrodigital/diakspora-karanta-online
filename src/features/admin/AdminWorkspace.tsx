@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
+  Bell,
   BookOpen,
   CalendarClock,
   CheckCircle2,
@@ -40,6 +41,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import type { OrganizationBrand } from "@/lib/auth/portal-access";
 import { AdminSupport } from "./AdminSupport";
+import { NotificationCenter } from "./NotificationCenter";
 import {
   assignCourseToCohort,
   assignTeacherToCohort,
@@ -376,7 +378,7 @@ export function AdminWorkspace({ organization, userId }: Props) {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6 grid h-auto w-full grid-cols-5 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[700px]">
+          <TabsList className="mb-6 grid h-auto w-full grid-cols-3 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[820px] sm:grid-cols-6">
             <TabsTrigger value="overview" className="min-h-11 rounded-xl px-2">
               <LayoutDashboard className="size-4 sm:mr-2" />
               <span className="hidden sm:inline">Vue d’ensemble</span>
@@ -395,6 +397,11 @@ export function AdminWorkspace({ organization, userId }: Props) {
               <BookOpen className="size-4 sm:mr-2" />
               <span className="hidden sm:inline">Pédagogie</span>
               <span className="sm:hidden">Cours</span>
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="min-h-11 rounded-xl px-2">
+              <Bell className="size-4 sm:mr-2" />
+              <span className="hidden sm:inline">Notifications</span>
+              <span className="sm:hidden">Alertes</span>
             </TabsTrigger>
             <TabsTrigger value="support" className="min-h-11 rounded-xl px-2">
               <Headphones className="size-4 sm:mr-2" />
@@ -856,6 +863,10 @@ export function AdminWorkspace({ organization, userId }: Props) {
 
               <TabsContent value="learning" className="mt-0">
                 <PedagogicalAdmin organization={organization} userId={userId} embedded />
+              </TabsContent>
+
+              <TabsContent value="notifications" className="mt-0">
+                <NotificationCenter organizationId={organization.id} />
               </TabsContent>
 
               <TabsContent value="support" className="mt-0 space-y-5">

@@ -978,6 +978,7 @@ export type Database = {
           id: string;
           join_url: string | null;
           lesson_id: string | null;
+          notification_revision: number;
           organization_id: string;
           provider: string;
           recording_status: string;
@@ -1001,6 +1002,7 @@ export type Database = {
           id?: string;
           join_url?: string | null;
           lesson_id?: string | null;
+          notification_revision?: number;
           organization_id: string;
           provider?: string;
           recording_status?: string;
@@ -1024,6 +1026,7 @@ export type Database = {
           id?: string;
           join_url?: string | null;
           lesson_id?: string | null;
+          notification_revision?: number;
           organization_id?: string;
           provider?: string;
           recording_status?: string;
@@ -1083,6 +1086,88 @@ export type Database = {
             columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      live_session_email_deliveries: {
+        Row: {
+          attempts: number;
+          created_at: string;
+          id: string;
+          kind: string;
+          last_error: string | null;
+          live_session_id: string;
+          next_attempt_at: string | null;
+          organization_id: string;
+          provider_message_id: string | null;
+          recipient_email: string;
+          recipient_name: string | null;
+          recipient_user_id: string | null;
+          revision: number;
+          scheduled_for: string;
+          sent_at: string | null;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          attempts?: number;
+          created_at?: string;
+          id?: string;
+          kind: string;
+          last_error?: string | null;
+          live_session_id: string;
+          next_attempt_at?: string | null;
+          organization_id: string;
+          provider_message_id?: string | null;
+          recipient_email: string;
+          recipient_name?: string | null;
+          recipient_user_id?: string | null;
+          revision?: number;
+          scheduled_for?: string;
+          sent_at?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          attempts?: number;
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          last_error?: string | null;
+          live_session_id?: string;
+          next_attempt_at?: string | null;
+          organization_id?: string;
+          provider_message_id?: string | null;
+          recipient_email?: string;
+          recipient_name?: string | null;
+          recipient_user_id?: string | null;
+          revision?: number;
+          scheduled_for?: string;
+          sent_at?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "live_session_email_deliveries_live_session_id_fkey";
+            columns: ["live_session_id"];
+            isOneToOne: false;
+            referencedRelation: "live_sessions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "live_session_email_deliveries_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "live_session_email_deliveries_recipient_user_id_fkey";
+            columns: ["recipient_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
         ];
