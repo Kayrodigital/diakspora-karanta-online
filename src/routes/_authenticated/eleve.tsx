@@ -255,6 +255,12 @@ function ElevePage() {
                   Prochains rendez-vous
                 </h2>
               </div>
+              <Link
+                to="/directs"
+                className="ml-auto inline-flex min-h-10 items-center rounded-full px-3 text-xs font-semibold text-primary hover:bg-primary/5"
+              >
+                Voir tout
+              </Link>
             </div>
 
             <div className="mt-4 space-y-3">

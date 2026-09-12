@@ -10,7 +10,7 @@ type Item = {
 const items: Item[] = [
   { key: "home", label: "Accueil", icon: Home, href: "/eleve" },
   { key: "courses", label: "Cours", icon: BookOpen, href: "/eleve#courses" },
-  { key: "live", label: "Directs", icon: Radio, href: "/eleve#directs" },
+  { key: "live", label: "Directs", icon: Radio, href: "/directs" },
   { key: "homework", label: "Devoir", icon: Mic, href: "/devoir" },
   { key: "messages", label: "Messages", icon: MessageCircle, href: "/messages" },
 ];

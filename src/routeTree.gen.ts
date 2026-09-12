@@ -23,6 +23,7 @@ import { Route as RattrapageRouteImport } from './routes/rattrapage'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedDevoirRouteImport } from './routes/_authenticated/devoir'
+import { Route as AuthenticatedDirectsRouteImport } from './routes/_authenticated/directs'
 import { Route as AuthenticatedEleveRouteImport } from './routes/_authenticated/eleve'
 import { Route as AuthenticatedLeconRouteImport } from './routes/_authenticated/lecon'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
@@ -100,6 +101,11 @@ const AuthenticatedDevoirRoute = AuthenticatedDevoirRouteImport.update({
   path: '/devoir',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDirectsRoute = AuthenticatedDirectsRouteImport.update({
+  id: '/directs',
+  path: '/directs',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedEleveRoute = AuthenticatedEleveRouteImport.update({
   id: '/eleve',
   path: '/eleve',
@@ -141,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/devoir': typeof AuthenticatedDevoirRoute
+  '/directs': typeof AuthenticatedDirectsRoute
   '/eleve': typeof AuthenticatedEleveRoute
   '/lecon': typeof AuthenticatedLeconRoute
   '/messages': typeof AuthenticatedMessagesRoute
@@ -161,6 +168,7 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/devoir': typeof AuthenticatedDevoirRoute
+  '/directs': typeof AuthenticatedDirectsRoute
   '/eleve': typeof AuthenticatedEleveRoute
   '/lecon': typeof AuthenticatedLeconRoute
   '/messages': typeof AuthenticatedMessagesRoute
@@ -183,6 +191,7 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/devoir': typeof AuthenticatedDevoirRoute
+  '/_authenticated/directs': typeof AuthenticatedDirectsRoute
   '/_authenticated/eleve': typeof AuthenticatedEleveRoute
   '/_authenticated/lecon': typeof AuthenticatedLeconRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/devoir'
+    | '/directs'
     | '/eleve'
     | '/lecon'
     | '/messages'
@@ -225,6 +235,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/devoir'
+    | '/directs'
     | '/eleve'
     | '/lecon'
     | '/messages'
@@ -246,6 +257,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/devoir'
+    | '/_authenticated/directs'
     | '/_authenticated/eleve'
     | '/_authenticated/lecon'
     | '/_authenticated/messages'
@@ -371,6 +383,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDevoirRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/directs': {
+      id: '/_authenticated/directs'
+      path: '/directs'
+      fullPath: '/directs'
+      preLoaderRoute: typeof AuthenticatedDirectsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/eleve': {
       id: '/_authenticated/eleve'
       path: '/eleve'
@@ -411,6 +430,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDevoirRoute: typeof AuthenticatedDevoirRoute
+  AuthenticatedDirectsRoute: typeof AuthenticatedDirectsRoute
   AuthenticatedEleveRoute: typeof AuthenticatedEleveRoute
   AuthenticatedLeconRoute: typeof AuthenticatedLeconRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
@@ -418,6 +438,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDevoirRoute: AuthenticatedDevoirRoute,
+  AuthenticatedDirectsRoute: AuthenticatedDirectsRoute,
   AuthenticatedEleveRoute: AuthenticatedEleveRoute,
   AuthenticatedLeconRoute: AuthenticatedLeconRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,

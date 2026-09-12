@@ -1,5 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import {
+  createLiveSession,
+  updateLiveSession,
+  type LiveSessionUpdate,
+} from "@/features/live/live-data";
 
 type PublicTables = Database["public"]["Tables"];
 type Row<Table extends keyof PublicTables> = PublicTables[Table]["Row"];
@@ -56,6 +61,7 @@ export type LearningItemInput =
       description?: string;
       provider: "zoom" | "google_meet" | "telegram" | "whatsapp" | "other";
       startsAt: string;
+      durationMinutes: number;
       joinUrl?: string;
       courseId?: string;
       cohortId?: string;
@@ -191,18 +197,13 @@ export async function createLearningItem(
     return;
   }
 
-  const { error } = await supabase.from("live_sessions").insert({
-    organization_id: organizationId,
-    created_by: userId,
-    title: input.title,
-    description: input.description || null,
-    provider: input.provider,
-    starts_at: new Date(input.startsAt).toISOString(),
-    join_url: input.joinUrl || null,
-    course_id: input.courseId || null,
-    cohort_id: input.cohortId || null,
-    status: "scheduled",
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Paris",
-  });
-  if (error) throw error;
+  await createLiveSession(organizationId, userId, input);
+}
+
+export async function updatePedagogicalLiveSession(
+  organizationId: string,
+  session: LiveSession,
+  input: LiveSessionUpdate,
+) {
+  await updateLiveSession(organizationId, session, input);
 }

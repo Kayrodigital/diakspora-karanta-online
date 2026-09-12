@@ -50,6 +50,7 @@ export type TeacherDashboardData = {
   cohorts: TeacherCohort[];
   courses: TeacherCourse[];
   upcomingLives: Row<"live_sessions">[];
+  liveSessions: Row<"live_sessions">[];
   homework: TeacherHomework[];
 };
 
@@ -151,6 +152,7 @@ export async function loadTeacherDashboard(
       cohorts: [],
       courses: [],
       upcomingLives: [],
+      liveSessions: [],
       homework: [],
     };
   }
@@ -171,11 +173,9 @@ export async function loadTeacherDashboard(
       .from("live_sessions")
       .select("*")
       .eq("organization_id", organizationId)
-      .in("cohort_id", cohortIds)
-      .in("status", ["scheduled", "live"])
-      .gte("starts_at", new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString())
-      .order("starts_at", { ascending: true })
-      .limit(8),
+      .gte("starts_at", new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString())
+      .order("starts_at", { ascending: false })
+      .limit(50),
   ]);
 
   const relationshipError = firstError([
@@ -383,7 +383,17 @@ export async function loadTeacherDashboard(
       profileResult.data?.preferred_name || profileResult.data?.full_name || "Professeur",
     cohorts: cohortSummaries,
     courses: courseSummaries,
-    upcomingLives: liveSessions.data ?? [],
+    upcomingLives: (liveSessions.data ?? [])
+      .filter(
+        (session) =>
+          session.status === "live" ||
+          (session.status === "scheduled" &&
+            new Date(session.ends_at ?? session.starts_at).getTime() >= Date.now()),
+      )
+      .sort(
+        (left, right) => new Date(left.starts_at).getTime() - new Date(right.starts_at).getTime(),
+      ),
+    liveSessions: liveSessions.data ?? [],
     homework,
   };
 }

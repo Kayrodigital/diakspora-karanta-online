@@ -10,8 +10,12 @@ import {
   Headphones,
   Layers3,
   LoaderCircle,
+  Pencil,
+  Play,
   Plus,
   Radio,
+  RotateCcw,
+  Square,
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -33,9 +37,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import type { OrganizationBrand } from "@/lib/auth/portal-access";
 import {
+  liveDurationMinutes,
+  localDateTimeValue,
+  type LiveProvider,
+  type LiveSessionUpdate,
+} from "@/features/live/live-data";
+import {
   createLearningItem,
   loadPedagogicalDashboard,
+  updatePedagogicalLiveSession,
   type LearningItemInput,
+  type LiveSession,
   type PedagogicalDashboard,
 } from "./pedagogical-data";
 
@@ -145,6 +157,7 @@ function inputFromForm(kind: CreationKind, formData: FormData): LearningItemInpu
     provider: (value(formData, "provider") || "zoom") as
       "zoom" | "google_meet" | "telegram" | "whatsapp" | "other",
     startsAt: value(formData, "startsAt"),
+    durationMinutes: Number(value(formData, "durationMinutes")) || 60,
     joinUrl: optionalValue(formData, "joinUrl"),
     courseId: optionalValue(formData, "courseId"),
     cohortId: optionalValue(formData, "cohortId"),
@@ -348,6 +361,15 @@ function LiveFields({ data }: { data: PedagogicalDashboard }) {
         <Field label="Date et heure" htmlFor="startsAt">
           <Input id="startsAt" name="startsAt" type="datetime-local" required />
         </Field>
+        <Field label="Durée prévue" htmlFor="durationMinutes">
+          <NativeSelect id="durationMinutes" name="durationMinutes" defaultValue="60">
+            <option value="30">30 minutes</option>
+            <option value="45">45 minutes</option>
+            <option value="60">1 heure</option>
+            <option value="90">1 h 30</option>
+            <option value="120">2 heures</option>
+          </NativeSelect>
+        </Field>
       </div>
       <Field label="Lien de participation" htmlFor="joinUrl">
         <Input id="joinUrl" name="joinUrl" type="url" placeholder="https://…" />
@@ -441,6 +463,175 @@ function CreateItemDialog({
   );
 }
 
+function ManageLiveDialog({
+  session,
+  data,
+  isPending,
+  onClose,
+  onSubmit,
+}: {
+  session: LiveSession | null;
+  data: PedagogicalDashboard;
+  isPending: boolean;
+  onClose: () => void;
+  onSubmit: (session: LiveSession, input: LiveSessionUpdate) => void;
+}) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!session) return;
+    const formData = new FormData(event.currentTarget);
+    onSubmit(session, {
+      title: value(formData, "title"),
+      description: value(formData, "description"),
+      provider: value(formData, "provider") as LiveProvider,
+      startsAt: value(formData, "startsAt"),
+      durationMinutes: Number(value(formData, "durationMinutes")) || 60,
+      joinUrl: value(formData, "joinUrl"),
+      replayUrl: value(formData, "replayUrl"),
+      courseId: value(formData, "courseId"),
+      cohortId: value(formData, "cohortId"),
+      status: value(formData, "status") as LiveSessionUpdate["status"],
+    });
+  }
+
+  return (
+    <Dialog open={Boolean(session)} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-h-[92vh] w-[calc(100%-2rem)] overflow-y-auto rounded-2xl sm:max-w-xl">
+        {session ? (
+          <form
+            key={`${session.id}-${session.updated_at}`}
+            onSubmit={handleSubmit}
+            className="grid gap-5"
+          >
+            <DialogHeader>
+              <DialogTitle className="font-serif text-2xl">Gérer le direct</DialogTitle>
+              <DialogDescription>
+                Modifiez le rendez-vous, passez-le en direct ou publiez son replay.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4">
+              <Field label="Titre" htmlFor="manage-live-title">
+                <Input id="manage-live-title" name="title" required defaultValue={session.title} />
+              </Field>
+              <Field label="Description" htmlFor="manage-live-description">
+                <Textarea
+                  id="manage-live-description"
+                  name="description"
+                  rows={3}
+                  defaultValue={session.description ?? ""}
+                />
+              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Outil" htmlFor="manage-live-provider">
+                  <NativeSelect
+                    id="manage-live-provider"
+                    name="provider"
+                    defaultValue={session.provider}
+                  >
+                    <option value="zoom">Zoom</option>
+                    <option value="google_meet">Google Meet</option>
+                    <option value="telegram">Telegram</option>
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="other">Autre</option>
+                  </NativeSelect>
+                </Field>
+                <Field label="État" htmlFor="manage-live-status">
+                  <NativeSelect id="manage-live-status" name="status" defaultValue={session.status}>
+                    <option value="scheduled">Planifié</option>
+                    <option value="live">En direct</option>
+                    <option value="completed">Terminé</option>
+                    <option value="cancelled">Annulé</option>
+                  </NativeSelect>
+                </Field>
+                <Field label="Date et heure" htmlFor="manage-live-start">
+                  <Input
+                    id="manage-live-start"
+                    name="startsAt"
+                    type="datetime-local"
+                    required
+                    defaultValue={localDateTimeValue(session.starts_at)}
+                  />
+                </Field>
+                <Field label="Durée (minutes)" htmlFor="manage-live-duration">
+                  <Input
+                    id="manage-live-duration"
+                    name="durationMinutes"
+                    type="number"
+                    min="15"
+                    max="480"
+                    required
+                    defaultValue={liveDurationMinutes(session)}
+                  />
+                </Field>
+              </div>
+              <Field label="Lien de participation" htmlFor="manage-live-url">
+                <Input
+                  id="manage-live-url"
+                  name="joinUrl"
+                  type="url"
+                  placeholder="https://…"
+                  defaultValue={session.join_url ?? ""}
+                />
+              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Cours" htmlFor="manage-live-course">
+                  <NativeSelect
+                    id="manage-live-course"
+                    name="courseId"
+                    defaultValue={session.course_id ?? ""}
+                  >
+                    <option value="">Aucun cours</option>
+                    {data.courses.map((course) => (
+                      <option key={course.id} value={course.id}>
+                        {course.title}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </Field>
+                <Field label="Classe" htmlFor="manage-live-cohort">
+                  <NativeSelect
+                    id="manage-live-cohort"
+                    name="cohortId"
+                    defaultValue={session.cohort_id ?? ""}
+                  >
+                    <option value="">Toute l’école autorisée</option>
+                    {data.cohorts.map((cohort) => (
+                      <option key={cohort.id} value={cohort.id}>
+                        {cohort.name}
+                      </option>
+                    ))}
+                  </NativeSelect>
+                </Field>
+              </div>
+              <Field label="Lien du replay" htmlFor="manage-live-replay">
+                <Input
+                  id="manage-live-replay"
+                  name="replayUrl"
+                  type="url"
+                  placeholder="https://youtube.com/…"
+                  defaultValue={session.replay_url ?? ""}
+                />
+              </Field>
+              <p className="rounded-xl bg-primary/5 p-3 text-xs leading-5 text-muted-foreground">
+                Toute modification devient immédiatement visible par les élèves autorisés.
+              </p>
+            </div>
+            <DialogFooter className="gap-2">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Fermer
+              </Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? <LoaderCircle className="animate-spin" /> : <Pencil />}
+                {isPending ? "Enregistrement…" : "Enregistrer"}
+              </Button>
+            </DialogFooter>
+          </form>
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function EmptyState({
   icon: Icon,
   title,
@@ -491,9 +682,13 @@ function statusLabel(status: string): string {
 function DashboardContent({
   data,
   onCreate,
+  onEditLive,
+  onUpdateLive,
 }: {
   data: PedagogicalDashboard;
   onCreate: (kind: CreationKind) => void;
+  onEditLive: (session: LiveSession) => void;
+  onUpdateLive: (session: LiveSession, input: LiveSessionUpdate) => void;
 }) {
   const upcomingLives = useMemo(
     () =>
@@ -662,30 +857,80 @@ function DashboardContent({
             <div className="grid gap-3 lg:grid-cols-2">
               {data.liveSessions.map((session) => (
                 <Card key={session.id} className="shadow-sm">
-                  <CardContent className="flex gap-4 p-5">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600">
-                      <CalendarDays aria-hidden />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-start justify-between gap-2">
-                        <h3 className="font-serif text-lg font-semibold">{session.title}</h3>
-                        <Badge variant="secondary">{statusLabel(session.status)}</Badge>
+                  <CardContent className="p-5">
+                    <div className="flex gap-4">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+                        <CalendarDays aria-hidden />
                       </div>
-                      <p className="mt-1 text-sm font-medium">
-                        {formatLiveDate(session.starts_at)}
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {providerLabels[session.provider] ?? session.provider}
-                      </p>
-                      {session.join_url ? (
-                        <a
-                          href={session.join_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <h3 className="font-serif text-lg font-semibold">{session.title}</h3>
+                          <Badge variant="secondary">{statusLabel(session.status)}</Badge>
+                        </div>
+                        <p className="mt-1 text-sm font-medium">
+                          {formatLiveDate(session.starts_at)}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {providerLabels[session.provider] ?? session.provider}
+                          {session.cohort_id
+                            ? ` · ${data.cohorts.find((cohort) => cohort.id === session.cohort_id)?.name ?? "Classe"}`
+                            : " · Toute l’école"}
+                        </p>
+                        {session.join_url ? (
+                          <a
+                            href={session.join_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                          >
+                            Ouvrir le lien <ArrowUpRight size={14} aria-hidden />
+                          </a>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className="mt-4 grid grid-cols-2 gap-2 border-t pt-4 sm:flex">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="min-h-10"
+                        onClick={() => onEditLive(session)}
+                      >
+                        <Pencil aria-hidden /> Modifier
+                      </Button>
+                      {session.status === "scheduled" ? (
+                        <Button
+                          size="sm"
+                          className="min-h-10"
+                          onClick={() => onUpdateLive(session, { status: "live" })}
                         >
-                          Ouvrir le lien <ArrowUpRight size={14} aria-hidden />
-                        </a>
+                          <Play aria-hidden /> Démarrer
+                        </Button>
+                      ) : null}
+                      {session.status === "live" ? (
+                        <Button
+                          size="sm"
+                          className="min-h-10"
+                          onClick={() => onUpdateLive(session, { status: "completed" })}
+                        >
+                          <Square aria-hidden /> Terminer
+                        </Button>
+                      ) : null}
+                      {session.status === "cancelled" ? (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="min-h-10"
+                          onClick={() => onUpdateLive(session, { status: "scheduled" })}
+                        >
+                          <RotateCcw aria-hidden /> Reprogrammer
+                        </Button>
+                      ) : null}
+                      {session.replay_url ? (
+                        <Button asChild size="sm" variant="secondary" className="min-h-10">
+                          <a href={session.replay_url} target="_blank" rel="noreferrer">
+                            <Radio aria-hidden /> Replay
+                          </a>
+                        </Button>
                       ) : null}
                     </div>
                   </CardContent>
@@ -749,6 +994,7 @@ function DashboardLoading() {
 export function PedagogicalAdmin({ organization, userId, embedded = false }: Props) {
   const queryClient = useQueryClient();
   const [creationKind, setCreationKind] = useState<CreationKind | null>(null);
+  const [managedLive, setManagedLive] = useState<LiveSession | null>(null);
   const queryKey = ["pedagogical-admin", organization.id] as const;
   const dashboard = useQuery({
     queryKey,
@@ -765,6 +1011,17 @@ export function PedagogicalAdmin({ organization, userId, embedded = false }: Pro
     },
     onError: (error) =>
       toast.error(error instanceof Error ? error.message : "Impossible d'enregistrer cet élément."),
+  });
+  const updateLive = useMutation({
+    mutationFn: ({ session, input }: { session: LiveSession; input: LiveSessionUpdate }) =>
+      updatePedagogicalLiveSession(organization.id, session, input),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey });
+      setManagedLive(null);
+      toast.success("Le direct a été mis à jour pour les élèves autorisés.");
+    },
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Impossible de modifier ce direct."),
   });
 
   return (
@@ -819,18 +1076,32 @@ export function PedagogicalAdmin({ organization, userId, embedded = false }: Pro
               </Button>
             </div>
           ) : (
-            <DashboardContent data={dashboard.data} onCreate={setCreationKind} />
+            <DashboardContent
+              data={dashboard.data}
+              onCreate={setCreationKind}
+              onEditLive={setManagedLive}
+              onUpdateLive={(session, input) => updateLive.mutate({ session, input })}
+            />
           )}
         </div>
 
         {dashboard.data ? (
-          <CreateItemDialog
-            kind={creationKind}
-            onKindChange={setCreationKind}
-            data={dashboard.data}
-            isPending={createItem.isPending}
-            onSubmit={(input) => createItem.mutate(input)}
-          />
+          <>
+            <CreateItemDialog
+              kind={creationKind}
+              onKindChange={setCreationKind}
+              data={dashboard.data}
+              isPending={createItem.isPending}
+              onSubmit={(input) => createItem.mutate(input)}
+            />
+            <ManageLiveDialog
+              session={managedLive}
+              data={dashboard.data}
+              isPending={updateLive.isPending}
+              onClose={() => setManagedLive(null)}
+              onSubmit={(session, input) => updateLive.mutate({ session, input })}
+            />
+          </>
         ) : null}
       </div>
     </main>

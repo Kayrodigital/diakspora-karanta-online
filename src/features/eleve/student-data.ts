@@ -9,6 +9,16 @@ export type StudentLesson = Row<"lessons">;
 export type StudentResource = Row<"lesson_resources"> & { playbackUrl: string | null };
 export type StudentLiveSession = Row<"live_sessions">;
 
+export type StudentLiveSessionView = StudentLiveSession & {
+  courseTitle: string | null;
+  cohortName: string | null;
+};
+
+export type StudentLiveHub = {
+  upcoming: StudentLiveSessionView[];
+  replays: StudentLiveSessionView[];
+};
+
 export type StudentCourseProgress = {
   course: StudentCourse;
   lessonCount: number;
@@ -120,6 +130,56 @@ export async function loadStudentHome(
     nextLesson,
     upcomingLives: lives.data ?? [],
     completedLessonIds: [...completedIds],
+  };
+}
+
+export async function loadStudentLiveHub(organizationId: string): Promise<StudentLiveHub> {
+  const since = new Date();
+  since.setFullYear(since.getFullYear() - 1);
+
+  const [sessions, courses, cohorts] = await Promise.all([
+    supabase
+      .from("live_sessions")
+      .select("*")
+      .eq("organization_id", organizationId)
+      .in("status", ["scheduled", "live", "completed"])
+      .gte("starts_at", since.toISOString())
+      .order("starts_at", { ascending: false })
+      .limit(60),
+    supabase.from("courses").select("id, title").eq("organization_id", organizationId),
+    supabase.from("cohorts").select("id, name").eq("organization_id", organizationId),
+  ]);
+
+  const error = firstError([sessions.error, courses.error, cohorts.error]);
+  if (error) throw error;
+
+  const courseNames = new Map((courses.data ?? []).map((course) => [course.id, course.title]));
+  const cohortNames = new Map((cohorts.data ?? []).map((cohort) => [cohort.id, cohort.name]));
+  const views = (sessions.data ?? []).map((session) => ({
+    ...session,
+    courseTitle: session.course_id ? (courseNames.get(session.course_id) ?? null) : null,
+    cohortName: session.cohort_id ? (cohortNames.get(session.cohort_id) ?? null) : null,
+  }));
+  const now = Date.now();
+
+  return {
+    upcoming: views
+      .filter(
+        (session) =>
+          session.status === "live" ||
+          (session.status === "scheduled" &&
+            (session.ends_at
+              ? new Date(session.ends_at).getTime() >= now
+              : new Date(session.starts_at).getTime() >= now)),
+      )
+      .sort((left, right) => {
+        if (left.status === "live" && right.status !== "live") return -1;
+        if (right.status === "live" && left.status !== "live") return 1;
+        return new Date(left.starts_at).getTime() - new Date(right.starts_at).getTime();
+      }),
+    replays: views.filter(
+      (session) => session.status === "completed" && Boolean(session.replay_url),
+    ),
   };
 }
 

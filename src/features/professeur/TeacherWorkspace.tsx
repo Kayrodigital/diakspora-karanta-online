@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   LogOut,
   MessageCircle,
+  Radio,
   School,
   Users,
   Video,
@@ -25,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import type { OrganizationBrand, OrganizationRole } from "@/lib/auth/portal-access";
 import { HomeworkReviewPanel, TeacherMessagesPanel } from "./TeacherInteractions";
+import { TeacherLiveSessions } from "./TeacherLiveSessions";
 import { loadTeacherDashboard, type TeacherCohort, type TeacherLearner } from "./teacher-data";
 
 type Props = {
@@ -291,7 +293,7 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
 
         {data ? (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-6 grid h-auto w-full grid-cols-5 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[680px]">
+            <TabsList className="mb-6 grid h-auto w-full grid-cols-3 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[760px] sm:grid-cols-6">
               <TabsTrigger value="overview" className="min-h-11 rounded-xl">
                 <LayoutDashboard className="size-4 sm:mr-2" />
                 <span>Accueil</span>
@@ -303,6 +305,10 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
               <TabsTrigger value="courses" className="min-h-11 rounded-xl">
                 <BookOpen className="size-4 sm:mr-2" />
                 <span>Cours</span>
+              </TabsTrigger>
+              <TabsTrigger value="lives" className="min-h-11 rounded-xl">
+                <Radio className="size-4 sm:mr-2" />
+                <span>Directs</span>
               </TabsTrigger>
               <TabsTrigger value="homework" className="min-h-11 rounded-xl">
                 <ClipboardCheck className="size-4 sm:mr-2" />
@@ -565,6 +571,10 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
                 </p>
               </div>
               <HomeworkReviewPanel organizationId={organization.id} userId={userId} data={data} />
+            </TabsContent>
+
+            <TabsContent value="lives" className="mt-0 space-y-5">
+              <TeacherLiveSessions organizationId={organization.id} userId={userId} data={data} />
             </TabsContent>
 
             <TabsContent value="messages" className="mt-0 space-y-5">
