@@ -40,6 +40,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { OrganizationBrand } from "@/lib/auth/portal-access";
 import {
   assignCourseToCohort,
+  assignTeacherToCohort,
   loadAdminDashboard,
   runAdminMemberAction,
   type AdminDashboardData,
@@ -196,6 +197,7 @@ export function AdminWorkspace({ organization, userId }: Props) {
   const [classOpen, setClassOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [courseAssignOpen, setCourseAssignOpen] = useState(false);
+  const [teacherAssignOpen, setTeacherAssignOpen] = useState(false);
   const [selectedCohortId, setSelectedCohortId] = useState("");
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -249,6 +251,17 @@ export function AdminWorkspace({ organization, userId }: Props) {
     onError: (error) => toast.error(error.message),
   });
 
+  const teacherAssignmentMutation = useMutation({
+    mutationFn: (input: { cohortId: string; teacherId: string | null }) =>
+      assignTeacherToCohort({ ...input, organizationId: organization.id }),
+    onSuccess: () => {
+      refresh();
+      setTeacherAssignOpen(false);
+      toast.success("Professeur responsable mis à jour.");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+
   const data = dashboardQuery.data;
   const activeLearners = data?.learners.filter((learner) => learner.status === "active") ?? [];
   const filteredMembers = useMemo(() => {
@@ -268,6 +281,8 @@ export function AdminWorkspace({ organization, userId }: Props) {
   const selectedCohort = data?.cohorts.find((cohort) => cohort.id === selectedCohortId);
   const parentMembers =
     data?.members.filter((member) => member.role === "parent" && member.status === "active") ?? [];
+  const teacherMembers =
+    data?.members.filter((member) => member.role === "teacher" && member.status === "active") ?? [];
 
   const submitAction = (event: FormEvent<HTMLFormElement>, action: AdminMemberAction["action"]) => {
     event.preventDefault();
@@ -730,6 +745,9 @@ export function AdminWorkspace({ organization, userId }: Props) {
                     const courses = data.courseCohorts.filter(
                       (item) => item.cohort_id === cohort.id,
                     );
+                    const responsibleTeacher = data.members.find(
+                      (member) => member.user_id === cohort.teacher_id,
+                    );
                     return (
                       <Card
                         key={cohort.id}
@@ -745,6 +763,11 @@ export function AdminWorkspace({ organization, userId }: Props) {
                             </Badge>
                           </div>
                           <h3 className="mt-4 text-lg font-semibold">{cohort.name}</h3>
+                          <p className="mt-1 text-xs font-medium text-primary">
+                            {responsibleTeacher
+                              ? `Professeur · ${personName(responsibleTeacher)}`
+                              : "Aucun professeur responsable"}
+                          </p>
                           <p className="mt-1 line-clamp-2 min-h-10 text-sm text-muted-foreground">
                             {cohort.description ||
                               cohort.level ||
@@ -763,9 +786,9 @@ export function AdminWorkspace({ organization, userId }: Props) {
                               <p className="text-xs text-muted-foreground">Cours</p>
                             </div>
                           </div>
-                          <div className="mt-4 flex gap-2">
+                          <div className="mt-4 grid grid-cols-2 gap-2">
                             <Button
-                              className="flex-1"
+                              className="w-full"
                               variant="outline"
                               onClick={() => {
                                 setSelectedCohortId(cohort.id);
@@ -782,6 +805,16 @@ export function AdminWorkspace({ organization, userId }: Props) {
                               }}
                             >
                               Attribuer un cours
+                            </Button>
+                            <Button
+                              className="col-span-2 w-full"
+                              variant="secondary"
+                              onClick={() => {
+                                setSelectedCohortId(cohort.id);
+                                setTeacherAssignOpen(true);
+                              }}
+                            >
+                              <GraduationCap className="size-4" /> Choisir le professeur
                             </Button>
                           </div>
                           {learners.length > 0 && (
@@ -1089,6 +1122,61 @@ export function AdminWorkspace({ organization, userId }: Props) {
                   <LoaderCircle className="size-4 animate-spin" />
                 )}{" "}
                 Attribuer le cours
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={teacherAssignOpen} onOpenChange={setTeacherAssignOpen}>
+        <DialogContent className="rounded-2xl sm:max-w-lg">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              const form = new FormData(event.currentTarget);
+              teacherAssignmentMutation.mutate({
+                cohortId: selectedCohortId,
+                teacherId: String(form.get("teacherId") ?? "") || null,
+              });
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>Professeur responsable</DialogTitle>
+              <DialogDescription>
+                Le professeur choisi verra « {selectedCohort?.name ?? "cette classe"} », ses élèves,
+                ses cours et leurs résultats dans son espace.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-5">
+              <Field label="Professeur" htmlFor="assign-teacher">
+                <NativeSelect
+                  id="assign-teacher"
+                  name="teacherId"
+                  defaultValue={selectedCohort?.teacher_id ?? ""}
+                >
+                  <option value="">Aucun professeur</option>
+                  {teacherMembers.map((teacher) => (
+                    <option key={teacher.user_id} value={teacher.user_id}>
+                      {personName(teacher)}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </Field>
+            </div>
+            {teacherMembers.length === 0 ? (
+              <p className="mb-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
+                Invitez d’abord une personne avec le rôle Professeur.
+              </p>
+            ) : null}
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setTeacherAssignOpen(false)}>
+                Annuler
+              </Button>
+              <Button type="submit" disabled={teacherAssignmentMutation.isPending}>
+                {teacherAssignmentMutation.isPending ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : null}
+                Enregistrer
               </Button>
             </DialogFooter>
           </form>

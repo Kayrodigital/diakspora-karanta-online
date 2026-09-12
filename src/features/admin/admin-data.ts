@@ -173,3 +173,16 @@ export async function assignCourseToCohort(input: {
   );
   if (error) throw new Error(message(error));
 }
+
+export async function assignTeacherToCohort(input: {
+  organizationId: string;
+  cohortId: string;
+  teacherId: string | null;
+}) {
+  const { error } = await supabase
+    .from("cohorts")
+    .update({ teacher_id: input.teacherId, updated_at: new Date().toISOString() })
+    .eq("organization_id", input.organizationId)
+    .eq("id", input.cohortId);
+  if (error) throw new Error(message(error));
+}
