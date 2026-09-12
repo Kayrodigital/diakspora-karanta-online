@@ -354,6 +354,9 @@ Deno.serve(async (request) => {
       const userId = required(payload.userId, "L'utilisateur");
       const status = required(payload.status, "Le statut");
       if (!["active", "suspended"].includes(status)) throw new Error("Statut non autorisé.");
+      if (userId === authData.user.id && status === "suspended") {
+        throw new Error("Vous ne pouvez pas suspendre votre propre accès.");
+      }
       const { error } = await serviceClient
         .from("organization_memberships")
         .update({ status, updated_at: new Date().toISOString() })
