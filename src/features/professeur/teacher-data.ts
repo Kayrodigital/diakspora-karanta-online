@@ -42,6 +42,7 @@ export type TeacherCohort = {
 export type TeacherHomework = Row<"homework_submissions"> & {
   learnerName: string;
   lessonTitle: string;
+  signedUrl: string | null;
 };
 
 export type TeacherDashboardData = {
@@ -51,6 +52,26 @@ export type TeacherDashboardData = {
   upcomingLives: Row<"live_sessions">[];
   homework: TeacherHomework[];
 };
+
+export async function reviewHomeworkSubmission(input: {
+  submissionId: string;
+  feedback: string;
+  status: "graded" | "resubmit_requested";
+  reviewerUserId: string;
+}) {
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from("homework_submissions")
+    .update({
+      feedback_text: input.feedback.trim(),
+      feedback_by: input.reviewerUserId,
+      feedback_at: now,
+      status: input.status,
+      updated_at: now,
+    })
+    .eq("id", input.submissionId);
+  if (error) throw error;
+}
 
 function firstError(errors: Array<Error | null>): Error | null {
   return errors.find((error): error is Error => Boolean(error)) ?? null;
@@ -199,8 +220,6 @@ export async function loadTeacherDashboard(
   const learnerUserIds = learners
     .map((learner) => learner.user_id)
     .filter((id): id is string => Boolean(id));
-  const lessonIds = lessons.map((lesson) => lesson.id);
-
   const [progressResult, attemptsResult, homeworkResult] = await Promise.all([
     learnerUserIds.length
       ? supabase
@@ -219,13 +238,12 @@ export async function loadTeacherDashboard(
       : emptyResult<
           Pick<Row<"quiz_attempts">, "user_id" | "score" | "status" | "submitted_at" | "graded_at">
         >(),
-    learnerUserIds.length && lessonIds.length
+    learnerUserIds.length
       ? supabase
           .from("homework_submissions")
           .select("*")
           .eq("organization_id", organizationId)
           .in("user_id", learnerUserIds)
-          .in("lesson_id", lessonIds)
           .order("created_at", { ascending: false })
       : emptyResult<Row<"homework_submissions">>(),
   ]);
@@ -342,17 +360,30 @@ export async function loadTeacherDashboard(
     } satisfies TeacherCohort;
   });
 
+  const homework = await Promise.all(
+    (homeworkResult.data ?? []).map(async (item) => {
+      const signedUrl = item.file_url
+        ? ((await supabase.storage.from("homework").createSignedUrl(item.file_url, 3600)).data
+            ?.signedUrl ?? null)
+        : null;
+      return {
+        ...item,
+        learnerName:
+          learners.find((learner) => learner.user_id === item.user_id)?.full_name ?? "Élève",
+        lessonTitle: item.lesson_id
+          ? lessonMap.get(item.lesson_id)?.title || "Leçon"
+          : "Devoir général",
+        signedUrl,
+      };
+    }),
+  );
+
   return {
     teacherName:
       profileResult.data?.preferred_name || profileResult.data?.full_name || "Professeur",
     cohorts: cohortSummaries,
     courses: courseSummaries,
     upcomingLives: liveSessions.data ?? [],
-    homework: (homeworkResult.data ?? []).map((item) => ({
-      ...item,
-      learnerName:
-        learners.find((learner) => learner.user_id === item.user_id)?.full_name ?? "Élève",
-      lessonTitle: item.lesson_id ? lessonMap.get(item.lesson_id)?.title || "Leçon" : "Leçon",
-    })),
+    homework,
   };
 }

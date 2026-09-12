@@ -13,12 +13,17 @@ function formatTime(s: number) {
   return `${m}:${sec}`;
 }
 
-export function AudioRecorder({ onSend }: { onSend: (blob: Blob | null, durationSec: number) => void | Promise<void> }) {
+export function AudioRecorder({
+  onSend,
+}: {
+  onSend: (blob: Blob | null, durationSec: number) => void | Promise<void>;
+}) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [elapsed, setElapsed] = useState(0);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
   const [simulated, setSimulated] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -96,6 +101,16 @@ export function AudioRecorder({ onSend }: { onSend: (blob: Blob | null, duration
     setSimulated(false);
   }
 
+  async function sendRecording() {
+    setSending(true);
+    try {
+      await onSend(blobRef.current, elapsed);
+      reset();
+    } finally {
+      setSending(false);
+    }
+  }
+
   function togglePlay() {
     const el = audioElRef.current;
     if (!el) return;
@@ -145,10 +160,7 @@ export function AudioRecorder({ onSend }: { onSend: (blob: Blob | null, duration
             </button>
           </div>
 
-          <div
-            className="flex items-end gap-1"
-            aria-hidden
-          >
+          <div className="flex items-end gap-1" aria-hidden>
             {[0, 1, 2, 3, 4].map((i) => (
               <span
                 key={i}
@@ -165,9 +177,7 @@ export function AudioRecorder({ onSend }: { onSend: (blob: Blob | null, duration
             {formatTime(elapsed)}
           </p>
           {simulated && (
-            <p className="text-xs text-muted-foreground">
-              (Aperçu : micro non disponible ici)
-            </p>
+            <p className="text-xs text-muted-foreground">(Aperçu : micro non disponible ici)</p>
           )}
         </>
       )}
@@ -182,7 +192,11 @@ export function AudioRecorder({ onSend }: { onSend: (blob: Blob | null, duration
               aria-label={playing ? "Pause" : "Écouter"}
               className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[color:var(--deep-green)] text-[color:var(--cream)] disabled:opacity-50"
             >
-              {playing ? <Pause size={22} aria-hidden /> : <Play size={22} fill="currentColor" aria-hidden />}
+              {playing ? (
+                <Pause size={22} aria-hidden />
+              ) : (
+                <Play size={22} fill="currentColor" aria-hidden />
+              )}
             </button>
             <div className="flex-1">
               <div className="h-2 overflow-hidden rounded-full bg-[color:var(--cream-2)]">
@@ -216,14 +230,12 @@ export function AudioRecorder({ onSend }: { onSend: (blob: Blob | null, duration
             </button>
             <button
               type="button"
-              onClick={() => {
-                onSend(blobRef.current, elapsed);
-                reset();
-              }}
+              onClick={sendRecording}
+              disabled={sending || !audioUrl}
               className="flex min-h-[52px] flex-[1.4] items-center justify-center gap-2 rounded-2xl bg-[color:var(--deep-green)] px-4 font-[family-name:var(--font-display-kid)] text-lg font-bold text-[color:var(--cream)] shadow-[var(--shadow-elegant)] transition active:scale-[0.98]"
             >
               <Send size={18} aria-hidden />
-              Envoyer au professeur
+              {sending ? "Envoi…" : "Envoyer au professeur"}
             </button>
           </div>
         </div>

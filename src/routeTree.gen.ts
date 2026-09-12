@@ -25,6 +25,7 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as AuthenticatedDevoirRouteImport } from './routes/_authenticated/devoir'
 import { Route as AuthenticatedEleveRouteImport } from './routes/_authenticated/eleve'
 import { Route as AuthenticatedLeconRouteImport } from './routes/_authenticated/lecon'
+import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as CoursCourseIdRouteImport } from './routes/cours/$courseId'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
@@ -109,6 +110,11 @@ const AuthenticatedLeconRoute = AuthenticatedLeconRouteImport.update({
   path: '/lecon',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const CoursCourseIdRoute = CoursCourseIdRouteImport.update({
   id: '/cours/$courseId',
   path: '/cours/$courseId',
@@ -137,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/devoir': typeof AuthenticatedDevoirRoute
   '/eleve': typeof AuthenticatedEleveRoute
   '/lecon': typeof AuthenticatedLeconRoute
+  '/messages': typeof AuthenticatedMessagesRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/devoir': typeof AuthenticatedDevoirRoute
   '/eleve': typeof AuthenticatedEleveRoute
   '/lecon': typeof AuthenticatedLeconRoute
+  '/messages': typeof AuthenticatedMessagesRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/_authenticated/devoir': typeof AuthenticatedDevoirRoute
   '/_authenticated/eleve': typeof AuthenticatedEleveRoute
   '/_authenticated/lecon': typeof AuthenticatedLeconRoute
+  '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -198,6 +207,7 @@ export interface FileRouteTypes {
     | '/devoir'
     | '/eleve'
     | '/lecon'
+    | '/messages'
     | '/cours/$courseId'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesByTo: FileRoutesByTo
@@ -217,6 +227,7 @@ export interface FileRouteTypes {
     | '/devoir'
     | '/eleve'
     | '/lecon'
+    | '/messages'
     | '/cours/$courseId'
     | '/.mcp/invoke-tool/$tool'
   id:
@@ -237,6 +248,7 @@ export interface FileRouteTypes {
     | '/_authenticated/devoir'
     | '/_authenticated/eleve'
     | '/_authenticated/lecon'
+    | '/_authenticated/messages'
     | '/cours/$courseId'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesById: FileRoutesById
@@ -373,6 +385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeconRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/messages': {
+      id: '/_authenticated/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof AuthenticatedMessagesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/cours/$courseId': {
       id: '/cours/$courseId'
       path: '/cours/$courseId'
@@ -394,12 +413,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDevoirRoute: typeof AuthenticatedDevoirRoute
   AuthenticatedEleveRoute: typeof AuthenticatedEleveRoute
   AuthenticatedLeconRoute: typeof AuthenticatedLeconRoute
+  AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDevoirRoute: AuthenticatedDevoirRoute,
   AuthenticatedEleveRoute: AuthenticatedEleveRoute,
   AuthenticatedLeconRoute: AuthenticatedLeconRoute,
+  AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

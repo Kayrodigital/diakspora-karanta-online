@@ -9,6 +9,7 @@ import {
   ChevronRight,
   CircleUserRound,
   GraduationCap,
+  Headphones,
   LayoutDashboard,
   LoaderCircle,
   LogOut,
@@ -38,6 +39,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import type { OrganizationBrand } from "@/lib/auth/portal-access";
+import { AdminSupport } from "./AdminSupport";
 import {
   assignCourseToCohort,
   assignTeacherToCohort,
@@ -374,7 +376,7 @@ export function AdminWorkspace({ organization, userId }: Props) {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6 grid h-auto w-full grid-cols-4 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[560px]">
+          <TabsList className="mb-6 grid h-auto w-full grid-cols-5 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[700px]">
             <TabsTrigger value="overview" className="min-h-11 rounded-xl px-2">
               <LayoutDashboard className="size-4 sm:mr-2" />
               <span className="hidden sm:inline">Vue d’ensemble</span>
@@ -393,6 +395,10 @@ export function AdminWorkspace({ organization, userId }: Props) {
               <BookOpen className="size-4 sm:mr-2" />
               <span className="hidden sm:inline">Pédagogie</span>
               <span className="sm:hidden">Cours</span>
+            </TabsTrigger>
+            <TabsTrigger value="support" className="min-h-11 rounded-xl px-2">
+              <Headphones className="size-4 sm:mr-2" />
+              <span>Support</span>
             </TabsTrigger>
           </TabsList>
 
@@ -850,6 +856,17 @@ export function AdminWorkspace({ organization, userId }: Props) {
 
               <TabsContent value="learning" className="mt-0">
                 <PedagogicalAdmin organization={organization} userId={userId} embedded />
+              </TabsContent>
+
+              <TabsContent value="support" className="mt-0 space-y-5">
+                <div>
+                  <h2 className="text-xl font-semibold">Demandes de support</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Prenez en charge les problèmes techniques sans mélanger les échanges
+                    pédagogiques.
+                  </p>
+                </div>
+                <AdminSupport organizationId={organization.id} userId={userId} />
               </TabsContent>
             </>
           )}

@@ -600,36 +600,51 @@ export type Database = {
       homework_submissions: {
         Row: {
           created_at: string;
+          duration_seconds: number | null;
+          feedback_at: string | null;
+          feedback_by: string | null;
           feedback_text: string | null;
           file_url: string | null;
           id: string;
           lesson_id: string | null;
-          organization_id: string | null;
-          status: string | null;
-          type: string | null;
-          user_id: string | null;
+          notes: string | null;
+          organization_id: string;
+          status: string;
+          type: string;
+          updated_at: string;
+          user_id: string;
         };
         Insert: {
           created_at?: string;
+          duration_seconds?: number | null;
+          feedback_at?: string | null;
+          feedback_by?: string | null;
           feedback_text?: string | null;
           file_url?: string | null;
           id?: string;
           lesson_id?: string | null;
-          organization_id?: string | null;
-          status?: string | null;
-          type?: string | null;
-          user_id?: string | null;
+          notes?: string | null;
+          organization_id: string;
+          status?: string;
+          type?: string;
+          updated_at?: string;
+          user_id: string;
         };
         Update: {
           created_at?: string;
+          duration_seconds?: number | null;
+          feedback_at?: string | null;
+          feedback_by?: string | null;
           feedback_text?: string | null;
           file_url?: string | null;
           id?: string;
           lesson_id?: string | null;
-          organization_id?: string | null;
-          status?: string | null;
-          type?: string | null;
-          user_id?: string | null;
+          notes?: string | null;
+          organization_id?: string;
+          status?: string;
+          type?: string;
+          updated_at?: string;
+          user_id?: string;
         };
         Relationships: [
           {
@@ -1172,6 +1187,102 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "organization_memberships_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      pedagogical_conversations: {
+        Row: {
+          created_at: string;
+          created_by: string;
+          id: string;
+          last_message_at: string;
+          learner_id: string;
+          organization_id: string;
+          status: string;
+          subject: string;
+          teacher_user_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string;
+          id?: string;
+          last_message_at?: string;
+          learner_id: string;
+          organization_id: string;
+          status?: string;
+          subject: string;
+          teacher_user_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string;
+          id?: string;
+          last_message_at?: string;
+          learner_id?: string;
+          organization_id?: string;
+          status?: string;
+          subject?: string;
+          teacher_user_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "pedagogical_conversations_learner_id_fkey";
+            columns: ["learner_id"];
+            isOneToOne: false;
+            referencedRelation: "learner_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pedagogical_conversations_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      pedagogical_messages: {
+        Row: {
+          body: string;
+          conversation_id: string;
+          created_at: string;
+          id: string;
+          organization_id: string;
+          sender_user_id: string;
+        };
+        Insert: {
+          body: string;
+          conversation_id: string;
+          created_at?: string;
+          id?: string;
+          organization_id: string;
+          sender_user_id?: string;
+        };
+        Update: {
+          body?: string;
+          conversation_id?: string;
+          created_at?: string;
+          id?: string;
+          organization_id?: string;
+          sender_user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "pedagogical_messages_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "pedagogical_conversations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pedagogical_messages_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
@@ -1779,6 +1890,98 @@ export type Database = {
             columns: ["user_id"];
             isOneToOne: true;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      support_messages: {
+        Row: {
+          body: string;
+          created_at: string;
+          id: string;
+          organization_id: string;
+          sender_user_id: string;
+          ticket_id: string;
+        };
+        Insert: {
+          body: string;
+          created_at?: string;
+          id?: string;
+          organization_id: string;
+          sender_user_id?: string;
+          ticket_id: string;
+        };
+        Update: {
+          body?: string;
+          created_at?: string;
+          id?: string;
+          organization_id?: string;
+          sender_user_id?: string;
+          ticket_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "support_messages_ticket_id_fkey";
+            columns: ["ticket_id"];
+            isOneToOne: false;
+            referencedRelation: "support_tickets";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      support_tickets: {
+        Row: {
+          assigned_to: string | null;
+          category: string;
+          created_at: string;
+          id: string;
+          last_message_at: string;
+          organization_id: string;
+          priority: string;
+          requester_user_id: string;
+          status: string;
+          subject: string;
+          updated_at: string;
+        };
+        Insert: {
+          assigned_to?: string | null;
+          category?: string;
+          created_at?: string;
+          id?: string;
+          last_message_at?: string;
+          organization_id: string;
+          priority?: string;
+          requester_user_id?: string;
+          status?: string;
+          subject: string;
+          updated_at?: string;
+        };
+        Update: {
+          assigned_to?: string | null;
+          category?: string;
+          created_at?: string;
+          id?: string;
+          last_message_at?: string;
+          organization_id?: string;
+          priority?: string;
+          requester_user_id?: string;
+          status?: string;
+          subject?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
             referencedColumns: ["id"];
           },
         ];

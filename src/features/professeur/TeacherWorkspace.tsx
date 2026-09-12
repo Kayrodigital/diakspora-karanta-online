@@ -24,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import type { OrganizationBrand, OrganizationRole } from "@/lib/auth/portal-access";
+import { HomeworkReviewPanel, TeacherMessagesPanel } from "./TeacherInteractions";
 import { loadTeacherDashboard, type TeacherCohort, type TeacherLearner } from "./teacher-data";
 
 type Props = {
@@ -290,7 +291,7 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
 
         {data ? (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-6 grid h-auto w-full grid-cols-3 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[430px]">
+            <TabsList className="mb-6 grid h-auto w-full grid-cols-5 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[680px]">
               <TabsTrigger value="overview" className="min-h-11 rounded-xl">
                 <LayoutDashboard className="size-4 sm:mr-2" />
                 <span>Accueil</span>
@@ -302,6 +303,15 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
               <TabsTrigger value="courses" className="min-h-11 rounded-xl">
                 <BookOpen className="size-4 sm:mr-2" />
                 <span>Cours</span>
+              </TabsTrigger>
+              <TabsTrigger value="homework" className="min-h-11 rounded-xl">
+                <ClipboardCheck className="size-4 sm:mr-2" />
+                <span className="hidden sm:inline">Corrections</span>
+                <span className="sm:hidden">Devoirs</span>
+              </TabsTrigger>
+              <TabsTrigger value="messages" className="min-h-11 rounded-xl">
+                <MessageCircle className="size-4 sm:mr-2" />
+                <span>Messages</span>
               </TabsTrigger>
             </TabsList>
 
@@ -414,22 +424,28 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
                         )}
                       </CardContent>
                     </Card>
-                    <Card className="border-border/60 shadow-sm">
-                      <CardContent className="p-5">
-                        <div className="flex items-start gap-3">
-                          <div className="grid size-10 place-items-center rounded-xl bg-[color:var(--gold)]/20 text-[color:var(--gold-dark)]">
-                            <MessageCircle className="size-5" />
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("messages")}
+                      className="w-full text-left"
+                    >
+                      <Card className="border-border/60 shadow-sm transition hover:border-primary/30">
+                        <CardContent className="p-5">
+                          <div className="flex items-start gap-3">
+                            <div className="grid size-10 place-items-center rounded-xl bg-[color:var(--gold)]/20 text-[color:var(--gold-dark)]">
+                              <MessageCircle className="size-5" />
+                            </div>
+                            <div>
+                              <p className="font-semibold">Questions et messages</p>
+                              <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                                Répondez aux questions privées de vos élèves dans un espace
+                                sécurisé.
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-semibold">Questions et messages</p>
-                            <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                              La messagerie privée sécurisée arrive dans la prochaine tranche du lot
-                              professeur.
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                        </CardContent>
+                      </Card>
+                    </button>
                   </div>
                 </div>
               )}
@@ -539,6 +555,27 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
                   </div>
                 </div>
               ) : null}
+            </TabsContent>
+
+            <TabsContent value="homework" className="mt-0 space-y-5">
+              <div>
+                <h2 className="text-xl font-semibold">Corrections vocales</h2>
+                <p className="text-sm text-muted-foreground">
+                  Écoutez les récitations, écrivez votre retour et validez le devoir.
+                </p>
+              </div>
+              <HomeworkReviewPanel organizationId={organization.id} userId={userId} data={data} />
+            </TabsContent>
+
+            <TabsContent value="messages" className="mt-0 space-y-5">
+              <div>
+                <h2 className="text-xl font-semibold">Questions des élèves</h2>
+                <p className="text-sm text-muted-foreground">
+                  Une conversation privée reste visible uniquement par l’élève, sa famille et son
+                  professeur.
+                </p>
+              </div>
+              <TeacherMessagesPanel organizationId={organization.id} userId={userId} data={data} />
             </TabsContent>
           </Tabs>
         ) : null}
