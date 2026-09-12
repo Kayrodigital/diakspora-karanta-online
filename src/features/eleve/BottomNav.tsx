@@ -1,48 +1,42 @@
-import { Home, BookOpen, NotebookPen, TrendingUp, User, type LucideIcon } from "lucide-react";
+import { BookOpen, Home, Radio, User, type LucideIcon } from "lucide-react";
 
 type Item = {
-  key: string;
+  key: "home" | "courses" | "live" | "profile";
   label: string;
   icon: LucideIcon;
-  active?: boolean;
+  href: string;
 };
 
 const items: Item[] = [
-  { key: "home",     label: "Accueil",  icon: Home, active: true },
-  { key: "lessons",  label: "Leçons",   icon: BookOpen },
-  { key: "notebook", label: "Carnet",   icon: NotebookPen },
-  { key: "progress", label: "Progrès",  icon: TrendingUp },
-  { key: "profile",  label: "Profil",   icon: User },
+  { key: "home", label: "Accueil", icon: Home, href: "/eleve" },
+  { key: "courses", label: "Cours", icon: BookOpen, href: "/eleve#courses" },
+  { key: "live", label: "Directs", icon: Radio, href: "/eleve#directs" },
+  { key: "profile", label: "Profil", icon: User, href: "/eleve#profil" },
 ];
 
-export function BottomNav() {
+export function BottomNav({ active = "home" }: { active?: Item["key"] }) {
   return (
     <nav
       aria-label="Navigation principale"
       className="fixed inset-x-0 bottom-0 z-30 border-t border-[color:var(--cream-2)] bg-[color:var(--cream)]/95 backdrop-blur supports-[backdrop-filter]:bg-[color:var(--cream)]/80"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <ul className="mx-auto grid max-w-md grid-cols-5">
-        {items.map((it) => {
-          const Icon = it.icon;
+      <ul className="mx-auto grid max-w-md grid-cols-4">
+        {items.map((item) => {
+          const Icon = item.icon;
+          const isActive = active === item.key;
           return (
-            <li key={it.key}>
-              <button
-                type="button"
-                aria-current={it.active ? "page" : undefined}
-                className={`flex min-h-[56px] w-full flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition ${
-                  it.active
-                    ? "text-[color:var(--deep-green)]"
-                    : "text-muted-foreground"
+            <li key={item.key}>
+              <a
+                href={item.href}
+                aria-current={isActive ? "page" : undefined}
+                className={`flex min-h-14 w-full flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition ${
+                  isActive ? "text-[color:var(--deep-green)]" : "text-muted-foreground"
                 }`}
               >
-                <Icon
-                  size={22}
-                  strokeWidth={it.active ? 2.4 : 2}
-                  aria-hidden
-                />
-                <span>{it.label}</span>
-              </button>
+                <Icon size={22} strokeWidth={isActive ? 2.4 : 2} aria-hidden />
+                <span>{item.label}</span>
+              </a>
             </li>
           );
         })}

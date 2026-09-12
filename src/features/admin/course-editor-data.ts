@@ -292,6 +292,12 @@ export async function createBasicQuiz(input: {
       })),
     );
     if (keyError) throw keyError;
+
+    const { error: publishError } = await supabase
+      .from("quizzes")
+      .update({ status: "published" })
+      .eq("id", quiz.id);
+    if (publishError) throw publishError;
   } catch (error) {
     await supabase.from("quizzes").delete().eq("id", quiz.id);
     throw error;

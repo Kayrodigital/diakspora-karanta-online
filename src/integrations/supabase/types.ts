@@ -1645,7 +1645,13 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      submit_quiz_attempt: {
+        Args: { p_answers: Json; p_quiz_id: string };
+        Returns: {
+          attempt_id: string;
+          score: number;
+        }[];
+      };
     };
     Enums: {
       [_ in never]: never;

@@ -1,217 +1,382 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import {
+  ArrowLeft,
+  Check,
+  CheckCircle2,
+  Download,
+  ExternalLink,
+  FileText,
+  Headphones,
+  PlayCircle,
+} from "lucide-react";
 import { z } from "zod";
 import { BottomNav } from "@/features/eleve/BottomNav";
-import { VideoPlayer } from "@/features/eleve/VideoPlayer";
-import { QuizQuestion } from "@/features/eleve/QuizQuestion";
-import { mockLecon, type QuizQuestion as QuizQuestionType } from "@/features/eleve/lecon-mock-data";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  loadStudentHome,
+  loadStudentLesson,
+  markLessonComplete,
+  submitStudentQuiz,
+  type StudentResource,
+} from "@/features/eleve/student-data";
 import { organizationTheme } from "@/lib/organization-theme";
 
-const searchSchema = z.object({ id: z.string().optional() });
+const searchSchema = z.object({ id: z.string().uuid().optional() });
 
 export const Route = createFileRoute("/_authenticated/lecon")({
   validateSearch: searchSchema,
-  head: () => ({
-    meta: [{ title: "Leçon — Diakspora Karanta" }],
-  }),
+  head: () => ({ meta: [{ title: "Leçon — Diakspora Karanta" }] }),
   component: LeconPage,
 });
 
-type Phase = "video" | "quiz";
+function resourceIcon(type: string) {
+  if (type === "audio") return Headphones;
+  if (["video", "youtube", "replay"].includes(type)) return PlayCircle;
+  return FileText;
+}
 
-async function loadLesson(organizationId: string, id: string | undefined) {
-  let query = supabase
-    .from("lessons")
-    .select("id, title, duration_minutes, video_url, quiz_questions")
-    .eq("organization_id", organizationId);
-  if (id) query = query.eq("id", id);
-  else query = query.order("order_index", { ascending: true });
-  const { data, error } = await query.limit(1).maybeSingle();
-  if (error) throw error;
-  return data;
+function ResourceCard({ resource }: { resource: StudentResource }) {
+  const Icon = resourceIcon(resource.resource_type);
+  const isAudio = resource.resource_type === "audio";
+  const isVideo = resource.resource_type === "video";
+  const isText = resource.resource_type === "text";
+
+  return (
+    <article className="rounded-2xl border border-[color:var(--cream-2)] bg-card p-4 shadow-[var(--shadow-card)]">
+      <div className="flex items-start gap-3">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[color:var(--gold)]/20 text-[color:var(--gold-dark)]">
+          <Icon size={21} aria-hidden />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-semibold">{resource.title}</h3>
+          {resource.description && (
+            <p className="mt-1 text-sm text-muted-foreground">{resource.description}</p>
+          )}
+        </div>
+      </div>
+
+      {isAudio && resource.playbackUrl && (
+        <audio controls preload="metadata" className="mt-4 w-full" src={resource.playbackUrl}>
+          Votre navigateur ne peut pas lire cet audio.
+        </audio>
+      )}
+
+      {isVideo && resource.playbackUrl && (
+        <video
+          controls
+          preload="metadata"
+          className="mt-4 aspect-video w-full rounded-xl bg-black"
+          src={resource.playbackUrl}
+        >
+          Votre navigateur ne peut pas lire cette vidéo.
+        </video>
+      )}
+
+      {isText && resource.transcript && (
+        <div className="mt-4 whitespace-pre-wrap rounded-xl bg-[color:var(--cream)] p-4 text-sm leading-7">
+          {resource.transcript}
+        </div>
+      )}
+
+      {!isText && resource.transcript && (
+        <details className="mt-4 rounded-xl bg-[color:var(--cream)] p-4 text-sm">
+          <summary className="cursor-pointer font-semibold">Lire la transcription</summary>
+          <p className="mt-3 whitespace-pre-wrap leading-7">{resource.transcript}</p>
+        </details>
+      )}
+
+      {!isAudio && !isVideo && resource.playbackUrl && (
+        <a
+          href={resource.playbackUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-4 flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[color:var(--deep-green)] px-4 font-semibold text-[color:var(--deep-green)]"
+        >
+          {resource.allow_download && resource.storage_path ? (
+            <Download size={18} aria-hidden />
+          ) : (
+            <ExternalLink size={18} aria-hidden />
+          )}
+          {resource.resource_type === "document" ? "Ouvrir le document" : "Ouvrir la ressource"}
+        </a>
+      )}
+
+      {!resource.playbackUrl && !isText && (
+        <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Cette ressource est temporairement indisponible.
+        </p>
+      )}
+    </article>
+  );
 }
 
 function LeconPage() {
   const { id } = Route.useSearch();
-  const { organization } = Route.useRouteContext();
-  const navigate = useNavigate();
-  const qc = useQueryClient();
-  const { data: lesson } = useSuspenseQuery({
-    queryKey: ["lesson", organization.id, id ?? "first"],
-    queryFn: () => loadLesson(organization.id, id),
+  const { organization, user } = Route.useRouteContext();
+  const queryClient = useQueryClient();
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [score, setScore] = useState<number | null>(null);
+
+  const { data } = useSuspenseQuery({
+    queryKey: ["student-lesson", organization.id, user.id, id ?? "next"],
+    queryFn: async () => {
+      let lessonId = id;
+      if (!lessonId) {
+        const home = await loadStudentHome(organization.id, user.id);
+        lessonId = home.nextLesson?.id;
+      }
+      if (!lessonId) throw new Error("Aucune leçon n’est disponible pour le moment.");
+      return loadStudentLesson(organization.id, user.id, lessonId);
+    },
   });
 
-  const { badgeEmoji, badgeName } = mockLecon;
-  const lessonQuestions =
-    ((lesson as { quiz_questions?: unknown } | null)?.quiz_questions as
-      QuizQuestionType[] | null | undefined) ?? null;
-
-  const questions: QuizQuestionType[] =
-    lessonQuestions && lessonQuestions.length > 0 ? lessonQuestions : mockLecon.questions;
-
-  const [phase, setPhase] = useState<Phase>("video");
-  const [videoEnded, setVideoEnded] = useState(false);
-  const [qIndex, setQIndex] = useState(0);
-  const [correctCount, setCorrectCount] = useState(0);
-  const [finished, setFinished] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  async function saveResults(finalCorrect: number) {
-    if (!lesson) return;
-    setSaving(true);
-    try {
-      const { data: userRes } = await supabase.auth.getUser();
-      const uid = userRes.user?.id;
-      if (!uid) return;
-      const score = Math.round((finalCorrect / questions.length) * 100);
-      await supabase.from("quiz_results").insert({
-        organization_id: organization.id,
-        user_id: uid,
-        lesson_id: lesson.id,
-        score,
-      });
-      // Upsert progress: check if exists, else insert
-      const { data: existing } = await supabase
-        .from("progress")
-        .select("id")
-        .eq("organization_id", organization.id)
-        .eq("user_id", uid)
-        .eq("lesson_id", lesson.id)
-        .maybeSingle();
-      if (existing) {
-        await supabase
-          .from("progress")
-          .update({ status: "completed", completed_at: new Date().toISOString() })
-          .eq("id", existing.id);
-      } else {
-        await supabase.from("progress").insert({
-          organization_id: organization.id,
-          user_id: uid,
-          lesson_id: lesson.id,
-          status: "completed",
-          completed_at: new Date().toISOString(),
-        });
-      }
-      qc.invalidateQueries({ queryKey: ["eleve-dashboard", organization.id] });
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  const handleAnswer = (wasCorrect: boolean) => {
-    const nextCorrect = wasCorrect ? correctCount + 1 : correctCount;
-    if (wasCorrect) setCorrectCount(nextCorrect);
-    if (qIndex + 1 < questions.length) {
-      setQIndex((i) => i + 1);
-    } else {
-      setFinished(true);
-      void saveResults(nextCorrect);
-    }
+  const selectedCount = useMemo(() => Object.keys(answers).length, [answers]);
+  const invalidateLearning = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["eleve-dashboard", organization.id] }),
+      queryClient.invalidateQueries({ queryKey: ["student-lesson", organization.id] }),
+    ]);
   };
 
-  if (!lesson) {
-    return (
-      <div className="min-h-screen bg-[color:var(--cream)] p-6 text-center">
-        <p>Aucune leçon disponible.</p>
-        <Link to="/eleve" className="mt-4 inline-block text-[color:var(--deep-green)] underline">
-          Retour
-        </Link>
-      </div>
-    );
-  }
+  const completeMutation = useMutation({
+    mutationFn: () => markLessonComplete(organization.id, user.id, data.lesson.id),
+    onSuccess: invalidateLearning,
+  });
+
+  const quizMutation = useMutation({
+    mutationFn: async () => {
+      if (!data.quiz) throw new Error("Ce quiz n’est plus disponible.");
+      return submitStudentQuiz(
+        data.quiz.id,
+        data.quiz.questions.map((question) => ({
+          question_id: question.id,
+          selected_option_ids: answers[question.id] ? [answers[question.id]] : [],
+        })),
+      );
+    },
+    onSuccess: async (result) => {
+      setScore(result);
+      await invalidateLearning();
+    },
+  });
+
+  const quizComplete = data.quiz ? selectedCount === data.quiz.questions.length : false;
+  const passed = score !== null && data.quiz ? score >= data.quiz.passingScore : false;
+  const mutationError = completeMutation.error ?? quizMutation.error;
 
   return (
     <div
       className="min-h-screen bg-[color:var(--cream)] text-foreground"
       style={organizationTheme(organization)}
     >
-      <div className="mx-auto w-full max-w-md md:max-w-3xl lg:max-w-5xl pb-28">
-        <header className="px-5 pt-6">
+      <main className="mx-auto w-full max-w-md pb-28 md:max-w-3xl lg:max-w-5xl">
+        <header className="px-5 pt-6 md:px-8">
           <Link
             to="/eleve"
-            className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground"
+            className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[color:var(--deep-green)]"
           >
-            ← Espace élève
+            <ArrowLeft size={18} aria-hidden />
+            Mes cours
           </Link>
-          <h1 className="mt-3 font-[family-name:var(--font-display-kid)] text-2xl font-bold leading-tight">
-            {lesson.title}
-          </h1>
+          {data.course && (
+            <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[color:var(--gold-dark)]">
+              {data.course.title}
+            </p>
+          )}
+          <div className="mt-1 flex items-start justify-between gap-4">
+            <div>
+              <h1 className="font-[family-name:var(--font-display-kid)] text-3xl font-bold leading-tight md:text-4xl">
+                {data.lesson.title}
+              </h1>
+              {data.lesson.duration_minutes && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Environ {data.lesson.duration_minutes} minutes
+                </p>
+              )}
+            </div>
+            {(data.completed || completeMutation.isSuccess || score !== null) && (
+              <span className="flex shrink-0 items-center gap-1 rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-bold text-emerald-800">
+                <Check size={14} aria-hidden /> Terminée
+              </span>
+            )}
+          </div>
         </header>
 
-        {phase === "video" && (
-          <section className="mt-5 px-5">
-            <VideoPlayer
-              title={lesson.title}
-              durationSec={(lesson.duration_minutes ?? 5) * 60}
-              thumbnailEmoji="🎥"
-              onEnded={() => setVideoEnded(true)}
-            />
-
-            {videoEnded && (
-              <button
-                type="button"
-                onClick={() => setPhase("quiz")}
-                className="mt-5 flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl bg-[color:var(--gold)] px-6 font-[family-name:var(--font-display-kid)] text-lg font-bold text-[color:var(--anthracite)] shadow-[var(--shadow-gold)]"
-              >
-                Passer au quiz
-                <ArrowRight size={22} aria-hidden />
-              </button>
+        <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_19rem] lg:px-8">
+          <div className="space-y-6 px-5 md:px-8 lg:px-0">
+            {data.lesson.video_url && (
+              <section aria-label="Vidéo de la leçon">
+                <video
+                  controls
+                  preload="metadata"
+                  src={data.lesson.video_url}
+                  className="aspect-video w-full rounded-2xl bg-black shadow-[var(--shadow-card)]"
+                >
+                  Votre navigateur ne peut pas lire cette vidéo.
+                </video>
+              </section>
             )}
-          </section>
-        )}
 
-        {phase === "quiz" && !finished && (
-          <section className="mt-5 px-5">
-            <QuizQuestion
-              key={questions[qIndex].id}
-              question={questions[qIndex]}
-              index={qIndex}
-              total={questions.length}
-              onNext={handleAnswer}
-            />
-          </section>
-        )}
-
-        {phase === "quiz" && finished && (
-          <section className="mt-5 px-5">
-            <div className="rounded-3xl bg-card p-6 text-center shadow-[var(--shadow-elegant)]">
-              <div
-                aria-hidden
-                className="mx-auto flex h-24 w-24 items-center justify-center rounded-full text-5xl shadow-[var(--shadow-gold)]"
-                style={{ background: "var(--gradient-gold)" }}
-              >
-                {badgeEmoji}
-              </div>
-              <p className="mt-4 font-[family-name:var(--font-display-kid)] text-2xl font-bold text-[color:var(--deep-green)]">
-                Bravo, leçon terminée !
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {correctCount} bonnes réponses sur {questions.length}. {saving && "Sauvegarde…"}
-              </p>
-              <div className="mt-5 rounded-2xl bg-[color:var(--gold)]/15 p-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[color:var(--gold-dark)]">
-                  Nouveau badge
+            {(data.lesson.summary || data.course?.description) && (
+              <section className="rounded-2xl bg-card p-5 shadow-[var(--shadow-card)]">
+                <h2 className="font-[family-name:var(--font-display-kid)] text-xl font-bold">
+                  À propos de cette leçon
+                </h2>
+                <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-muted-foreground">
+                  {data.lesson.summary || data.course?.description}
                 </p>
-                <p className="mt-1 font-[family-name:var(--font-display-kid)] text-lg font-bold">
-                  {badgeName}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => navigate({ to: "/eleve" })}
-                className="mt-6 flex min-h-[56px] w-full items-center justify-center rounded-2xl bg-[color:var(--deep-green)] px-6 font-[family-name:var(--font-display-kid)] text-lg font-bold text-[color:var(--cream)]"
-              >
-                Terminer
-              </button>
-            </div>
-          </section>
-        )}
-      </div>
+              </section>
+            )}
 
-      <BottomNav />
+            <section>
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="font-[family-name:var(--font-display-kid)] text-2xl font-bold">
+                  Ressources du cours
+                </h2>
+                <span className="text-xs text-muted-foreground">
+                  {data.resources.length} ressource{data.resources.length > 1 ? "s" : ""}
+                </span>
+              </div>
+              {data.resources.length ? (
+                <div className="mt-4 space-y-4">
+                  {data.resources.map((resource) => (
+                    <ResourceCard key={resource.id} resource={resource} />
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-4 rounded-2xl border border-dashed border-[color:var(--gold-dark)]/40 p-5 text-sm text-muted-foreground">
+                  Le professeur n’a pas encore ajouté d’audio, de vidéo ou de document à cette
+                  leçon.
+                </div>
+              )}
+            </section>
+          </div>
+
+          <aside className="px-5 md:px-8 lg:px-0">
+            {data.quiz ? (
+              <section className="rounded-3xl bg-card p-5 shadow-[var(--shadow-elegant)]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[color:var(--gold-dark)]">
+                  Vérifie tes connaissances
+                </p>
+                <h2 className="mt-1 font-[family-name:var(--font-display-kid)] text-2xl font-bold">
+                  {data.quiz.title}
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Réponds à toutes les questions, puis valide tes réponses.
+                </p>
+
+                {score === null ? (
+                  <div className="mt-5 space-y-6">
+                    {data.quiz.questions.map((question, index) => (
+                      <fieldset key={question.id}>
+                        <legend className="text-sm font-semibold leading-6">
+                          {index + 1}. {question.prompt}
+                        </legend>
+                        <div className="mt-3 space-y-2">
+                          {question.options.map((option) => {
+                            const selected = answers[question.id] === option.id;
+                            return (
+                              <label
+                                key={option.id}
+                                className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm transition ${
+                                  selected
+                                    ? "border-[color:var(--deep-green)] bg-[color:var(--deep-green)]/8"
+                                    : "border-[color:var(--cream-2)]"
+                                }`}
+                              >
+                                <input
+                                  type="radio"
+                                  name={question.id}
+                                  value={option.id}
+                                  checked={selected}
+                                  onChange={() =>
+                                    setAnswers((current) => ({
+                                      ...current,
+                                      [question.id]: option.id,
+                                    }))
+                                  }
+                                  className="h-4 w-4 accent-[color:var(--deep-green)]"
+                                />
+                                {option.label}
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </fieldset>
+                    ))}
+                    <button
+                      type="button"
+                      disabled={!quizComplete || quizMutation.isPending}
+                      onClick={() => quizMutation.mutate()}
+                      className="min-h-13 w-full rounded-2xl bg-[color:var(--deep-green)] px-5 font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      {quizMutation.isPending ? "Correction…" : "Valider mes réponses"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-5 rounded-2xl bg-[color:var(--cream)] p-5 text-center">
+                    <CheckCircle2
+                      className={`mx-auto ${passed ? "text-emerald-600" : "text-[color:var(--gold-dark)]"}`}
+                      size={46}
+                      aria-hidden
+                    />
+                    <p className="mt-3 font-[family-name:var(--font-display-kid)] text-2xl font-bold">
+                      {score}%
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {passed
+                        ? "Bravo, tu as validé cette leçon !"
+                        : `Continue tes révisions. Il faut ${data.quiz.passingScore}% pour réussir.`}
+                    </p>
+                    <Link
+                      to="/eleve"
+                      className="mt-5 flex min-h-11 items-center justify-center rounded-xl bg-[color:var(--deep-green)] px-4 font-semibold text-white"
+                    >
+                      Retour à mes cours
+                    </Link>
+                  </div>
+                )}
+              </section>
+            ) : (
+              <section className="rounded-3xl bg-card p-5 shadow-[var(--shadow-elegant)]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[color:var(--gold-dark)]">
+                  Progression
+                </p>
+                <h2 className="mt-1 font-[family-name:var(--font-display-kid)] text-2xl font-bold">
+                  Tu as terminé ?
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Après avoir écouté ou regardé les ressources, marque la leçon comme terminée.
+                </p>
+                <button
+                  type="button"
+                  disabled={
+                    data.completed || completeMutation.isSuccess || completeMutation.isPending
+                  }
+                  onClick={() => completeMutation.mutate()}
+                  className="mt-5 flex min-h-13 w-full items-center justify-center gap-2 rounded-2xl bg-[color:var(--gold)] px-5 font-bold text-[color:var(--anthracite)] disabled:opacity-55"
+                >
+                  <Check size={19} aria-hidden />
+                  {completeMutation.isPending
+                    ? "Enregistrement…"
+                    : data.completed || completeMutation.isSuccess
+                      ? "Leçon terminée"
+                      : "Marquer comme terminée"}
+                </button>
+              </section>
+            )}
+
+            {mutationError && (
+              <p role="alert" className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-800">
+                {mutationError.message}
+              </p>
+            )}
+          </aside>
+        </div>
+      </main>
+
+      <BottomNav active="courses" />
     </div>
   );
 }
