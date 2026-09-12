@@ -1,4 +1,5 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowUpRight,
@@ -599,9 +600,13 @@ function DashboardContent({
                       <span className="rounded-full bg-muted px-2.5 py-1">
                         {accessLabels[course.access_scope] ?? course.access_scope}
                       </span>
-                      <span className="flex items-center gap-1 font-medium text-primary">
+                      <Link
+                        to="/cours/$courseId"
+                        params={{ courseId: course.id }}
+                        className="flex min-h-9 items-center gap-1 font-medium text-primary hover:underline"
+                      >
                         Structurer le cours <ArrowUpRight size={14} aria-hidden />
-                      </span>
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>

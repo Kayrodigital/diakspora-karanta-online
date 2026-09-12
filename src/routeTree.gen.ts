@@ -25,6 +25,7 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as AuthenticatedDevoirRouteImport } from './routes/_authenticated/devoir'
 import { Route as AuthenticatedEleveRouteImport } from './routes/_authenticated/eleve'
 import { Route as AuthenticatedLeconRouteImport } from './routes/_authenticated/lecon'
+import { Route as CoursCourseIdRouteImport } from './routes/cours/$courseId'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
 const IndexRoute = IndexRouteImport.update({
@@ -108,6 +109,11 @@ const AuthenticatedLeconRoute = AuthenticatedLeconRouteImport.update({
   path: '/lecon',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const CoursCourseIdRoute = CoursCourseIdRouteImport.update({
+  id: '/cours/$courseId',
+  path: '/cours/$courseId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/devoir': typeof AuthenticatedDevoirRoute
   '/eleve': typeof AuthenticatedEleveRoute
   '/lecon': typeof AuthenticatedLeconRoute
+  '/cours/$courseId': typeof CoursCourseIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 export interface FileRoutesByTo {
@@ -149,6 +156,7 @@ export interface FileRoutesByTo {
   '/devoir': typeof AuthenticatedDevoirRoute
   '/eleve': typeof AuthenticatedEleveRoute
   '/lecon': typeof AuthenticatedLeconRoute
+  '/cours/$courseId': typeof CoursCourseIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 export interface FileRoutesById {
@@ -169,6 +177,7 @@ export interface FileRoutesById {
   '/_authenticated/devoir': typeof AuthenticatedDevoirRoute
   '/_authenticated/eleve': typeof AuthenticatedEleveRoute
   '/_authenticated/lecon': typeof AuthenticatedLeconRoute
+  '/cours/$courseId': typeof CoursCourseIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 export interface FileRouteTypes {
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/devoir'
     | '/eleve'
     | '/lecon'
+    | '/cours/$courseId'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/devoir'
     | '/eleve'
     | '/lecon'
+    | '/cours/$courseId'
     | '/.mcp/invoke-tool/$tool'
   id:
     | '__root__'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/_authenticated/devoir'
     | '/_authenticated/eleve'
     | '/_authenticated/lecon'
+    | '/cours/$courseId'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesById: FileRoutesById
 }
@@ -243,6 +255,7 @@ export interface RootRouteChildren {
   RattrapageRoute: typeof RattrapageRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  CoursCourseIdRoute: typeof CoursCourseIdRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 
@@ -360,6 +373,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeconRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/cours/$courseId': {
+      id: '/cours/$courseId'
+      path: '/cours/$courseId'
+      fullPath: '/cours/$courseId'
+      preLoaderRoute: typeof CoursCourseIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -400,6 +420,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  CoursCourseIdRoute: CoursCourseIdRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
 }
 export const routeTree = rootRouteImport
