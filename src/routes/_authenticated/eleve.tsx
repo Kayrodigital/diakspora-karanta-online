@@ -122,10 +122,21 @@ function ElevePage() {
               </div>
             ) : (
               <div className="relative mt-4 rounded-2xl bg-white/10 p-4">
-                <p className="font-medium">Ton prochain cours apparaîtra ici.</p>
-                <p className="mt-1 text-sm text-white/75">
-                  Ton professeur doit d’abord publier un cours et t’inscrire dans sa classe.
-                </p>
+                {data.courses.some((course) => course.lessonCount > 0) ? (
+                  <>
+                    <p className="font-medium">Bravo, tu as terminé tes leçons disponibles !</p>
+                    <p className="mt-1 text-sm text-white/75">
+                      Tu peux les revoir depuis « Mes cours » en attendant la prochaine leçon.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-medium">Ton prochain cours apparaîtra ici.</p>
+                    <p className="mt-1 text-sm text-white/75">
+                      Ton professeur doit d’abord publier un cours et t’inscrire dans sa classe.
+                    </p>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -208,7 +219,7 @@ function ElevePage() {
                             className="mt-5 flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[color:var(--deep-green)] px-4 font-semibold text-white"
                           >
                             <Play size={17} aria-hidden />
-                            {percent > 0 ? "Reprendre" : "Commencer"}
+                            {percent === 100 ? "Revoir" : percent > 0 ? "Reprendre" : "Commencer"}
                           </Link>
                         ) : (
                           <p className="mt-5 rounded-xl bg-[color:var(--cream-2)]/60 px-4 py-3 text-center text-sm text-muted-foreground">

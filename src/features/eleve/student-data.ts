@@ -111,8 +111,7 @@ export async function loadStudentHome(
     };
   });
 
-  const nextLesson =
-    visibleLessons.find((lesson) => !completedIds.has(lesson.id)) ?? visibleLessons[0] ?? null;
+  const nextLesson = visibleLessons.find((lesson) => !completedIds.has(lesson.id)) ?? null;
 
   return {
     firstName: profile.data?.full_name?.split(" ")[0] || "Élève",

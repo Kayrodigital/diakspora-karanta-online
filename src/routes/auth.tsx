@@ -157,12 +157,27 @@ function AuthPage() {
             <input
               type="password"
               required
-              minLength={6}
+              minLength={mode === "signup" ? 12 : 6}
+              pattern={
+                mode === "signup"
+                  ? "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{12,}"
+                  : undefined
+              }
+              title={
+                mode === "signup"
+                  ? "12 caractères minimum, avec minuscule, majuscule, chiffre et symbole."
+                  : undefined
+              }
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="rounded-xl border-2 border-[color:var(--cream-2)] bg-white px-4 py-3 text-base"
               autoComplete={mode === "signin" ? "current-password" : "new-password"}
             />
+            {mode === "signup" && (
+              <span className="text-xs font-normal leading-5 text-muted-foreground">
+                12 caractères minimum, avec une minuscule, une majuscule, un chiffre et un symbole.
+              </span>
+            )}
           </label>
 
           {error && (

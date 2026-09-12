@@ -23,10 +23,12 @@ BEGIN
     RAISE EXCEPTION 'The Diakspora organization must exist before seeding the demo course';
   END IF;
 
-  SELECT id INTO v_owner_id
-  FROM auth.users
-  WHERE email IN ('kayro.digital@gmail.com', 'contact@diakspora.com')
-  ORDER BY CASE WHEN email = 'kayro.digital@gmail.com' THEN 0 ELSE 1 END
+  SELECT user_id INTO v_owner_id
+  FROM public.organization_memberships
+  WHERE organization_id = v_tenant_id
+    AND role IN ('owner', 'admin')
+    AND status = 'active'
+  ORDER BY CASE WHEN role = 'owner' THEN 0 ELSE 1 END, created_at
   LIMIT 1;
 
   INSERT INTO public.subjects (

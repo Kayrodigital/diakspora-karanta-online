@@ -133,10 +133,14 @@ function LeconPage() {
 
   const selectedCount = useMemo(() => Object.keys(answers).length, [answers]);
   const invalidateLearning = async () => {
+    const dashboardKey = ["eleve-dashboard", organization.id, user.id] as const;
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ["eleve-dashboard", organization.id] }),
+      queryClient.invalidateQueries({ queryKey: dashboardKey, exact: true }),
       queryClient.invalidateQueries({ queryKey: ["student-lesson", organization.id] }),
     ]);
+    // TanStack Router keeps the dashboard route warm while the lesson is open.
+    // Refetch the inactive query now so returning to the catalog never shows stale progress.
+    await queryClient.refetchQueries({ queryKey: dashboardKey, exact: true, type: "all" });
   };
 
   const completeMutation = useMutation({
