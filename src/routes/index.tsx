@@ -159,7 +159,7 @@ function Home() {
               <div className="relative aspect-[1/1.04] overflow-hidden rounded-[44%_56%_46%_54%/38%_40%_60%_62%] border border-[#F4D58D]/40 shadow-[0_35px_80px_rgba(7,24,15,0.55)]">
                 <img
                   src="/brands/diakspora/landing/karanta-hero.webp"
-                  alt="Un enseignant transmettant le savoir à des enfants réunis autour du feu"
+                  alt="Un enseignant transmettant le savoir au sein d’un cercle d’apprentissage"
                   className="h-full w-full object-cover"
                   fetchPriority="high"
                 />
@@ -168,7 +168,7 @@ function Home() {
               <div className="absolute -bottom-5 left-4 max-w-[250px] rounded-2xl border border-white/35 bg-[#FFF9EC]/95 p-4 text-[#242923] shadow-xl backdrop-blur sm:left-8">
                 <p className="font-serif text-lg font-semibold">Karanta</p>
                 <p className="mt-1 text-xs leading-5 text-[#5E625C]">
-                  Les assises d’apprentissage autour du feu, réinventées pour aujourd’hui.
+                  Cercle d’apprentissage.
                 </p>
               </div>
             </div>
@@ -181,7 +181,7 @@ function Home() {
               <div className="absolute -inset-5 rounded-[40px] border border-[#D7B969]/55" />
               <img
                 src="/brands/diakspora/landing/karanta-roots.webp"
-                alt="Des enfants apprenant ensemble autour du feu dans un village ouest-africain"
+                alt="Des enfants réunis dans un cercle d’apprentissage en Afrique de l’Ouest"
                 className="relative aspect-square w-full rounded-[34px] bg-[#F0E3C5] object-cover shadow-[0_24px_60px_rgba(66,48,23,0.16)]"
                 loading="lazy"
               />
@@ -194,8 +194,8 @@ function Home() {
                 Retrouver l’esprit du cercle d’apprentissage.
               </h2>
               <p className="mt-6 text-base leading-8 text-[#565A54]">
-                En Afrique de l’Ouest, <strong className="text-[#292D28]">Karanta</strong> évoque
-                l’assise autour du feu : un temps où l’on écoute, répète, questionne et transmet.
+                En Afrique de l’Ouest, <strong className="text-[#292D28]">Karanta</strong> désigne
+                un cercle d’apprentissage : un temps où l’on écoute, répète, questionne et transmet.
                 Diakspora fait vivre cet héritage dans un environnement numérique adapté aux
                 familles d’aujourd’hui.
               </p>
