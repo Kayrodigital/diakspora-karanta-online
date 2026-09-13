@@ -49,12 +49,23 @@ export type StudentQuiz = {
   questions: StudentQuizQuestion[];
 };
 
+export type StudentLessonOutlineItem = {
+  id: string;
+  title: string;
+  moduleTitle: string | null;
+  orderIndex: number;
+  completed: boolean;
+};
+
 export type StudentLessonData = {
   lesson: StudentLesson;
   course: StudentCourse | null;
   resources: StudentResource[];
   quiz: StudentQuiz | null;
   completed: boolean;
+  outline: StudentLessonOutlineItem[];
+  lessonNumber: number;
+  nextLesson: StudentLessonOutlineItem | null;
 };
 
 function firstError(errors: Array<Error | null>): Error | null {
@@ -226,25 +237,42 @@ export async function loadStudentLesson(
       .limit(1),
     supabase
       .from("progress")
-      .select("status")
+      .select("lesson_id, status")
       .eq("organization_id", organizationId)
-      .eq("user_id", userId)
-      .eq("lesson_id", lessonId)
-      .maybeSingle(),
+      .eq("user_id", userId),
   ]);
 
   const primaryError = firstError([lesson.error, resources.error, quizzes.error, progress.error]);
   if (primaryError) throw primaryError;
   if (!lesson.data) throw new Error("Cette leçon n'est pas disponible.");
+  const lessonRow = lesson.data;
 
-  const coursePromise = lesson.data.course_id
+  const coursePromise = lessonRow.course_id
     ? supabase
         .from("courses")
         .select("*")
         .eq("organization_id", organizationId)
-        .eq("id", lesson.data.course_id)
+        .eq("id", lessonRow.course_id)
         .maybeSingle()
     : Promise.resolve({ data: null, error: null });
+  const modulesPromise = lessonRow.course_id
+    ? supabase
+        .from("course_modules")
+        .select("id, title, order_index")
+        .eq("organization_id", organizationId)
+        .eq("course_id", lessonRow.course_id)
+        .eq("status", "published")
+        .order("order_index", { ascending: true })
+    : Promise.resolve({ data: [], error: null });
+  const outlinePromise = lessonRow.course_id
+    ? supabase
+        .from("lessons")
+        .select("id, title, module_id, order_index")
+        .eq("organization_id", organizationId)
+        .eq("course_id", lessonRow.course_id)
+        .eq("status", "published")
+        .order("order_index", { ascending: true })
+    : Promise.resolve({ data: [], error: null });
   const quiz = quizzes.data?.[0] ?? null;
   const questionsPromise = quiz
     ? supabase
@@ -255,13 +283,35 @@ export async function loadStudentLesson(
         .order("order_index", { ascending: true })
     : Promise.resolve({ data: [], error: null });
 
-  const [course, questions, playableResources] = await Promise.all([
+  const [course, modules, outlineRows, questions, playableResources] = await Promise.all([
     coursePromise,
+    modulesPromise,
+    outlinePromise,
     questionsPromise,
     Promise.all((resources.data ?? []).map(createPlaybackUrl)),
   ]);
-  const secondaryError = firstError([course.error, questions.error]);
+  const secondaryError = firstError([
+    course.error,
+    modules.error,
+    outlineRows.error,
+    questions.error,
+  ]);
   if (secondaryError) throw secondaryError;
+
+  const completedLessonIds = new Set(
+    (progress.data ?? [])
+      .filter((item) => item.status === "completed" && item.lesson_id)
+      .map((item) => item.lesson_id as string),
+  );
+  const moduleNames = new Map((modules.data ?? []).map((module) => [module.id, module.title]));
+  const outline: StudentLessonOutlineItem[] = (outlineRows.data ?? []).map((item, index) => ({
+    id: item.id,
+    title: item.title,
+    moduleTitle: item.module_id ? (moduleNames.get(item.module_id) ?? null) : null,
+    orderIndex: item.order_index ?? index,
+    completed: completedLessonIds.has(item.id),
+  }));
+  const currentIndex = outline.findIndex((item) => item.id === lessonRow.id);
 
   let studentQuiz: StudentQuiz | null = null;
   if (quiz && questions.data?.length) {
@@ -290,11 +340,14 @@ export async function loadStudentLesson(
   }
 
   return {
-    lesson: lesson.data,
+    lesson: lessonRow,
     course: course.data,
     resources: playableResources,
     quiz: studentQuiz,
-    completed: progress.data?.status === "completed",
+    completed: completedLessonIds.has(lessonRow.id),
+    outline,
+    lessonNumber: currentIndex >= 0 ? currentIndex + 1 : 1,
+    nextLesson: currentIndex >= 0 ? (outline[currentIndex + 1] ?? null) : null,
   };
 }
 
