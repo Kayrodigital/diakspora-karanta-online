@@ -1392,6 +1392,51 @@ export type Database = {
           },
         ];
       };
+      lesson_notes: {
+        Row: {
+          body: string;
+          created_at: string;
+          id: string;
+          lesson_id: string;
+          organization_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          body?: string;
+          created_at?: string;
+          id?: string;
+          lesson_id: string;
+          organization_id: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Update: {
+          body?: string;
+          created_at?: string;
+          id?: string;
+          lesson_id?: string;
+          organization_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lesson_notes_lesson_id_organization_id_fkey";
+            columns: ["lesson_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "lesson_notes_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       lessons: {
         Row: {
           content: Json;

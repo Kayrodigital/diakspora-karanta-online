@@ -66,6 +66,7 @@ export type StudentLessonData = {
   outline: StudentLessonOutlineItem[];
   lessonNumber: number;
   nextLesson: StudentLessonOutlineItem | null;
+  note: string;
 };
 
 function firstError(errors: Array<Error | null>): Error | null {
@@ -212,7 +213,7 @@ export async function loadStudentLesson(
   userId: string,
   lessonId: string,
 ): Promise<StudentLessonData> {
-  const [lesson, resources, quizzes, progress] = await Promise.all([
+  const [lesson, resources, quizzes, progress, note] = await Promise.all([
     supabase
       .from("lessons")
       .select("*")
@@ -240,9 +241,22 @@ export async function loadStudentLesson(
       .select("lesson_id, status")
       .eq("organization_id", organizationId)
       .eq("user_id", userId),
+    supabase
+      .from("lesson_notes")
+      .select("body")
+      .eq("organization_id", organizationId)
+      .eq("user_id", userId)
+      .eq("lesson_id", lessonId)
+      .maybeSingle(),
   ]);
 
-  const primaryError = firstError([lesson.error, resources.error, quizzes.error, progress.error]);
+  const primaryError = firstError([
+    lesson.error,
+    resources.error,
+    quizzes.error,
+    progress.error,
+    note.error,
+  ]);
   if (primaryError) throw primaryError;
   if (!lesson.data) throw new Error("Cette leçon n'est pas disponible.");
   const lessonRow = lesson.data;
@@ -348,7 +362,28 @@ export async function loadStudentLesson(
     outline,
     lessonNumber: currentIndex >= 0 ? currentIndex + 1 : 1,
     nextLesson: currentIndex >= 0 ? (outline[currentIndex + 1] ?? null) : null,
+    note: note.data?.body ?? "",
   };
+}
+
+export async function saveStudentLessonNote(
+  organizationId: string,
+  userId: string,
+  lessonId: string,
+  body: string,
+): Promise<void> {
+  const { error } = await supabase.from("lesson_notes").upsert(
+    {
+      organization_id: organizationId,
+      user_id: userId,
+      lesson_id: lessonId,
+      body: body.slice(0, 10000),
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "organization_id,user_id,lesson_id" },
+  );
+
+  if (error) throw error;
 }
 
 export async function markLessonComplete(
