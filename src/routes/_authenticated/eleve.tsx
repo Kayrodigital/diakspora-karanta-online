@@ -34,6 +34,15 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   minute: "2-digit",
 });
 
+const diaksporaCategoryCovers: Record<string, string> = {
+  "Lire l’arabe — Lettres solaires et lunaires": "/brands/diakspora/categories/alphabet-arabe.webp",
+  "Mukhtasar Al-Akhdari — La purification": "/brands/diakspora/categories/fiqh.webp",
+};
+
+function courseCover(title: string, fallback: string | null) {
+  return diaksporaCategoryCovers[title] ?? fallback;
+}
+
 function greetingIcon() {
   const hour = new Date().getHours();
   return hour >= 6 && hour < 19 ? "☀️" : "🌙";
@@ -182,14 +191,15 @@ function ElevePage() {
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 {data.courses.map(({ course, lessonCount, completedCount, nextLessonId }) => {
                   const percent = progressPercent(completedCount, lessonCount);
+                  const coverUrl = courseCover(course.title, course.cover_url);
                   return (
                     <article
                       key={course.id}
                       className="overflow-hidden rounded-3xl border border-[color:var(--cream-2)] bg-card shadow-[var(--shadow-card)]"
                     >
-                      {course.cover_url ? (
+                      {coverUrl ? (
                         <img
-                          src={course.cover_url}
+                          src={coverUrl}
                           alt=""
                           className="h-36 w-full object-cover"
                           loading="lazy"
