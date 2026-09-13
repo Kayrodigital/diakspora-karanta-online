@@ -280,14 +280,14 @@ function Home() {
                 eyebrow="Langue arabe"
                 title="Les lettres solaires et lunaires"
                 description="Comprendre leur différence, les reconnaître et s’entraîner à les prononcer."
-                image="/brands/diakspora/courses/lettres-solaires-lunaires.webp"
+                image="/brands/diakspora/categories/alphabet-arabe.webp"
                 color="#387149"
               />
               <CoursePreview
                 eyebrow="Mukhtasar Al-Akhdari"
                 title="L’eau pure et purifiante"
                 description="Découvrir la notion de pureté à travers les deux premières leçons du parcours."
-                image="/brands/diakspora/landing/tablette-traditionnelle.webp"
+                image="/brands/diakspora/categories/fiqh.webp"
                 color="#B56E26"
               />
             </div>
@@ -586,12 +586,12 @@ function CoursePreview({
 }) {
   return (
     <article className="group overflow-hidden rounded-[30px] border border-[#D8C8A8] bg-[#FFFDF7] shadow-[0_14px_40px_rgba(63,48,25,0.08)]">
-      <div className="grid sm:grid-cols-[220px_1fr]">
-        <div className="relative min-h-56 overflow-hidden bg-[#EADCC0] sm:min-h-full">
+      <div>
+        <div className="relative aspect-video overflow-hidden bg-[#EADCC0]">
           <img
             src={image}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
             loading="lazy"
           />
           <span
@@ -601,7 +601,7 @@ function CoursePreview({
             <Play className="ml-0.5 size-5 fill-current" />
           </span>
         </div>
-        <div className="flex flex-col justify-center p-7">
+        <div className="flex flex-col justify-center p-7 sm:p-8">
           <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color }}>
             {eyebrow}
           </p>
