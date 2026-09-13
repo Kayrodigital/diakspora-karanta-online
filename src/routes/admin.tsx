@@ -20,10 +20,10 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminPage() {
-  const { organization, user } = Route.useRouteContext();
+  const { organization, membership, user } = Route.useRouteContext();
   return (
     <div style={organizationTheme(organization)}>
-      <AdminWorkspace organization={organization} userId={user.id} />
+      <AdminWorkspace organization={organization} role={membership.role} userId={user.id} />
     </div>
   );
 }

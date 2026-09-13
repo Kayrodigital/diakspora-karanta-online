@@ -43,14 +43,41 @@ function resourceIcon(type: string) {
   return FileText;
 }
 
+function youtubeEmbedUrl(url: string | null): string | null {
+  if (!url) return null;
+
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.replace(/^www\./, "");
+    let videoId: string | null = null;
+
+    if (hostname === "youtu.be") videoId = parsed.pathname.split("/").filter(Boolean)[0] ?? null;
+    if (["youtube.com", "m.youtube.com"].includes(hostname)) {
+      videoId =
+        parsed.searchParams.get("v") ??
+        (parsed.pathname.startsWith("/embed/") ? parsed.pathname.split("/")[2] : null);
+    }
+
+    return videoId && /^[a-zA-Z0-9_-]{6,}$/.test(videoId)
+      ? `https://www.youtube-nocookie.com/embed/${videoId}`
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 function ResourceCard({ resource }: { resource: StudentResource }) {
   const Icon = resourceIcon(resource.resource_type);
   const isAudio = resource.resource_type === "audio";
   const isVideo = resource.resource_type === "video";
   const isText = resource.resource_type === "text";
+  const youtubeUrl =
+    resource.resource_type === "youtube" ? youtubeEmbedUrl(resource.playbackUrl) : null;
 
   return (
-    <article className="rounded-2xl border border-[color:var(--cream-2)] bg-card p-4 shadow-[var(--shadow-card)] sm:p-5">
+    <article
+      className={`rounded-2xl border border-[color:var(--cream-2)] bg-card p-4 shadow-[var(--shadow-card)] sm:p-5 ${youtubeUrl ? "sm:col-span-2" : ""}`}
+    >
       <div className="flex items-start gap-3">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[color:var(--gold)]/20 text-[color:var(--gold-dark)]">
           <Icon size={21} aria-hidden />
@@ -80,6 +107,18 @@ function ResourceCard({ resource }: { resource: StudentResource }) {
         </video>
       ) : null}
 
+      {youtubeUrl ? (
+        <iframe
+          src={youtubeUrl}
+          title={resource.title}
+          className="mt-4 aspect-video w-full rounded-xl bg-black"
+          loading="lazy"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      ) : null}
+
       {isText && resource.transcript ? (
         <div className="mt-4 whitespace-pre-wrap rounded-xl bg-[color:var(--cream)] p-4 text-sm leading-7">
           {resource.transcript}
@@ -93,7 +132,7 @@ function ResourceCard({ resource }: { resource: StudentResource }) {
         </details>
       ) : null}
 
-      {!isAudio && !isVideo && resource.playbackUrl ? (
+      {!isAudio && !isVideo && !youtubeUrl && resource.playbackUrl ? (
         <a
           href={resource.playbackUrl}
           target="_blank"

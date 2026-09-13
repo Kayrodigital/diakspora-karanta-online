@@ -4,10 +4,14 @@ import { loadPortalAccess } from "@/lib/auth/portal-access";
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
-    const access = await loadPortalAccess("family");
-    if (!access) throw redirect({ to: "/auth", search: { portal: "family" } });
-    if (access.membership.role !== "learner") throw redirect({ to: "/parent" });
-    return access;
+    const familyAccess = await loadPortalAccess("family");
+    if (familyAccess?.membership.role === "learner") return familyAccess;
+
+    const adminPreview = await loadPortalAccess("admin");
+    if (adminPreview) return adminPreview;
+
+    if (familyAccess?.membership.role === "parent") throw redirect({ to: "/parent" });
+    throw redirect({ to: "/auth", search: { portal: "family" } });
   },
   component: () => <Outlet />,
 });

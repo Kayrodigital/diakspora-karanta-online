@@ -6,9 +6,13 @@ import { organizationTheme } from "@/lib/organization-theme";
 export const Route = createFileRoute("/professeur")({
   ssr: false,
   beforeLoad: async () => {
-    const access = await loadPortalAccess("teacher");
-    if (!access) throw redirect({ to: "/auth", search: { portal: "teacher" } });
-    return access;
+    const teacherAccess = await loadPortalAccess("teacher");
+    if (teacherAccess) return teacherAccess;
+
+    const adminPreview = await loadPortalAccess("admin");
+    if (adminPreview) return adminPreview;
+
+    throw redirect({ to: "/auth", search: { portal: "teacher" } });
   },
   head: () => ({
     meta: [

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PortalSwitcher } from "@/components/PortalSwitcher";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -251,17 +252,20 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
               <p className="text-xs text-muted-foreground">Espace professeur</p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Se déconnecter"
-            onClick={async () => {
-              await supabase.auth.signOut();
-              window.location.assign("/auth?portal=teacher");
-            }}
-          >
-            <LogOut className="size-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <PortalSwitcher current="teacher" role={role} />
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Se déconnecter"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                window.location.assign("/auth?portal=teacher");
+              }}
+            >
+              <LogOut className="size-4" />
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -597,6 +601,7 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
             <TabsContent value="assessments" className="mt-0 space-y-5">
               <TeacherAssessments
                 organizationId={organization.id}
+                organizationName={organization.name}
                 userId={userId}
                 cohorts={data.cohorts}
               />

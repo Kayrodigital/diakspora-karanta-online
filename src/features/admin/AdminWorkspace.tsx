@@ -39,8 +39,9 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { PortalSwitcher } from "@/components/PortalSwitcher";
 import { supabase } from "@/integrations/supabase/client";
-import type { OrganizationBrand } from "@/lib/auth/portal-access";
+import type { OrganizationBrand, OrganizationRole } from "@/lib/auth/portal-access";
 import { AdminSupport } from "./AdminSupport";
 import { NotificationCenter } from "./NotificationCenter";
 import {
@@ -58,6 +59,7 @@ import { ShopAdmin } from "./ShopAdmin";
 
 type Props = {
   organization: OrganizationBrand;
+  role: OrganizationRole;
   userId: string;
 };
 
@@ -195,7 +197,7 @@ function StatCard({
   );
 }
 
-export function AdminWorkspace({ organization, userId }: Props) {
+export function AdminWorkspace({ organization, role, userId }: Props) {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -342,9 +344,7 @@ export function AdminWorkspace({ organization, userId }: Props) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
-              <Link to="/eleve">Voir l’espace élève</Link>
-            </Button>
+            <PortalSwitcher current="admin" role={role} />
             <Button
               variant="ghost"
               size="icon"

@@ -97,9 +97,10 @@ export async function loadTeacherDashboard(
   userId: string,
   role: OrganizationRole,
 ): Promise<TeacherDashboardData> {
+  const canViewAllCohorts = ["owner", "admin", "technician", "pedagogical_manager"].includes(role);
   const [profileResult, directCohortsResult, staffMembershipsResult] = await Promise.all([
     supabase.from("profiles").select("full_name, preferred_name").eq("id", userId).maybeSingle(),
-    role === "pedagogical_manager"
+    canViewAllCohorts
       ? supabase
           .from("cohorts")
           .select("*")

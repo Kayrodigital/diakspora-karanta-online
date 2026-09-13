@@ -11,6 +11,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { BottomNav } from "@/features/eleve/BottomNav";
+import { PortalSwitcher } from "@/components/PortalSwitcher";
 import { loadStudentHome } from "@/features/eleve/student-data";
 import { supabase } from "@/integrations/supabase/client";
 import { organizationTheme } from "@/lib/organization-theme";
@@ -44,7 +45,7 @@ function progressPercent(completed: number, total: number) {
 
 function ElevePage() {
   const navigate = useNavigate();
-  const { organization, user } = Route.useRouteContext();
+  const { organization, membership, user } = Route.useRouteContext();
   const { data } = useSuspenseQuery({
     queryKey: ["eleve-dashboard", organization.id, user.id],
     queryFn: () => loadStudentHome(organization.id, user.id),
@@ -98,6 +99,9 @@ function ElevePage() {
             <LogOut size={18} aria-hidden />
           </button>
         </header>
+        <div className="px-5 pt-3 md:px-8">
+          <PortalSwitcher current="learner" role={membership.role} />
+        </div>
 
         <section className="mt-5 px-5 md:px-8">
           <div
