@@ -33,6 +33,7 @@ export type TeacherCohort = {
   name: string;
   code: string | null;
   level: string | null;
+  programLevelId: string | null;
   status: string;
   learners: TeacherLearner[];
   courses: TeacherCourse[];
@@ -347,6 +348,7 @@ export async function loadTeacherDashboard(
       name: cohort.name,
       code: cohort.code,
       level: cohort.level,
+      programLevelId: cohort.program_level_id,
       status: cohort.status,
       learners: cohortLearners,
       courses: cohortCourses,

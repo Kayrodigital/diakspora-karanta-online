@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   BarChart3,
+  Award,
   BookOpen,
   CalendarClock,
   CheckCircle2,
@@ -24,6 +25,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { TeacherAssessments } from "@/features/assessment/TeacherAssessments";
 import type { OrganizationBrand, OrganizationRole } from "@/lib/auth/portal-access";
 import { HomeworkReviewPanel, TeacherMessagesPanel } from "./TeacherInteractions";
 import { TeacherLiveSessions } from "./TeacherLiveSessions";
@@ -293,7 +295,7 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
 
         {data ? (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-6 grid h-auto w-full grid-cols-3 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[760px] sm:grid-cols-6">
+            <TabsList className="mb-6 grid h-auto w-full grid-cols-4 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[900px] sm:grid-cols-7">
               <TabsTrigger value="overview" className="min-h-11 rounded-xl">
                 <LayoutDashboard className="size-4 sm:mr-2" />
                 <span>Accueil</span>
@@ -318,6 +320,10 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
               <TabsTrigger value="messages" className="min-h-11 rounded-xl">
                 <MessageCircle className="size-4 sm:mr-2" />
                 <span>Messages</span>
+              </TabsTrigger>
+              <TabsTrigger value="assessments" className="min-h-11 rounded-xl">
+                <Award className="size-4 sm:mr-2" />
+                <span>Évaluer</span>
               </TabsTrigger>
             </TabsList>
 
@@ -586,6 +592,14 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
                 </p>
               </div>
               <TeacherMessagesPanel organizationId={organization.id} userId={userId} data={data} />
+            </TabsContent>
+
+            <TabsContent value="assessments" className="mt-0 space-y-5">
+              <TeacherAssessments
+                organizationId={organization.id}
+                userId={userId}
+                cohorts={data.cohorts}
+              />
             </TabsContent>
           </Tabs>
         ) : null}

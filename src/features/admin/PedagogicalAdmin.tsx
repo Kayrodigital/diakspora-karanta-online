@@ -35,6 +35,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { AssessmentAdmin } from "@/features/assessment/AssessmentAdmin";
 import type { OrganizationBrand } from "@/lib/auth/portal-access";
 import {
   liveDurationMinutes,
@@ -681,11 +682,15 @@ function statusLabel(status: string): string {
 
 function DashboardContent({
   data,
+  organizationId,
+  userId,
   onCreate,
   onEditLive,
   onUpdateLive,
 }: {
   data: PedagogicalDashboard;
+  organizationId: string;
+  userId: string;
   onCreate: (kind: CreationKind) => void;
   onEditLive: (session: LiveSession) => void;
   onUpdateLive: (session: LiveSession, input: LiveSessionUpdate) => void;
@@ -750,7 +755,7 @@ function DashboardContent({
       </section>
 
       <Tabs defaultValue="courses" className="mt-6">
-        <TabsList className="grid h-auto w-full grid-cols-4 rounded-xl p-1">
+        <TabsList className="grid h-auto w-full grid-cols-5 rounded-xl p-1">
           <TabsTrigger value="courses" className="min-h-10 px-2">
             Cours
           </TabsTrigger>
@@ -762,6 +767,9 @@ function DashboardContent({
           </TabsTrigger>
           <TabsTrigger value="books" className="min-h-10 px-2">
             Livres
+          </TabsTrigger>
+          <TabsTrigger value="assessment" className="min-h-10 px-2">
+            Évaluation
           </TabsTrigger>
         </TabsList>
 
@@ -972,6 +980,10 @@ function DashboardContent({
             </div>
           )}
         </TabsContent>
+
+        <TabsContent value="assessment" className="mt-4">
+          <AssessmentAdmin organizationId={organizationId} userId={userId} />
+        </TabsContent>
       </Tabs>
     </>
   );
@@ -1078,6 +1090,8 @@ export function PedagogicalAdmin({ organization, userId, embedded = false }: Pro
           ) : (
             <DashboardContent
               data={dashboard.data}
+              organizationId={organization.id}
+              userId={userId}
               onCreate={setCreationKind}
               onEditLive={setManagedLive}
               onUpdateLive={(session, input) => updateLive.mutate({ session, input })}

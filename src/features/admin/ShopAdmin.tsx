@@ -621,7 +621,7 @@ export function ShopAdmin({ organizationId, userId }: Props) {
                           {item.product_title} × {item.quantity}
                         </span>
                         <span className="shrink-0 font-semibold">
-                          {formatPrice(item.line_total_cents, editingOrder.currency)}
+                          {formatPrice(item.line_total_cents ?? 0, editingOrder.currency)}
                         </span>
                       </div>
                     ))}

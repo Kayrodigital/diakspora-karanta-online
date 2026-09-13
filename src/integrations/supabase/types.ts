@@ -8,6 +8,259 @@ export type Database = {
   };
   public: {
     Tables: {
+      assessment_competencies: {
+        Row: {
+          assessment_id: string;
+          competency_id: string;
+          organization_id: string;
+          weight: number;
+        };
+        Insert: {
+          assessment_id: string;
+          competency_id: string;
+          organization_id: string;
+          weight?: number;
+        };
+        Update: {
+          assessment_id?: string;
+          competency_id?: string;
+          organization_id?: string;
+          weight?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "assessment_competencies_assessment_id_organization_id_fkey";
+            columns: ["assessment_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "assessments";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "assessment_competencies_competency_id_organization_id_fkey";
+            columns: ["competency_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "competencies";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "assessment_competencies_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      assessment_periods: {
+        Row: {
+          created_at: string;
+          ends_on: string;
+          id: string;
+          name: string;
+          organization_id: string;
+          starts_on: string;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          ends_on: string;
+          id?: string;
+          name: string;
+          organization_id: string;
+          starts_on: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          ends_on?: string;
+          id?: string;
+          name?: string;
+          organization_id?: string;
+          starts_on?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "assessment_periods_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      assessment_results: {
+        Row: {
+          assessment_id: string;
+          created_at: string;
+          evaluated_at: string | null;
+          evaluated_by: string | null;
+          id: string;
+          learner_id: string;
+          mastery_level: string;
+          organization_id: string;
+          published_at: string | null;
+          raw_score: number | null;
+          score_percent: number | null;
+          status: string;
+          teacher_feedback: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          assessment_id: string;
+          created_at?: string;
+          evaluated_at?: string | null;
+          evaluated_by?: string | null;
+          id?: string;
+          learner_id: string;
+          mastery_level?: string;
+          organization_id: string;
+          published_at?: string | null;
+          raw_score?: number | null;
+          score_percent?: number | null;
+          status?: string;
+          teacher_feedback?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          assessment_id?: string;
+          created_at?: string;
+          evaluated_at?: string | null;
+          evaluated_by?: string | null;
+          id?: string;
+          learner_id?: string;
+          mastery_level?: string;
+          organization_id?: string;
+          published_at?: string | null;
+          raw_score?: number | null;
+          score_percent?: number | null;
+          status?: string;
+          teacher_feedback?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "assessment_results_assessment_id_organization_id_fkey";
+            columns: ["assessment_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "assessments";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "assessment_results_learner_id_fkey";
+            columns: ["learner_id"];
+            isOneToOne: false;
+            referencedRelation: "learner_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assessment_results_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      assessments: {
+        Row: {
+          assessment_type: string;
+          cohort_id: string;
+          course_id: string | null;
+          created_at: string;
+          created_by: string;
+          description: string | null;
+          evidence_type: string;
+          id: string;
+          lesson_id: string | null;
+          max_score: number;
+          organization_id: string;
+          passing_score: number;
+          period_id: string | null;
+          scheduled_on: string | null;
+          status: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          assessment_type?: string;
+          cohort_id: string;
+          course_id?: string | null;
+          created_at?: string;
+          created_by: string;
+          description?: string | null;
+          evidence_type?: string;
+          id?: string;
+          lesson_id?: string | null;
+          max_score?: number;
+          organization_id: string;
+          passing_score?: number;
+          period_id?: string | null;
+          scheduled_on?: string | null;
+          status?: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          assessment_type?: string;
+          cohort_id?: string;
+          course_id?: string | null;
+          created_at?: string;
+          created_by?: string;
+          description?: string | null;
+          evidence_type?: string;
+          id?: string;
+          lesson_id?: string | null;
+          max_score?: number;
+          organization_id?: string;
+          passing_score?: number;
+          period_id?: string | null;
+          scheduled_on?: string | null;
+          status?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "assessments_cohort_id_organization_id_fkey";
+            columns: ["cohort_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "cohorts";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "assessments_course_id_organization_id_fkey";
+            columns: ["course_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "courses";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "assessments_lesson_id_organization_id_fkey";
+            columns: ["lesson_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "assessments_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assessments_period_id_organization_id_fkey";
+            columns: ["period_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "assessment_periods";
+            referencedColumns: ["id", "organization_id"];
+          },
+        ];
+      };
       attendance: {
         Row: {
           id: string;
@@ -229,6 +482,7 @@ export type Database = {
           max_students: number | null;
           name: string;
           organization_id: string;
+          program_level_id: string | null;
           starts_on: string | null;
           status: string;
           teacher_id: string | null;
@@ -245,6 +499,7 @@ export type Database = {
           max_students?: number | null;
           name: string;
           organization_id: string;
+          program_level_id?: string | null;
           starts_on?: string | null;
           status?: string;
           teacher_id?: string | null;
@@ -261,6 +516,7 @@ export type Database = {
           max_students?: number | null;
           name?: string;
           organization_id?: string;
+          program_level_id?: string | null;
           starts_on?: string | null;
           status?: string;
           teacher_id?: string | null;
@@ -276,11 +532,136 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "cohorts_program_level_id_fkey";
+            columns: ["program_level_id"];
+            isOneToOne: false;
+            referencedRelation: "program_levels";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "cohorts_teacher_id_fkey";
             columns: ["teacher_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
+          },
+        ];
+      };
+      competencies: {
+        Row: {
+          code: string | null;
+          created_at: string;
+          description: string | null;
+          id: string;
+          is_essential: boolean;
+          level_id: string;
+          name: string;
+          order_index: number;
+          organization_id: string;
+          status: string;
+          success_criteria: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          code?: string | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          is_essential?: boolean;
+          level_id: string;
+          name: string;
+          order_index?: number;
+          organization_id: string;
+          status?: string;
+          success_criteria?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          code?: string | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          is_essential?: boolean;
+          level_id?: string;
+          name?: string;
+          order_index?: number;
+          organization_id?: string;
+          status?: string;
+          success_criteria?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "competencies_level_id_organization_id_fkey";
+            columns: ["level_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "program_levels";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "competencies_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      competency_evidence: {
+        Row: {
+          competency_id: string;
+          created_at: string;
+          feedback: string | null;
+          id: string;
+          mastery_level: string;
+          organization_id: string;
+          result_id: string;
+          score_percent: number | null;
+          updated_at: string;
+        };
+        Insert: {
+          competency_id: string;
+          created_at?: string;
+          feedback?: string | null;
+          id?: string;
+          mastery_level: string;
+          organization_id: string;
+          result_id: string;
+          score_percent?: number | null;
+          updated_at?: string;
+        };
+        Update: {
+          competency_id?: string;
+          created_at?: string;
+          feedback?: string | null;
+          id?: string;
+          mastery_level?: string;
+          organization_id?: string;
+          result_id?: string;
+          score_percent?: number | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "competency_evidence_competency_id_organization_id_fkey";
+            columns: ["competency_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "competencies";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "competency_evidence_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "competency_evidence_result_id_organization_id_fkey";
+            columns: ["result_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "assessment_results";
+            referencedColumns: ["id", "organization_id"];
           },
         ];
       };
@@ -787,6 +1168,145 @@ export type Database = {
           },
         ];
       };
+      learner_self_assessments: {
+        Row: {
+          assessed_at: string;
+          competency_id: string;
+          confidence: string;
+          id: string;
+          learner_id: string;
+          note: string | null;
+          organization_id: string;
+        };
+        Insert: {
+          assessed_at?: string;
+          competency_id: string;
+          confidence: string;
+          id?: string;
+          learner_id: string;
+          note?: string | null;
+          organization_id: string;
+        };
+        Update: {
+          assessed_at?: string;
+          competency_id?: string;
+          confidence?: string;
+          id?: string;
+          learner_id?: string;
+          note?: string | null;
+          organization_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "learner_self_assessments_competency_id_organization_id_fkey";
+            columns: ["competency_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "competencies";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "learner_self_assessments_learner_id_fkey";
+            columns: ["learner_id"];
+            isOneToOne: false;
+            referencedRelation: "learner_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "learner_self_assessments_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      learning_programs: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          id: string;
+          name: string;
+          organization_id: string;
+          slug: string;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          id?: string;
+          name: string;
+          organization_id: string;
+          slug: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          id?: string;
+          name?: string;
+          organization_id?: string;
+          slug?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "learning_programs_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      lesson_competencies: {
+        Row: {
+          competency_id: string;
+          lesson_id: string;
+          organization_id: string;
+          weight: number;
+        };
+        Insert: {
+          competency_id: string;
+          lesson_id: string;
+          organization_id: string;
+          weight?: number;
+        };
+        Update: {
+          competency_id?: string;
+          lesson_id?: string;
+          organization_id?: string;
+          weight?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lesson_competencies_competency_id_organization_id_fkey";
+            columns: ["competency_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "competencies";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "lesson_competencies_lesson_id_organization_id_fkey";
+            columns: ["lesson_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "lesson_competencies_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       lesson_resources: {
         Row: {
           allow_download: boolean;
@@ -965,6 +1485,88 @@ export type Database = {
           },
         ];
       };
+      live_session_email_deliveries: {
+        Row: {
+          attempts: number;
+          created_at: string;
+          id: string;
+          kind: string;
+          last_error: string | null;
+          live_session_id: string;
+          next_attempt_at: string | null;
+          organization_id: string;
+          provider_message_id: string | null;
+          recipient_email: string;
+          recipient_name: string | null;
+          recipient_user_id: string | null;
+          revision: number;
+          scheduled_for: string;
+          sent_at: string | null;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          attempts?: number;
+          created_at?: string;
+          id?: string;
+          kind: string;
+          last_error?: string | null;
+          live_session_id: string;
+          next_attempt_at?: string | null;
+          organization_id: string;
+          provider_message_id?: string | null;
+          recipient_email: string;
+          recipient_name?: string | null;
+          recipient_user_id?: string | null;
+          revision?: number;
+          scheduled_for?: string;
+          sent_at?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          attempts?: number;
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          last_error?: string | null;
+          live_session_id?: string;
+          next_attempt_at?: string | null;
+          organization_id?: string;
+          provider_message_id?: string | null;
+          recipient_email?: string;
+          recipient_name?: string | null;
+          recipient_user_id?: string | null;
+          revision?: number;
+          scheduled_for?: string;
+          sent_at?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "live_session_email_deliveries_live_session_id_fkey";
+            columns: ["live_session_id"];
+            isOneToOne: false;
+            referencedRelation: "live_sessions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "live_session_email_deliveries_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "live_session_email_deliveries_recipient_user_id_fkey";
+            columns: ["recipient_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       live_sessions: {
         Row: {
           cohort_id: string | null;
@@ -1090,88 +1692,6 @@ export type Database = {
           },
         ];
       };
-      live_session_email_deliveries: {
-        Row: {
-          attempts: number;
-          created_at: string;
-          id: string;
-          kind: string;
-          last_error: string | null;
-          live_session_id: string;
-          next_attempt_at: string | null;
-          organization_id: string;
-          provider_message_id: string | null;
-          recipient_email: string;
-          recipient_name: string | null;
-          recipient_user_id: string | null;
-          revision: number;
-          scheduled_for: string;
-          sent_at: string | null;
-          status: string;
-          updated_at: string;
-        };
-        Insert: {
-          attempts?: number;
-          created_at?: string;
-          id?: string;
-          kind: string;
-          last_error?: string | null;
-          live_session_id: string;
-          next_attempt_at?: string | null;
-          organization_id: string;
-          provider_message_id?: string | null;
-          recipient_email: string;
-          recipient_name?: string | null;
-          recipient_user_id?: string | null;
-          revision?: number;
-          scheduled_for?: string;
-          sent_at?: string | null;
-          status?: string;
-          updated_at?: string;
-        };
-        Update: {
-          attempts?: number;
-          created_at?: string;
-          id?: string;
-          kind?: string;
-          last_error?: string | null;
-          live_session_id?: string;
-          next_attempt_at?: string | null;
-          organization_id?: string;
-          provider_message_id?: string | null;
-          recipient_email?: string;
-          recipient_name?: string | null;
-          recipient_user_id?: string | null;
-          revision?: number;
-          scheduled_for?: string;
-          sent_at?: string | null;
-          status?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "live_session_email_deliveries_live_session_id_fkey";
-            columns: ["live_session_id"];
-            isOneToOne: false;
-            referencedRelation: "live_sessions";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "live_session_email_deliveries_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "live_session_email_deliveries_recipient_user_id_fkey";
-            columns: ["recipient_user_id"];
-            isOneToOne: false;
-            referencedRelation: "profiles";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       organization_invitations: {
         Row: {
           accepted_at: string | null;
@@ -1279,6 +1799,57 @@ export type Database = {
           },
         ];
       };
+      organizations: {
+        Row: {
+          accent_color: string;
+          created_at: string;
+          created_by: string | null;
+          custom_domain: string | null;
+          default_locale: string;
+          enabled_locales: string[];
+          feature_flags: Json;
+          id: string;
+          logo_url: string | null;
+          name: string;
+          primary_color: string;
+          slug: string;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          accent_color?: string;
+          created_at?: string;
+          created_by?: string | null;
+          custom_domain?: string | null;
+          default_locale?: string;
+          enabled_locales?: string[];
+          feature_flags?: Json;
+          id?: string;
+          logo_url?: string | null;
+          name: string;
+          primary_color?: string;
+          slug: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          accent_color?: string;
+          created_at?: string;
+          created_by?: string | null;
+          custom_domain?: string | null;
+          default_locale?: string;
+          enabled_locales?: string[];
+          feature_flags?: Json;
+          id?: string;
+          logo_url?: string | null;
+          name?: string;
+          primary_color?: string;
+          slug?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       pedagogical_conversations: {
         Row: {
           created_at: string;
@@ -1375,57 +1946,6 @@ export type Database = {
           },
         ];
       };
-      organizations: {
-        Row: {
-          accent_color: string;
-          created_at: string;
-          created_by: string | null;
-          custom_domain: string | null;
-          default_locale: string;
-          enabled_locales: string[];
-          feature_flags: Json;
-          id: string;
-          logo_url: string | null;
-          name: string;
-          primary_color: string;
-          slug: string;
-          status: string;
-          updated_at: string;
-        };
-        Insert: {
-          accent_color?: string;
-          created_at?: string;
-          created_by?: string | null;
-          custom_domain?: string | null;
-          default_locale?: string;
-          enabled_locales?: string[];
-          feature_flags?: Json;
-          id?: string;
-          logo_url?: string | null;
-          name: string;
-          primary_color?: string;
-          slug: string;
-          status?: string;
-          updated_at?: string;
-        };
-        Update: {
-          accent_color?: string;
-          created_at?: string;
-          created_by?: string | null;
-          custom_domain?: string | null;
-          default_locale?: string;
-          enabled_locales?: string[];
-          feature_flags?: Json;
-          id?: string;
-          logo_url?: string | null;
-          name?: string;
-          primary_color?: string;
-          slug?: string;
-          status?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
       platform_administrators: {
         Row: {
           created_at: string;
@@ -1494,6 +2014,63 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
+          },
+        ];
+      };
+      program_levels: {
+        Row: {
+          code: string | null;
+          created_at: string;
+          description: string | null;
+          id: string;
+          name: string;
+          order_index: number;
+          organization_id: string;
+          program_id: string;
+          required_mastery_percent: number;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          code?: string | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          name: string;
+          order_index?: number;
+          organization_id: string;
+          program_id: string;
+          required_mastery_percent?: number;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          code?: string | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          name?: string;
+          order_index?: number;
+          organization_id?: string;
+          program_id?: string;
+          required_mastery_percent?: number;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "program_levels_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "program_levels_program_id_organization_id_fkey";
+            columns: ["program_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "learning_programs";
+            referencedColumns: ["id", "organization_id"];
           },
         ];
       };
@@ -1979,6 +2556,574 @@ export type Database = {
           },
         ];
       };
+      report_card_items: {
+        Row: {
+          comment: string | null;
+          competency_id: string;
+          id: string;
+          mastery_level: string;
+          organization_id: string;
+          report_card_id: string;
+        };
+        Insert: {
+          comment?: string | null;
+          competency_id: string;
+          id?: string;
+          mastery_level: string;
+          organization_id: string;
+          report_card_id: string;
+        };
+        Update: {
+          comment?: string | null;
+          competency_id?: string;
+          id?: string;
+          mastery_level?: string;
+          organization_id?: string;
+          report_card_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "report_card_items_competency_id_organization_id_fkey";
+            columns: ["competency_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "competencies";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "report_card_items_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "report_card_items_report_card_id_organization_id_fkey";
+            columns: ["report_card_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "report_cards";
+            referencedColumns: ["id", "organization_id"];
+          },
+        ];
+      };
+      report_cards: {
+        Row: {
+          attendance_percent: number | null;
+          cohort_id: string;
+          created_at: string;
+          created_by: string;
+          decision: string;
+          id: string;
+          learner_id: string;
+          mastery_percent: number | null;
+          organization_id: string;
+          overall_score: number | null;
+          period_id: string | null;
+          priorities: string | null;
+          published_at: string | null;
+          status: string;
+          strengths: string | null;
+          teacher_comment: string | null;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          attendance_percent?: number | null;
+          cohort_id: string;
+          created_at?: string;
+          created_by: string;
+          decision?: string;
+          id?: string;
+          learner_id: string;
+          mastery_percent?: number | null;
+          organization_id: string;
+          overall_score?: number | null;
+          period_id?: string | null;
+          priorities?: string | null;
+          published_at?: string | null;
+          status?: string;
+          strengths?: string | null;
+          teacher_comment?: string | null;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          attendance_percent?: number | null;
+          cohort_id?: string;
+          created_at?: string;
+          created_by?: string;
+          decision?: string;
+          id?: string;
+          learner_id?: string;
+          mastery_percent?: number | null;
+          organization_id?: string;
+          overall_score?: number | null;
+          period_id?: string | null;
+          priorities?: string | null;
+          published_at?: string | null;
+          status?: string;
+          strengths?: string | null;
+          teacher_comment?: string | null;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "report_cards_cohort_id_organization_id_fkey";
+            columns: ["cohort_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "cohorts";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "report_cards_learner_id_fkey";
+            columns: ["learner_id"];
+            isOneToOne: false;
+            referencedRelation: "learner_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "report_cards_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "report_cards_period_id_organization_id_fkey";
+            columns: ["period_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "assessment_periods";
+            referencedColumns: ["id", "organization_id"];
+          },
+        ];
+      };
+      shop_order_items: {
+        Row: {
+          cover_url: string | null;
+          created_at: string;
+          id: string;
+          line_total_cents: number | null;
+          order_id: string;
+          organization_id: string;
+          product_id: string | null;
+          product_sku: string | null;
+          product_title: string;
+          quantity: number;
+          unit_price_cents: number;
+        };
+        Insert: {
+          cover_url?: string | null;
+          created_at?: string;
+          id?: string;
+          line_total_cents?: number | null;
+          order_id: string;
+          organization_id: string;
+          product_id?: string | null;
+          product_sku?: string | null;
+          product_title: string;
+          quantity: number;
+          unit_price_cents: number;
+        };
+        Update: {
+          cover_url?: string | null;
+          created_at?: string;
+          id?: string;
+          line_total_cents?: number | null;
+          order_id?: string;
+          organization_id?: string;
+          product_id?: string | null;
+          product_sku?: string | null;
+          product_title?: string;
+          quantity?: number;
+          unit_price_cents?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_order_items_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_order_items_order_tenant";
+            columns: ["order_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_orders";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "shop_order_items_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_order_items_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_products";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_order_items_product_tenant";
+            columns: ["product_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_products";
+            referencedColumns: ["id", "organization_id"];
+          },
+        ];
+      };
+      shop_orders: {
+        Row: {
+          created_at: string;
+          currency: string;
+          customer_email: string;
+          customer_name: string;
+          customer_phone: string | null;
+          delivered_at: string | null;
+          expires_at: string;
+          id: string;
+          internal_notes: string | null;
+          order_number: string;
+          organization_id: string;
+          paid_at: string | null;
+          shipped_at: string | null;
+          shipping_address: Json | null;
+          shipping_cents: number;
+          shop_id: string;
+          status: string;
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          subtotal_cents: number;
+          total_cents: number;
+          tracking_reference: string | null;
+          updated_at: string;
+          user_id: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          currency?: string;
+          customer_email: string;
+          customer_name: string;
+          customer_phone?: string | null;
+          delivered_at?: string | null;
+          expires_at?: string;
+          id?: string;
+          internal_notes?: string | null;
+          order_number?: string;
+          organization_id: string;
+          paid_at?: string | null;
+          shipped_at?: string | null;
+          shipping_address?: Json | null;
+          shipping_cents?: number;
+          shop_id: string;
+          status?: string;
+          stripe_checkout_session_id?: string | null;
+          stripe_payment_intent_id?: string | null;
+          subtotal_cents?: number;
+          total_cents?: number;
+          tracking_reference?: string | null;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          currency?: string;
+          customer_email?: string;
+          customer_name?: string;
+          customer_phone?: string | null;
+          delivered_at?: string | null;
+          expires_at?: string;
+          id?: string;
+          internal_notes?: string | null;
+          order_number?: string;
+          organization_id?: string;
+          paid_at?: string | null;
+          shipped_at?: string | null;
+          shipping_address?: Json | null;
+          shipping_cents?: number;
+          shop_id?: string;
+          status?: string;
+          stripe_checkout_session_id?: string | null;
+          stripe_payment_intent_id?: string | null;
+          subtotal_cents?: number;
+          total_cents?: number;
+          tracking_reference?: string | null;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_orders_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_orders_shop_id_fkey";
+            columns: ["shop_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_settings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_orders_tenant_consistency";
+            columns: ["shop_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_settings";
+            referencedColumns: ["id", "organization_id"];
+          },
+        ];
+      };
+      shop_products: {
+        Row: {
+          author: string | null;
+          book_id: string | null;
+          compare_at_price_cents: number | null;
+          cover_url: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          featured: boolean;
+          format: string;
+          id: string;
+          language: string;
+          low_stock_threshold: number;
+          organization_id: string;
+          price_cents: number;
+          published_at: string | null;
+          shop_id: string;
+          sku: string | null;
+          slug: string;
+          status: string;
+          stock_quantity: number;
+          subtitle: string | null;
+          title: string;
+          track_inventory: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          author?: string | null;
+          book_id?: string | null;
+          compare_at_price_cents?: number | null;
+          cover_url?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          featured?: boolean;
+          format?: string;
+          id?: string;
+          language?: string;
+          low_stock_threshold?: number;
+          organization_id: string;
+          price_cents: number;
+          published_at?: string | null;
+          shop_id: string;
+          sku?: string | null;
+          slug: string;
+          status?: string;
+          stock_quantity?: number;
+          subtitle?: string | null;
+          title: string;
+          track_inventory?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          author?: string | null;
+          book_id?: string | null;
+          compare_at_price_cents?: number | null;
+          cover_url?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          featured?: boolean;
+          format?: string;
+          id?: string;
+          language?: string;
+          low_stock_threshold?: number;
+          organization_id?: string;
+          price_cents?: number;
+          published_at?: string | null;
+          shop_id?: string;
+          sku?: string | null;
+          slug?: string;
+          status?: string;
+          stock_quantity?: number;
+          subtitle?: string | null;
+          title?: string;
+          track_inventory?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_products_book_id_fkey";
+            columns: ["book_id"];
+            isOneToOne: false;
+            referencedRelation: "books";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_products_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_products_shop_id_fkey";
+            columns: ["shop_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_settings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_products_tenant_consistency";
+            columns: ["shop_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_settings";
+            referencedColumns: ["id", "organization_id"];
+          },
+        ];
+      };
+      shop_settings: {
+        Row: {
+          created_at: string;
+          currency: string;
+          description: string | null;
+          flat_shipping_cents: number;
+          free_shipping_threshold_cents: number | null;
+          id: string;
+          name: string;
+          organization_id: string;
+          payment_enabled: boolean;
+          payment_provider: string;
+          shipping_country: string;
+          slug: string;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          currency?: string;
+          description?: string | null;
+          flat_shipping_cents?: number;
+          free_shipping_threshold_cents?: number | null;
+          id?: string;
+          name: string;
+          organization_id: string;
+          payment_enabled?: boolean;
+          payment_provider?: string;
+          shipping_country?: string;
+          slug: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          currency?: string;
+          description?: string | null;
+          flat_shipping_cents?: number;
+          free_shipping_threshold_cents?: number | null;
+          id?: string;
+          name?: string;
+          organization_id?: string;
+          payment_enabled?: boolean;
+          payment_provider?: string;
+          shipping_country?: string;
+          slug?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_settings_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: true;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      shop_webhook_events: {
+        Row: {
+          created_at: string;
+          event_id: string;
+          event_type: string;
+          last_error: string | null;
+          processed_at: string | null;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          event_id: string;
+          event_type: string;
+          last_error?: string | null;
+          processed_at?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          event_id?: string;
+          event_type?: string;
+          last_error?: string | null;
+          processed_at?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      subjects: {
+        Row: {
+          color: string | null;
+          created_at: string;
+          description: string | null;
+          id: string;
+          name: string;
+          order_index: number;
+          organization_id: string;
+          slug: string;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          color?: string | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          name: string;
+          order_index?: number;
+          organization_id: string;
+          slug: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          color?: string | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          name?: string;
+          order_index?: number;
+          organization_id?: string;
+          slug?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "subjects_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       support_messages: {
         Row: {
           body: string;
@@ -2071,212 +3216,6 @@ export type Database = {
           },
         ];
       };
-      shop_order_items: {
-        Row: {
-          cover_url: string | null;
-          created_at: string;
-          id: string;
-          line_total_cents: number;
-          order_id: string;
-          organization_id: string;
-          product_id: string | null;
-          product_sku: string | null;
-          product_title: string;
-          quantity: number;
-          unit_price_cents: number;
-        };
-        Insert: {
-          cover_url?: string | null;
-          created_at?: string;
-          id?: string;
-          order_id: string;
-          organization_id: string;
-          product_id?: string | null;
-          product_sku?: string | null;
-          product_title: string;
-          quantity: number;
-          unit_price_cents: number;
-        };
-        Update: {
-          cover_url?: string | null;
-          created_at?: string;
-          id?: string;
-          order_id?: string;
-          organization_id?: string;
-          product_id?: string | null;
-          product_sku?: string | null;
-          product_title?: string;
-          quantity?: number;
-          unit_price_cents?: number;
-        };
-        Relationships: [];
-      };
-      shop_orders: {
-        Row: {
-          created_at: string;
-          currency: string;
-          customer_email: string;
-          customer_name: string;
-          customer_phone: string | null;
-          delivered_at: string | null;
-          expires_at: string;
-          id: string;
-          internal_notes: string | null;
-          order_number: string;
-          organization_id: string;
-          paid_at: string | null;
-          shipped_at: string | null;
-          shipping_address: Json | null;
-          shipping_cents: number;
-          shop_id: string;
-          status: string;
-          stripe_checkout_session_id: string | null;
-          stripe_payment_intent_id: string | null;
-          subtotal_cents: number;
-          total_cents: number;
-          tracking_reference: string | null;
-          updated_at: string;
-          user_id: string | null;
-        };
-        Insert: {
-          customer_email: string;
-          customer_name: string;
-          organization_id: string;
-          shop_id: string;
-          [key: string]: unknown;
-        };
-        Update: Partial<Database["public"]["Tables"]["shop_orders"]["Row"]>;
-        Relationships: [];
-      };
-      shop_products: {
-        Row: {
-          author: string | null;
-          book_id: string | null;
-          compare_at_price_cents: number | null;
-          cover_url: string | null;
-          created_at: string;
-          created_by: string | null;
-          description: string | null;
-          featured: boolean;
-          format: string;
-          id: string;
-          language: string;
-          low_stock_threshold: number;
-          organization_id: string;
-          price_cents: number;
-          published_at: string | null;
-          shop_id: string;
-          sku: string | null;
-          slug: string;
-          status: string;
-          stock_quantity: number;
-          subtitle: string | null;
-          title: string;
-          track_inventory: boolean;
-          updated_at: string;
-        };
-        Insert: {
-          organization_id: string;
-          price_cents: number;
-          shop_id: string;
-          slug: string;
-          title: string;
-          author?: string | null;
-          book_id?: string | null;
-          compare_at_price_cents?: number | null;
-          cover_url?: string | null;
-          created_at?: string;
-          created_by?: string | null;
-          description?: string | null;
-          featured?: boolean;
-          format?: string;
-          id?: string;
-          language?: string;
-          low_stock_threshold?: number;
-          published_at?: string | null;
-          sku?: string | null;
-          status?: string;
-          stock_quantity?: number;
-          subtitle?: string | null;
-          track_inventory?: boolean;
-          updated_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["shop_products"]["Row"]>;
-        Relationships: [];
-      };
-      shop_settings: {
-        Row: {
-          created_at: string;
-          currency: string;
-          description: string | null;
-          flat_shipping_cents: number;
-          free_shipping_threshold_cents: number | null;
-          id: string;
-          name: string;
-          organization_id: string;
-          payment_enabled: boolean;
-          payment_provider: string;
-          shipping_country: string;
-          slug: string;
-          status: string;
-          updated_at: string;
-        };
-        Insert: {
-          name: string;
-          organization_id: string;
-          slug: string;
-          [key: string]: unknown;
-        };
-        Update: Partial<Database["public"]["Tables"]["shop_settings"]["Row"]>;
-        Relationships: [];
-      };
-      subjects: {
-        Row: {
-          color: string | null;
-          created_at: string;
-          description: string | null;
-          id: string;
-          name: string;
-          order_index: number;
-          organization_id: string;
-          slug: string;
-          status: string;
-          updated_at: string;
-        };
-        Insert: {
-          color?: string | null;
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          name: string;
-          order_index?: number;
-          organization_id: string;
-          slug: string;
-          status?: string;
-          updated_at?: string;
-        };
-        Update: {
-          color?: string | null;
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          name?: string;
-          order_index?: number;
-          organization_id?: string;
-          slug?: string;
-          status?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "subjects_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
     };
     Views: {
       [_ in never]: never;
@@ -2286,6 +3225,29 @@ export type Database = {
       check_shop_checkout_rate_limit: {
         Args: { p_fingerprint: string };
         Returns: boolean;
+      };
+      claim_due_live_email_notifications: {
+        Args: { p_limit?: number };
+        Returns: {
+          attempt: number;
+          cohort_name: string;
+          course_title: string;
+          delivery_id: string;
+          description: string;
+          ends_at: string;
+          join_url: string;
+          kind: string;
+          live_session_id: string;
+          organization_id: string;
+          organization_name: string;
+          provider: string;
+          recipient_email: string;
+          recipient_name: string;
+          replay_url: string;
+          starts_at: string;
+          timezone: string;
+          title: string;
+        }[];
       };
       create_shop_order: {
         Args: {
@@ -2325,7 +3287,42 @@ export type Database = {
           p_status: string;
           p_tracking_reference?: string;
         };
-        Returns: Database["public"]["Tables"]["shop_orders"]["Row"];
+        Returns: {
+          created_at: string;
+          currency: string;
+          customer_email: string;
+          customer_name: string;
+          customer_phone: string | null;
+          delivered_at: string | null;
+          expires_at: string;
+          id: string;
+          internal_notes: string | null;
+          order_number: string;
+          organization_id: string;
+          paid_at: string | null;
+          shipped_at: string | null;
+          shipping_address: Json | null;
+          shipping_cents: number;
+          shop_id: string;
+          status: string;
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          subtotal_cents: number;
+          total_cents: number;
+          tracking_reference: string | null;
+          updated_at: string;
+          user_id: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "shop_orders";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      verify_live_notification_cron_secret: {
+        Args: { p_secret: string };
+        Returns: boolean;
       };
     };
     Enums: {

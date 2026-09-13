@@ -28,6 +28,7 @@ import { Route as AuthenticatedDirectsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedEleveRouteImport } from './routes/_authenticated/eleve'
 import { Route as AuthenticatedLeconRouteImport } from './routes/_authenticated/lecon'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
+import { Route as AuthenticatedProgressionRouteImport } from './routes/_authenticated/progression'
 import { Route as CoursCourseIdRouteImport } from './routes/cours/$courseId'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
@@ -127,6 +128,12 @@ const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
   path: '/messages',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProgressionRoute =
+  AuthenticatedProgressionRouteImport.update({
+    id: '/progression',
+    path: '/progression',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const CoursCourseIdRoute = CoursCourseIdRouteImport.update({
   id: '/cours/$courseId',
   path: '/cours/$courseId',
@@ -158,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/eleve': typeof AuthenticatedEleveRoute
   '/lecon': typeof AuthenticatedLeconRoute
   '/messages': typeof AuthenticatedMessagesRoute
+  '/progression': typeof AuthenticatedProgressionRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -180,6 +188,7 @@ export interface FileRoutesByTo {
   '/eleve': typeof AuthenticatedEleveRoute
   '/lecon': typeof AuthenticatedLeconRoute
   '/messages': typeof AuthenticatedMessagesRoute
+  '/progression': typeof AuthenticatedProgressionRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -204,6 +213,7 @@ export interface FileRoutesById {
   '/_authenticated/eleve': typeof AuthenticatedEleveRoute
   '/_authenticated/lecon': typeof AuthenticatedLeconRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
+  '/_authenticated/progression': typeof AuthenticatedProgressionRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -228,6 +238,7 @@ export interface FileRouteTypes {
     | '/eleve'
     | '/lecon'
     | '/messages'
+    | '/progression'
     | '/cours/$courseId'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesByTo: FileRoutesByTo
@@ -250,6 +261,7 @@ export interface FileRouteTypes {
     | '/eleve'
     | '/lecon'
     | '/messages'
+    | '/progression'
     | '/cours/$courseId'
     | '/.mcp/invoke-tool/$tool'
   id:
@@ -273,6 +285,7 @@ export interface FileRouteTypes {
     | '/_authenticated/eleve'
     | '/_authenticated/lecon'
     | '/_authenticated/messages'
+    | '/_authenticated/progression'
     | '/cours/$courseId'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesById: FileRoutesById
@@ -431,6 +444,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMessagesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/progression': {
+      id: '/_authenticated/progression'
+      path: '/progression'
+      fullPath: '/progression'
+      preLoaderRoute: typeof AuthenticatedProgressionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/cours/$courseId': {
       id: '/cours/$courseId'
       path: '/cours/$courseId'
@@ -454,6 +474,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEleveRoute: typeof AuthenticatedEleveRoute
   AuthenticatedLeconRoute: typeof AuthenticatedLeconRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
+  AuthenticatedProgressionRoute: typeof AuthenticatedProgressionRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -462,6 +483,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEleveRoute: AuthenticatedEleveRoute,
   AuthenticatedLeconRoute: AuthenticatedLeconRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
+  AuthenticatedProgressionRoute: AuthenticatedProgressionRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

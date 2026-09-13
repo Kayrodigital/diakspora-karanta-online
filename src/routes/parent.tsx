@@ -27,6 +27,7 @@ import {
 } from "@/features/parent/mock-data";
 import { loadPortalAccess } from "@/lib/auth/portal-access";
 import { organizationTheme } from "@/lib/organization-theme";
+import { LearnerProgressDashboard } from "@/features/assessment/LearnerProgressDashboard";
 
 export const Route = createFileRoute("/parent")({
   ssr: false,
@@ -97,6 +98,10 @@ function ParentPage() {
         <div className="mt-5 px-5">
           <AttendanceStatusBadge status={mockAttendance} />
         </div>
+
+        <section className="mt-8 px-5">
+          <LearnerProgressDashboard organizationId={organization.id} />
+        </section>
 
         {/* 3. Weekly summary */}
         <section className="mt-8 px-5">

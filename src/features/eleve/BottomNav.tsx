@@ -1,7 +1,7 @@
-import { BookOpen, Home, MessageCircle, Mic, Radio, type LucideIcon } from "lucide-react";
+import { Award, BookOpen, Home, MessageCircle, Mic, Radio, type LucideIcon } from "lucide-react";
 
 type Item = {
-  key: "home" | "courses" | "live" | "homework" | "messages";
+  key: "home" | "courses" | "progress" | "live" | "homework" | "messages";
   label: string;
   icon: LucideIcon;
   href: string;
@@ -10,6 +10,7 @@ type Item = {
 const items: Item[] = [
   { key: "home", label: "Accueil", icon: Home, href: "/eleve" },
   { key: "courses", label: "Cours", icon: BookOpen, href: "/eleve#courses" },
+  { key: "progress", label: "Progrès", icon: Award, href: "/progression" },
   { key: "live", label: "Directs", icon: Radio, href: "/directs" },
   { key: "homework", label: "Devoir", icon: Mic, href: "/devoir" },
   { key: "messages", label: "Messages", icon: MessageCircle, href: "/messages" },
@@ -22,7 +23,7 @@ export function BottomNav({ active = "home" }: { active?: Item["key"] }) {
       className="fixed inset-x-0 bottom-0 z-30 border-t border-[color:var(--cream-2)] bg-[color:var(--cream)]/95 backdrop-blur supports-[backdrop-filter]:bg-[color:var(--cream)]/80"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <ul className="mx-auto grid max-w-lg grid-cols-5">
+      <ul className="mx-auto grid max-w-xl grid-cols-6">
         {items.map((item) => {
           const Icon = item.icon;
           const isActive = active === item.key;
