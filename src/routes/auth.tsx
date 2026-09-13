@@ -43,8 +43,10 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [pendingConfirmationEmail, setPendingConfirmationEmail] = useState<string | null>(null);
 
   useEffect(() => {
     if (portal !== "family") setMode("signin");
@@ -70,25 +72,30 @@ function AuthPage() {
     e.preventDefault();
     setError(null);
     setNotice(null);
+    setPendingConfirmationEmail(null);
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
+        const normalizedEmail = email.trim().toLowerCase();
+        const { data, error } = await supabase.auth.signUp({
+          email: normalizedEmail,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/auth?portal=family`,
-            data: { full_name: fullName || email.split("@")[0] },
+            data: { full_name: fullName || normalizedEmail.split("@")[0] },
           },
         });
         if (error) throw error;
-        // If session exists (auto-confirm), navigate; else ask to check email
-        const { data: sess } = await supabase.auth.getSession();
-        if (sess.session) {
+        if (data.session) {
           setNotice(
             "Compte créé. L'organisation doit maintenant valider ton inscription avant l'accès aux cours.",
           );
-        } else setNotice("Compte créé. Vérifie ton email pour confirmer ton adresse.");
+        } else {
+          setPendingConfirmationEmail(normalizedEmail);
+          setNotice(
+            "Si cette adresse est nouvelle, un email de confirmation vient d’être envoyé. Si tu as déjà un compte, utilise « J’ai déjà un compte ».",
+          );
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -104,6 +111,30 @@ function AuthPage() {
       setError(err instanceof Error ? err.message : "Erreur");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function resendConfirmation() {
+    if (!pendingConfirmationEmail) return;
+    setError(null);
+    setNotice(null);
+    setResending(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: pendingConfirmationEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth?portal=family`,
+        },
+      });
+      if (error) throw error;
+      setNotice(
+        "Demande envoyée. Vérifie la boîte de réception et les courriers indésirables. L’envoi peut prendre quelques minutes.",
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Impossible de renvoyer l’email.");
+    } finally {
+      setResending(false);
     }
   }
 
@@ -157,17 +188,8 @@ function AuthPage() {
             <input
               type="password"
               required
-              minLength={mode === "signup" ? 12 : 6}
-              pattern={
-                mode === "signup"
-                  ? "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{12,}"
-                  : undefined
-              }
-              title={
-                mode === "signup"
-                  ? "12 caractères minimum, avec minuscule, majuscule, chiffre et symbole."
-                  : undefined
-              }
+              minLength={mode === "signup" ? 8 : 6}
+              title={mode === "signup" ? "8 caractères minimum." : undefined}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="rounded-xl border-2 border-[color:var(--cream-2)] bg-white px-4 py-3 text-base"
@@ -175,7 +197,7 @@ function AuthPage() {
             />
             {mode === "signup" && (
               <span className="text-xs font-normal leading-5 text-muted-foreground">
-                12 caractères minimum, avec une minuscule, une majuscule, un chiffre et un symbole.
+                8 caractères minimum. Choisis une phrase facile à retenir et difficile à deviner.
               </span>
             )}
           </label>
@@ -189,6 +211,17 @@ function AuthPage() {
             <p className="rounded-xl bg-[color:var(--deep-green)]/10 px-3 py-2 text-sm text-[color:var(--deep-green)]">
               {notice}
             </p>
+          )}
+
+          {mode === "signup" && pendingConfirmationEmail && (
+            <button
+              type="button"
+              onClick={() => void resendConfirmation()}
+              disabled={resending}
+              className="min-h-11 rounded-xl border border-[color:var(--deep-green)]/30 px-4 text-sm font-semibold text-[color:var(--deep-green)] disabled:opacity-60"
+            >
+              {resending ? "Envoi en cours…" : "Renvoyer l’email de confirmation"}
+            </button>
           )}
 
           <button
@@ -206,6 +239,7 @@ function AuthPage() {
                 setMode(mode === "signin" ? "signup" : "signin");
                 setError(null);
                 setNotice(null);
+                setPendingConfirmationEmail(null);
               }}
               className="text-center text-sm font-semibold text-[color:var(--deep-green)] underline underline-offset-4"
             >
