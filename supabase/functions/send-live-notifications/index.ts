@@ -147,8 +147,19 @@ Deno.serve(async (request) => {
   if (request.method !== "POST") return json({ error: "Méthode non autorisée." }, 405);
 
   try {
-    const expectedCronSecret = required("NOTIFICATION_CRON_SECRET");
-    if (request.headers.get("x-cron-secret") !== expectedCronSecret) {
+    const suppliedCronSecret = request.headers.get("x-cron-secret")?.trim();
+    if (!suppliedCronSecret) {
+      return json({ error: "Accès refusé." }, 401);
+    }
+
+    const supabase = createClient(required("SUPABASE_URL"), secretKey(), {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data: authorized, error: authorizationError } = await supabase.rpc(
+      "verify_live_notification_cron_secret",
+      { p_secret: suppliedCronSecret },
+    );
+    if (authorizationError || authorized !== true) {
       return json({ error: "Accès refusé." }, 401);
     }
 
@@ -157,14 +168,10 @@ Deno.serve(async (request) => {
     const senderName = Deno.env.get("BREVO_SENDER_NAME")?.trim() || "Diakspora Karanta";
     const appUrl = Deno.env.get("APP_URL")?.trim() || "https://diakspora-karanta-online.vercel.app";
     const sandbox = Deno.env.get("BREVO_SANDBOX_MODE") === "true";
-    const supabase = createClient(required("SUPABASE_URL"), secretKey(), {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-
     const { data, error } = await supabase.rpc("claim_due_live_email_notifications", {
       p_limit: 50,
     });
-    if (error) throw error;
+    if (error) throw new Error(error.message);
 
     const deliveries = (data ?? []) as Notification[];
     let sent = 0;
