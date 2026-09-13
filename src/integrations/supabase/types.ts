@@ -985,6 +985,7 @@ export type Database = {
           feedback_at: string | null;
           feedback_by: string | null;
           feedback_text: string | null;
+          external_url: string | null;
           file_url: string | null;
           id: string;
           lesson_id: string | null;
@@ -1001,6 +1002,7 @@ export type Database = {
           feedback_at?: string | null;
           feedback_by?: string | null;
           feedback_text?: string | null;
+          external_url?: string | null;
           file_url?: string | null;
           id?: string;
           lesson_id?: string | null;
@@ -1017,6 +1019,7 @@ export type Database = {
           feedback_at?: string | null;
           feedback_by?: string | null;
           feedback_text?: string | null;
+          external_url?: string | null;
           file_url?: string | null;
           id?: string;
           lesson_id?: string | null;

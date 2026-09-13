@@ -1,9 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Camera, CheckCircle2, Clock3, Mic, Play, Send } from "lucide-react";
+import {
+  Camera,
+  CheckCircle2,
+  Clock3,
+  ExternalLink,
+  FileText,
+  Link2,
+  Mic,
+  Play,
+  Send,
+} from "lucide-react";
 import { PhotoCapture } from "@/features/eleve/PhotoCapture";
 import { AudioRecorder } from "@/features/eleve/AudioRecorder";
+import { DocumentUpload } from "@/features/eleve/DocumentUpload";
 import { BottomNav } from "@/features/eleve/BottomNav";
 import { supabase } from "@/integrations/supabase/client";
 import { organizationTheme } from "@/lib/organization-theme";
@@ -13,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/devoir")({
   component: DevoirPage,
 });
 
-type Tab = "audio" | "photo";
+type Tab = "audio" | "photo" | "document" | "link";
 
 async function fetchHomeworkData(organizationId: string) {
   const { data: userResult } = await supabase.auth.getUser();
@@ -63,8 +74,9 @@ async function uploadFile(organizationId: string, file: Blob, extension: string)
 
 async function insertSubmission(input: {
   organizationId: string;
-  fileUrl: string;
-  type: "photo" | "audio";
+  fileUrl?: string;
+  externalUrl?: string;
+  type: "photo" | "audio" | "document";
   lessonId: string | null;
   durationSeconds?: number;
   notes?: string;
@@ -76,7 +88,8 @@ async function insertSubmission(input: {
     organization_id: input.organizationId,
     user_id: userId,
     type: input.type,
-    file_url: input.fileUrl,
+    file_url: input.fileUrl ?? null,
+    external_url: input.externalUrl ?? null,
     lesson_id: input.lessonId,
     duration_seconds: input.durationSeconds,
     notes: input.notes?.trim() || null,
@@ -97,6 +110,7 @@ function DevoirPage() {
   const [tab, setTab] = useState<Tab>("audio");
   const [lessonId, setLessonId] = useState("");
   const [notes, setNotes] = useState("");
+  const [externalUrl, setExternalUrl] = useState("");
   const [sent, setSent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -164,6 +178,53 @@ function DevoirPage() {
     }
   }
 
+  async function handleDocument(file: File) {
+    setError(null);
+    try {
+      const path = await uploadFile(organization.id, file, "pdf");
+      await insertSubmission({
+        organizationId: organization.id,
+        fileUrl: path,
+        type: "document",
+        lessonId: lessonId || null,
+        notes,
+      });
+      setNotes("");
+      setSent("PDF envoyé au professeur");
+      await refresh();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Erreur d’envoi");
+      throw cause;
+    }
+  }
+
+  async function handleLink() {
+    setError(null);
+    const value = externalUrl.trim();
+    try {
+      const url = new URL(value);
+      if (
+        url.protocol !== "https:" ||
+        !["drive.google.com", "docs.google.com"].includes(url.hostname)
+      ) {
+        throw new Error("Utilise un lien Google Drive ou Google Docs en HTTPS.");
+      }
+      await insertSubmission({
+        organizationId: organization.id,
+        externalUrl: url.toString(),
+        type: "document",
+        lessonId: lessonId || null,
+        notes,
+      });
+      setExternalUrl("");
+      setNotes("");
+      setSent("Lien Google envoyé au professeur");
+      await refresh();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Lien invalide");
+    }
+  }
+
   const lessonNames = new Map(
     (homework.data?.lessons ?? []).map((lesson) => [lesson.id, lesson.title]),
   );
@@ -188,7 +249,7 @@ function DevoirPage() {
             Envoyer mon devoir
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-            Enregistre ta voix, réécoute-toi puis envoie ton travail à ton professeur.
+            Envoie ta voix, une photo, un PDF ou un lien Google Drive à ton professeur.
           </p>
         </header>
 
@@ -229,9 +290,9 @@ function DevoirPage() {
 
         <div
           role="tablist"
-          className="mx-5 mt-5 grid grid-cols-2 rounded-2xl bg-[color:var(--cream-2)] p-1 md:mx-8"
+          className="mx-5 mt-5 grid grid-cols-4 rounded-2xl bg-[color:var(--cream-2)] p-1 md:mx-8"
         >
-          {(["audio", "photo"] as const).map((value) => (
+          {(["audio", "photo", "document", "link"] as const).map((value) => (
             <button
               key={value}
               role="tab"
@@ -239,8 +300,33 @@ function DevoirPage() {
               onClick={() => setTab(value)}
               className={`flex min-h-11 items-center justify-center gap-2 rounded-xl font-[family-name:var(--font-display-kid)] font-bold ${tab === value ? "bg-[color:var(--deep-green)] text-[color:var(--cream)]" : "text-[color:var(--anthracite)]"}`}
             >
-              {value === "audio" ? <Mic size={18} /> : <Camera size={18} />}
-              {value === "audio" ? "Ma voix" : "Photo"}
+              {value === "audio" ? (
+                <Mic size={17} />
+              ) : value === "photo" ? (
+                <Camera size={17} />
+              ) : value === "document" ? (
+                <FileText size={17} />
+              ) : (
+                <Link2 size={17} />
+              )}
+              <span className="hidden sm:inline">
+                {value === "audio"
+                  ? "Ma voix"
+                  : value === "photo"
+                    ? "Photo"
+                    : value === "document"
+                      ? "PDF"
+                      : "Lien"}
+              </span>
+              <span className="sm:hidden">
+                {value === "audio"
+                  ? "Vocal"
+                  : value === "photo"
+                    ? "Photo"
+                    : value === "document"
+                      ? "PDF"
+                      : "Lien"}
+              </span>
             </button>
           ))}
         </div>
@@ -262,8 +348,46 @@ function DevoirPage() {
         <section className="mt-6 px-5 md:px-8">
           {tab === "audio" ? (
             <AudioRecorder onSend={handleAudio} />
-          ) : (
+          ) : tab === "photo" ? (
             <PhotoCapture onSend={handlePhotos} />
+          ) : tab === "document" ? (
+            <DocumentUpload onSend={handleDocument} />
+          ) : (
+            <div className="rounded-3xl border border-[color:var(--cream-2)] bg-card p-5 shadow-[var(--shadow-card)]">
+              <div className="flex items-start gap-3">
+                <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-[color:var(--cream-2)] text-[color:var(--deep-green)]">
+                  <Link2 size={23} aria-hidden />
+                </div>
+                <div>
+                  <h2 className="font-[family-name:var(--font-display-kid)] text-lg font-bold">
+                    Partager un document Google
+                  </h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Vérifie que ton professeur peut ouvrir le lien.
+                  </p>
+                </div>
+              </div>
+              <label htmlFor="external-homework-url" className="mt-5 block text-sm font-bold">
+                Lien Google Drive ou Google Docs
+              </label>
+              <input
+                id="external-homework-url"
+                type="url"
+                inputMode="url"
+                value={externalUrl}
+                onChange={(event) => setExternalUrl(event.target.value)}
+                placeholder="https://docs.google.com/…"
+                className="mt-2 min-h-12 w-full rounded-xl border border-[color:var(--cream-2)] bg-background px-3 text-sm"
+              />
+              <button
+                type="button"
+                disabled={!externalUrl.trim()}
+                onClick={handleLink}
+                className="mt-4 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-[color:var(--deep-green)] px-4 font-[family-name:var(--font-display-kid)] text-lg font-bold text-[color:var(--cream)] disabled:opacity-50"
+              >
+                <Send size={18} aria-hidden /> Envoyer au professeur
+              </button>
+            </div>
           )}
         </section>
 
@@ -285,7 +409,15 @@ function DevoirPage() {
                   >
                     <div className="flex items-start gap-3">
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[color:var(--cream-2)] text-[color:var(--deep-green)]">
-                        {submission.type === "audio" ? <Mic size={22} /> : <Camera size={22} />}
+                        {submission.type === "audio" ? (
+                          <Mic size={22} />
+                        ) : submission.type === "photo" ? (
+                          <Camera size={22} />
+                        ) : submission.external_url ? (
+                          <Link2 size={22} />
+                        ) : (
+                          <FileText size={22} />
+                        )}
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-[family-name:var(--font-display-kid)] font-bold">
@@ -320,6 +452,15 @@ function DevoirPage() {
                         className="mt-4 flex min-h-10 items-center justify-center gap-2 rounded-xl bg-muted text-sm font-semibold"
                       >
                         <Play size={15} /> Voir mon envoi
+                      </a>
+                    ) : submission.external_url ? (
+                      <a
+                        href={submission.external_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-4 flex min-h-10 items-center justify-center gap-2 rounded-xl bg-muted text-sm font-semibold"
+                      >
+                        <ExternalLink size={15} /> Ouvrir le document Google
                       </a>
                     ) : null}
                     {submission.feedback_text ? (

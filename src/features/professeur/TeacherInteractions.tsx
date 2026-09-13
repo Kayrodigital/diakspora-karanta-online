@@ -1,6 +1,14 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, MessageCircle, Mic, RotateCcw, Send, UserRound } from "lucide-react";
+import {
+  CheckCircle2,
+  ExternalLink,
+  MessageCircle,
+  Mic,
+  RotateCcw,
+  Send,
+  UserRound,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -132,6 +140,12 @@ export function HomeworkReviewPanel({
               <Button asChild variant="outline" className="mt-5 w-full">
                 <a href={selected.signedUrl} target="_blank" rel="noreferrer">
                   Voir le devoir
+                </a>
+              </Button>
+            ) : selected.external_url ? (
+              <Button asChild variant="outline" className="mt-5 w-full">
+                <a href={selected.external_url} target="_blank" rel="noreferrer">
+                  <ExternalLink className="size-4" /> Ouvrir le document Google
                 </a>
               </Button>
             ) : (
