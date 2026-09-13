@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AvanceRouteImport } from './routes/avance'
+import { Route as BoutiqueRouteImport } from './routes/boutique'
 import { Route as IntermediaireRouteImport } from './routes/intermediaire'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ParcoursRouteImport } from './routes/parcours'
@@ -52,6 +53,11 @@ const AuthRoute = AuthRouteImport.update({
 const AvanceRoute = AvanceRouteImport.update({
   id: '/avance',
   path: '/avance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BoutiqueRoute = BoutiqueRouteImport.update({
+  id: '/boutique',
+  path: '/boutique',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IntermediaireRoute = IntermediaireRouteImport.update({
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/avance': typeof AvanceRoute
+  '/boutique': typeof BoutiqueRoute
   '/intermediaire': typeof IntermediaireRoute
   '/mcp': typeof McpRoute
   '/parcours': typeof ParcoursRoute
@@ -159,6 +166,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/avance': typeof AvanceRoute
+  '/boutique': typeof BoutiqueRoute
   '/intermediaire': typeof IntermediaireRoute
   '/mcp': typeof McpRoute
   '/parcours': typeof ParcoursRoute
@@ -182,6 +190,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/avance': typeof AvanceRoute
+  '/boutique': typeof BoutiqueRoute
   '/intermediaire': typeof IntermediaireRoute
   '/mcp': typeof McpRoute
   '/parcours': typeof ParcoursRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/avance'
+    | '/boutique'
     | '/intermediaire'
     | '/mcp'
     | '/parcours'
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/avance'
+    | '/boutique'
     | '/intermediaire'
     | '/mcp'
     | '/parcours'
@@ -248,6 +259,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/avance'
+    | '/boutique'
     | '/intermediaire'
     | '/mcp'
     | '/parcours'
@@ -271,6 +283,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   AvanceRoute: typeof AvanceRoute
+  BoutiqueRoute: typeof BoutiqueRoute
   IntermediaireRoute: typeof IntermediaireRoute
   McpRoute: typeof McpRoute
   ParcoursRoute: typeof ParcoursRoute
@@ -318,6 +331,13 @@ declare module '@tanstack/react-router' {
       path: '/avance'
       fullPath: '/avance'
       preLoaderRoute: typeof AvanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/boutique': {
+      id: '/boutique'
+      path: '/boutique'
+      fullPath: '/boutique'
+      preLoaderRoute: typeof BoutiqueRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/intermediaire': {
@@ -453,6 +473,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   AvanceRoute: AvanceRoute,
+  BoutiqueRoute: BoutiqueRoute,
   IntermediaireRoute: IntermediaireRoute,
   McpRoute: McpRoute,
   ParcoursRoute: ParcoursRoute,

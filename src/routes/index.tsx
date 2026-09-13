@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { BookOpen, ShoppingBag } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -60,6 +61,12 @@ function Home() {
               Niveau avancé
             </span>
           </div>
+          <Link
+            to="/boutique"
+            className="mx-auto mt-8 flex min-h-12 w-fit items-center gap-2 rounded-2xl bg-[color:var(--gold)] px-6 font-semibold text-[color:var(--anthracite)] shadow-[var(--shadow-gold)] transition hover:brightness-105"
+          >
+            <ShoppingBag className="size-4" /> Découvrir la librairie
+          </Link>
         </div>
       </header>
 
@@ -94,9 +101,39 @@ function Home() {
         </div>
       </section>
 
+      <section className="border-y border-border bg-card/60">
+        <div className="mx-auto grid max-w-6xl gap-6 px-6 py-12 md:grid-cols-[1fr_auto] md:items-center">
+          <div className="flex items-start gap-4">
+            <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+              <BookOpen className="size-6" />
+            </div>
+            <div>
+              <h2 className="font-serif text-2xl font-semibold">
+                Les livres des cours, au même endroit
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Commandez les ouvrages recommandés par vos professeurs, avec livraison en France.
+              </p>
+            </div>
+          </div>
+          <ButtonLink />
+        </div>
+      </section>
+
       <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
         <span className="font-serif text-sm">Diakspora Karanta</span> · بسم الله
       </footer>
     </div>
+  );
+}
+
+function ButtonLink() {
+  return (
+    <Link
+      to="/boutique"
+      className="flex min-h-11 items-center justify-center rounded-xl border border-primary px-5 text-sm font-semibold text-primary transition hover:bg-primary hover:text-primary-foreground"
+    >
+      Voir les livres
+    </Link>
   );
 }

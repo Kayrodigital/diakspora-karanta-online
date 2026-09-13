@@ -1,6 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Bell, BookOpen, CalendarDays, Clock3, LogOut, Play, Radio } from "lucide-react";
+import {
+  Bell,
+  BookOpen,
+  CalendarDays,
+  Clock3,
+  LogOut,
+  Play,
+  Radio,
+  ShoppingBag,
+} from "lucide-react";
 import { BottomNav } from "@/features/eleve/BottomNav";
 import { loadStudentHome } from "@/features/eleve/student-data";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,6 +82,13 @@ function ElevePage() {
           >
             <Bell size={20} aria-hidden />
           </button>
+          <Link
+            to="/boutique"
+            aria-label="Ouvrir la librairie"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[color:var(--cream-2)] bg-card"
+          >
+            <ShoppingBag size={18} aria-hidden />
+          </Link>
           <button
             type="button"
             onClick={signOut}

@@ -2071,6 +2071,165 @@ export type Database = {
           },
         ];
       };
+      shop_order_items: {
+        Row: {
+          cover_url: string | null;
+          created_at: string;
+          id: string;
+          line_total_cents: number;
+          order_id: string;
+          organization_id: string;
+          product_id: string | null;
+          product_sku: string | null;
+          product_title: string;
+          quantity: number;
+          unit_price_cents: number;
+        };
+        Insert: {
+          cover_url?: string | null;
+          created_at?: string;
+          id?: string;
+          order_id: string;
+          organization_id: string;
+          product_id?: string | null;
+          product_sku?: string | null;
+          product_title: string;
+          quantity: number;
+          unit_price_cents: number;
+        };
+        Update: {
+          cover_url?: string | null;
+          created_at?: string;
+          id?: string;
+          order_id?: string;
+          organization_id?: string;
+          product_id?: string | null;
+          product_sku?: string | null;
+          product_title?: string;
+          quantity?: number;
+          unit_price_cents?: number;
+        };
+        Relationships: [];
+      };
+      shop_orders: {
+        Row: {
+          created_at: string;
+          currency: string;
+          customer_email: string;
+          customer_name: string;
+          customer_phone: string | null;
+          delivered_at: string | null;
+          expires_at: string;
+          id: string;
+          internal_notes: string | null;
+          order_number: string;
+          organization_id: string;
+          paid_at: string | null;
+          shipped_at: string | null;
+          shipping_address: Json | null;
+          shipping_cents: number;
+          shop_id: string;
+          status: string;
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          subtotal_cents: number;
+          total_cents: number;
+          tracking_reference: string | null;
+          updated_at: string;
+          user_id: string | null;
+        };
+        Insert: {
+          customer_email: string;
+          customer_name: string;
+          organization_id: string;
+          shop_id: string;
+          [key: string]: unknown;
+        };
+        Update: Partial<Database["public"]["Tables"]["shop_orders"]["Row"]>;
+        Relationships: [];
+      };
+      shop_products: {
+        Row: {
+          author: string | null;
+          book_id: string | null;
+          compare_at_price_cents: number | null;
+          cover_url: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          featured: boolean;
+          format: string;
+          id: string;
+          language: string;
+          low_stock_threshold: number;
+          organization_id: string;
+          price_cents: number;
+          published_at: string | null;
+          shop_id: string;
+          sku: string | null;
+          slug: string;
+          status: string;
+          stock_quantity: number;
+          subtitle: string | null;
+          title: string;
+          track_inventory: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          organization_id: string;
+          price_cents: number;
+          shop_id: string;
+          slug: string;
+          title: string;
+          author?: string | null;
+          book_id?: string | null;
+          compare_at_price_cents?: number | null;
+          cover_url?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          featured?: boolean;
+          format?: string;
+          id?: string;
+          language?: string;
+          low_stock_threshold?: number;
+          published_at?: string | null;
+          sku?: string | null;
+          status?: string;
+          stock_quantity?: number;
+          subtitle?: string | null;
+          track_inventory?: boolean;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["shop_products"]["Row"]>;
+        Relationships: [];
+      };
+      shop_settings: {
+        Row: {
+          created_at: string;
+          currency: string;
+          description: string | null;
+          flat_shipping_cents: number;
+          free_shipping_threshold_cents: number | null;
+          id: string;
+          name: string;
+          organization_id: string;
+          payment_enabled: boolean;
+          payment_provider: string;
+          shipping_country: string;
+          slug: string;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          name: string;
+          organization_id: string;
+          slug: string;
+          [key: string]: unknown;
+        };
+        Update: Partial<Database["public"]["Tables"]["shop_settings"]["Row"]>;
+        Relationships: [];
+      };
       subjects: {
         Row: {
           color: string | null;
@@ -2124,12 +2283,49 @@ export type Database = {
     };
     Functions: {
       accept_my_organization_invitations: { Args: never; Returns: number };
+      check_shop_checkout_rate_limit: {
+        Args: { p_fingerprint: string };
+        Returns: boolean;
+      };
+      create_shop_order: {
+        Args: {
+          p_customer_email: string;
+          p_customer_name: string;
+          p_customer_phone: string;
+          p_items: Json;
+          p_shop_id: string;
+          p_user_id?: string;
+        };
+        Returns: Json;
+      };
+      mark_shop_order_paid: {
+        Args: {
+          p_checkout_session_id: string;
+          p_order_id: string;
+          p_payment_intent_id: string;
+          p_shipping_address?: Json;
+        };
+        Returns: boolean;
+      };
+      release_shop_order: {
+        Args: { p_order_id: string; p_status?: string };
+        Returns: boolean;
+      };
       submit_quiz_attempt: {
         Args: { p_answers: Json; p_quiz_id: string };
         Returns: {
           attempt_id: string;
           score: number;
         }[];
+      };
+      update_shop_order_fulfillment: {
+        Args: {
+          p_internal_notes?: string;
+          p_order_id: string;
+          p_status: string;
+          p_tracking_reference?: string;
+        };
+        Returns: Database["public"]["Tables"]["shop_orders"]["Row"];
       };
     };
     Enums: {

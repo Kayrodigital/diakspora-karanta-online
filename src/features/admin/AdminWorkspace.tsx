@@ -17,6 +17,7 @@ import {
   Plus,
   School,
   Search,
+  ShoppingBag,
   ShieldCheck,
   UserPlus,
   Users,
@@ -53,6 +54,7 @@ import {
 } from "./admin-data";
 import { PedagogicalAdmin } from "./PedagogicalAdmin";
 import { createLearningItem } from "./pedagogical-data";
+import { ShopAdmin } from "./ShopAdmin";
 
 type Props = {
   organization: OrganizationBrand;
@@ -378,7 +380,7 @@ export function AdminWorkspace({ organization, userId }: Props) {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6 grid h-auto w-full grid-cols-3 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[820px] sm:grid-cols-6">
+          <TabsList className="mb-6 grid h-auto w-full grid-cols-4 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[940px] sm:grid-cols-7">
             <TabsTrigger value="overview" className="min-h-11 rounded-xl px-2">
               <LayoutDashboard className="size-4 sm:mr-2" />
               <span className="hidden sm:inline">Vue d’ensemble</span>
@@ -402,6 +404,10 @@ export function AdminWorkspace({ organization, userId }: Props) {
               <Bell className="size-4 sm:mr-2" />
               <span className="hidden sm:inline">Notifications</span>
               <span className="sm:hidden">Alertes</span>
+            </TabsTrigger>
+            <TabsTrigger value="shop" className="min-h-11 rounded-xl px-2">
+              <ShoppingBag className="size-4 sm:mr-2" />
+              <span>Boutique</span>
             </TabsTrigger>
             <TabsTrigger value="support" className="min-h-11 rounded-xl px-2">
               <Headphones className="size-4 sm:mr-2" />
@@ -867,6 +873,10 @@ export function AdminWorkspace({ organization, userId }: Props) {
 
               <TabsContent value="notifications" className="mt-0">
                 <NotificationCenter organizationId={organization.id} />
+              </TabsContent>
+
+              <TabsContent value="shop" className="mt-0">
+                <ShopAdmin organizationId={organization.id} userId={userId} />
               </TabsContent>
 
               <TabsContent value="support" className="mt-0 space-y-5">
