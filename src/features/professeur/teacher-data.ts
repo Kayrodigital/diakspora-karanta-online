@@ -21,6 +21,7 @@ export type TeacherLearner = {
 
 export type TeacherCourse = {
   id: string;
+  createdBy: string | null;
   title: string;
   level: string | null;
   status: string;
@@ -316,6 +317,7 @@ export async function loadTeacherDashboard(
 
   const courseSummaries = courseRows.map((course) => ({
     id: course.id,
+    createdBy: course.created_by,
     title: course.title,
     level: course.level,
     status: course.status,

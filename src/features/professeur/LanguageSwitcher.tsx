@@ -6,7 +6,7 @@ type Props = {
   onChange: (lang: Lang) => void;
 };
 
-const ORDER: Lang[] = ["ar", "fr", "en"];
+const ORDER: Lang[] = ["fr", "ar"];
 
 export function LanguageSwitcher({ lang, onChange }: Props) {
   return (

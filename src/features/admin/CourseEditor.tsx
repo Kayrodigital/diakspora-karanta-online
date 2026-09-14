@@ -73,6 +73,8 @@ type Props = {
   courseId: string;
   organization: OrganizationBrand;
   userId: string;
+  backTo?: "/admin" | "/professeur";
+  canPublish?: boolean;
 };
 
 const accessLabels: Record<string, string> = {
@@ -443,6 +445,7 @@ function LessonCard({
   onAddResource,
   onAddQuiz,
   onPublish,
+  canPublish,
 }: {
   lesson: CourseLesson;
   resources: LessonResource[];
@@ -451,6 +454,7 @@ function LessonCard({
   onAddResource: () => void;
   onAddQuiz: () => void;
   onPublish: (published: boolean) => void;
+  canPublish: boolean;
 }) {
   const published = lesson.status === "published";
   return (
@@ -478,15 +482,19 @@ function LessonCard({
                     : "À la demande"}
               </p>
             </div>
-            <label className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>{published ? "Publiée" : "Brouillon"}</span>
-              <Switch
-                checked={published}
-                disabled={pending}
-                onCheckedChange={onPublish}
-                aria-label={`Publier ${lesson.title}`}
-              />
-            </label>
+            {canPublish ? (
+              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>{published ? "Publiée" : "Brouillon"}</span>
+                <Switch
+                  checked={published}
+                  disabled={pending}
+                  onCheckedChange={onPublish}
+                  aria-label={`Publier ${lesson.title}`}
+                />
+              </label>
+            ) : (
+              <Badge variant="secondary">À faire valider</Badge>
+            )}
           </div>
           {lesson.summary ? (
             <p className="mt-3 text-sm text-muted-foreground">{lesson.summary}</p>
@@ -531,11 +539,13 @@ function CourseStructure({
   pending,
   onDialog,
   onPublishLesson,
+  canPublish,
 }: {
   data: CourseEditorData;
   pending: boolean;
   onDialog: (dialog: EditorDialog) => void;
   onPublishLesson: (lessonId: string, published: boolean) => void;
+  canPublish: boolean;
 }) {
   if (!data.modules.length)
     return (
@@ -593,6 +603,7 @@ function CourseStructure({
                     )}
                     quizCount={data.quizzes.filter((quiz) => quiz.lesson_id === lesson.id).length}
                     pending={pending}
+                    canPublish={canPublish}
                     onAddResource={() => onDialog({ kind: "resource", lessonId: lesson.id })}
                     onAddQuiz={() => onDialog({ kind: "quiz", lessonId: lesson.id })}
                     onPublish={(published) => onPublishLesson(lesson.id, published)}
@@ -615,7 +626,13 @@ function CourseStructure({
   );
 }
 
-export function CourseEditor({ courseId, organization, userId }: Props) {
+export function CourseEditor({
+  courseId,
+  organization,
+  userId,
+  backTo = "/admin",
+  canPublish = true,
+}: Props) {
   const queryClient = useQueryClient();
   const queryKey = ["course-editor", organization.id, courseId] as const;
   const [dialog, setDialog] = useState<EditorDialog>(null);
@@ -649,7 +666,9 @@ export function CourseEditor({ courseId, organization, userId }: Props) {
             <h1 className="font-serif text-2xl font-semibold">Cours indisponible</h1>
             <p className="mt-2 text-sm text-muted-foreground">{editor.error.message}</p>
             <Button asChild className="mt-5">
-              <Link to="/admin">Retour à l'administration</Link>
+              <Link to={backTo}>
+                {backTo === "/professeur" ? "Retour à mon espace" : "Retour à l'administration"}
+              </Link>
             </Button>
           </CardContent>
         </Card>
@@ -770,11 +789,11 @@ export function CourseEditor({ courseId, organization, userId }: Props) {
     <main className="min-h-screen bg-[color:var(--cream)] text-foreground">
       <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
         <Link
-          to="/admin"
+          to={backTo}
           className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft aria-hidden />
-          Centre pédagogique
+          {backTo === "/professeur" ? "Mon espace professeur" : "Centre pédagogique"}
         </Link>
         <header className="mt-4 rounded-3xl border bg-card p-5 shadow-sm sm:p-7">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
@@ -803,21 +822,27 @@ export function CourseEditor({ courseId, organization, userId }: Props) {
                 <Settings2 aria-hidden />
                 Modifier
               </Button>
-              <Button
-                disabled={mutation.isPending || !publishedLessonCount}
-                className="min-h-11"
-                onClick={() =>
-                  mutation.mutate(() =>
-                    updateCoursePublication({
-                      organizationId: organization.id,
-                      courseId,
-                      published: data.course.status !== "published",
-                    }),
-                  )
-                }
-              >
-                {data.course.status === "published" ? "Dépublier" : "Publier"}
-              </Button>
+              {canPublish ? (
+                <Button
+                  disabled={mutation.isPending || !publishedLessonCount}
+                  className="min-h-11"
+                  onClick={() =>
+                    mutation.mutate(() =>
+                      updateCoursePublication({
+                        organizationId: organization.id,
+                        courseId,
+                        published: data.course.status !== "published",
+                      }),
+                    )
+                  }
+                >
+                  {data.course.status === "published" ? "Dépublier" : "Publier"}
+                </Button>
+              ) : (
+                <Badge className="min-h-11 justify-center px-4" variant="secondary">
+                  Validation administrative requise
+                </Badge>
+              )}
             </div>
           </div>
           <div className="mt-6 grid grid-cols-3 gap-3 border-t pt-5 text-center sm:max-w-lg sm:text-left">
@@ -857,6 +882,7 @@ export function CourseEditor({ courseId, organization, userId }: Props) {
             <CourseStructure
               data={data}
               pending={mutation.isPending}
+              canPublish={canPublish}
               onDialog={setDialog}
               onPublishLesson={(lessonId, published) =>
                 mutation.mutate(() =>

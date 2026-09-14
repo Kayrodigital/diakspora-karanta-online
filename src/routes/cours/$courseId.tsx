@@ -6,6 +6,9 @@ import { organizationTheme } from "@/lib/organization-theme";
 export const Route = createFileRoute("/cours/$courseId")({
   ssr: false,
   beforeLoad: async () => {
+    const teacherAccess = await loadPortalAccess("teacher");
+    if (teacherAccess) return teacherAccess;
+
     const access = await loadPortalAccess("admin");
     if (!access) throw redirect({ to: "/auth", search: { portal: "admin" } });
     return access;
@@ -21,10 +24,19 @@ export const Route = createFileRoute("/cours/$courseId")({
 
 function CourseEditorPage() {
   const { courseId } = Route.useParams();
-  const { organization, user } = Route.useRouteContext();
+  const { organization, membership, user } = Route.useRouteContext();
+  const teacherRoles = ["teacher", "class_manager", "pedagogical_manager"];
   return (
     <div style={organizationTheme(organization)}>
-      <CourseEditor courseId={courseId} organization={organization} userId={user.id} />
+      <CourseEditor
+        courseId={courseId}
+        organization={organization}
+        userId={user.id}
+        backTo={teacherRoles.includes(membership.role) ? "/professeur" : "/admin"}
+        canPublish={["owner", "admin", "technician", "pedagogical_manager"].includes(
+          membership.role,
+        )}
+      />
     </div>
   );
 }

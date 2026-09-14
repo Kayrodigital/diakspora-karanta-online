@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.stripe-shop-webhook]
 verify_jwt = false
+
+[functions.generate-course-draft]
+verify_jwt = true

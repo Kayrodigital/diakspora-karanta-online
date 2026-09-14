@@ -17,6 +17,7 @@ import {
   School,
   Users,
   Video,
+  WandSparkles,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,9 @@ import type { OrganizationBrand, OrganizationRole } from "@/lib/auth/portal-acce
 import { HomeworkReviewPanel, TeacherMessagesPanel } from "./TeacherInteractions";
 import { TeacherLiveSessions } from "./TeacherLiveSessions";
 import { loadTeacherDashboard, type TeacherCohort, type TeacherLearner } from "./teacher-data";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { makeT, type Lang } from "./i18n";
+import { TeacherCourseAssistant } from "./TeacherCourseAssistant";
 
 type Props = {
   organization: OrganizationBrand;
@@ -220,6 +224,17 @@ function ClassPanel({ cohort }: { cohort: TeacherCohort }) {
 export function TeacherWorkspace({ organization, role, userId }: Props) {
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedCohortId, setSelectedCohortId] = useState("");
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  const [lang, setLang] = useState<Lang>(() => {
+    if (typeof window === "undefined") return "fr";
+    return window.localStorage.getItem("karanta-teacher-language") === "ar" ? "ar" : "fr";
+  });
+  const t = makeT(lang);
+  const isRtl = lang === "ar";
+  const changeLanguage = (next: Lang) => {
+    setLang(next);
+    window.localStorage.setItem("karanta-teacher-language", next);
+  };
   const dashboard = useQuery({
     queryKey: ["teacher-dashboard", organization.id, userId],
     queryFn: () => loadTeacherDashboard(organization.id, userId, role),
@@ -236,7 +251,11 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
     data?.cohorts.find((cohort) => cohort.id === selectedCohortId) ?? data?.cohorts[0];
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.1),transparent_30rem)] bg-background">
+    <div
+      dir={isRtl ? "rtl" : "ltr"}
+      lang={isRtl ? "ar" : "fr"}
+      className="min-h-screen bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.1),transparent_30rem)] bg-background"
+    >
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
@@ -249,15 +268,16 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
             </div>
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold sm:text-base">{organization.name}</p>
-              <p className="text-xs text-muted-foreground">Espace professeur</p>
+              <p className="text-xs text-muted-foreground">{t("teacher_space")}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageSwitcher lang={lang} onChange={changeLanguage} />
             <PortalSwitcher current="teacher" role={role} />
             <Button
               variant="ghost"
               size="icon"
-              aria-label="Se déconnecter"
+              aria-label={t("logout")}
               onClick={async () => {
                 await supabase.auth.signOut();
                 window.location.assign("/auth?portal=teacher");
@@ -272,14 +292,13 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
       <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
         <div className="mb-6">
           <Badge variant="secondary" className="mb-3 rounded-full">
-            Tableau de bord pédagogique
+            {t("dashboard")}
           </Badge>
           <h1 className="font-serif text-2xl tracking-tight sm:text-3xl">
-            As-salāmu ʿalaykum{data ? `, ${firstName(data.teacherName)}` : ""}
+            {t("welcome")}
+            {data ? `, ${firstName(data.teacherName)}` : ""}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground sm:text-base">
-            Vos classes, vos élèves et leurs apprentissages au même endroit.
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground sm:text-base">{t("welcome_help")}</p>
         </div>
 
         {dashboard.isLoading ? (
@@ -302,32 +321,31 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
             <TabsList className="mb-6 grid h-auto w-full grid-cols-4 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[900px] sm:grid-cols-7">
               <TabsTrigger value="overview" className="min-h-11 rounded-xl">
                 <LayoutDashboard className="size-4 sm:mr-2" />
-                <span>Accueil</span>
+                <span>{t("tab_home")}</span>
               </TabsTrigger>
               <TabsTrigger value="classes" className="min-h-11 rounded-xl">
                 <School className="size-4 sm:mr-2" />
-                <span>Classes</span>
+                <span>{t("tab_classes")}</span>
               </TabsTrigger>
               <TabsTrigger value="courses" className="min-h-11 rounded-xl">
                 <BookOpen className="size-4 sm:mr-2" />
-                <span>Cours</span>
+                <span>{t("tab_courses")}</span>
               </TabsTrigger>
               <TabsTrigger value="lives" className="min-h-11 rounded-xl">
                 <Radio className="size-4 sm:mr-2" />
-                <span>Directs</span>
+                <span>{t("tab_lives")}</span>
               </TabsTrigger>
               <TabsTrigger value="homework" className="min-h-11 rounded-xl">
                 <ClipboardCheck className="size-4 sm:mr-2" />
-                <span className="hidden sm:inline">Corrections</span>
-                <span className="sm:hidden">Devoirs</span>
+                <span>{t("tab_homework")}</span>
               </TabsTrigger>
               <TabsTrigger value="messages" className="min-h-11 rounded-xl">
                 <MessageCircle className="size-4 sm:mr-2" />
-                <span>Messages</span>
+                <span>{t("tab_messages")}</span>
               </TabsTrigger>
               <TabsTrigger value="assessments" className="min-h-11 rounded-xl">
                 <Award className="size-4 sm:mr-2" />
-                <span>Évaluer</span>
+                <span>{t("tab_assessments")}</span>
               </TabsTrigger>
             </TabsList>
 
@@ -336,24 +354,71 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
                 <Stat
                   icon={<School className="size-5" />}
                   value={data.cohorts.length}
-                  label="Classes attribuées"
+                  label={t("assigned_classes")}
                 />
                 <Stat
                   icon={<Users className="size-5" />}
                   value={allLearners.size}
-                  label="Élèves suivis"
+                  label={t("followed_students")}
                 />
                 <Stat
                   icon={<BookOpen className="size-5" />}
                   value={data.courses.length}
-                  label="Cours associés"
+                  label={t("associated_courses")}
                 />
                 <Stat
                   icon={<ClipboardCheck className="size-5" />}
                   value={data.homework.filter((item) => item.status !== "graded").length}
-                  label="Corrections en attente"
+                  label={t("corrections_waiting")}
                 />
               </div>
+
+              <section>
+                <h2 className="mb-3 font-serif text-xl font-semibold">{t("quick_actions")}</h2>
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <button
+                    type="button"
+                    onClick={() => setAssistantOpen(true)}
+                    className="text-start"
+                  >
+                    <Card className="h-full border-primary/25 bg-primary/[0.04] shadow-sm transition hover:-translate-y-0.5 hover:border-primary/45">
+                      <CardContent className="p-5">
+                        <div className="grid size-11 place-items-center rounded-2xl bg-primary text-primary-foreground">
+                          <WandSparkles className="size-5" />
+                        </div>
+                        <h3 className="mt-4 font-semibold">{t("create_course")}</h3>
+                        <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                          {t("create_course_help")}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </button>
+                  {[
+                    ["homework", ClipboardCheck, "grade_homework", "grade_homework_help"],
+                    ["lives", Radio, "schedule_live", "schedule_live_help"],
+                    ["messages", MessageCircle, "answer_messages", "answer_messages_help"],
+                  ].map(([tab, Icon, titleKey, helpKey]) => (
+                    <button
+                      key={String(tab)}
+                      type="button"
+                      onClick={() => setActiveTab(String(tab))}
+                      className="text-start"
+                    >
+                      <Card className="h-full border-border/60 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/30">
+                        <CardContent className="p-5">
+                          <div className="grid size-11 place-items-center rounded-2xl bg-primary/10 text-primary">
+                            <Icon className="size-5" />
+                          </div>
+                          <h3 className="mt-4 font-semibold">{t(String(titleKey))}</h3>
+                          <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                            {t(String(helpKey))}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </button>
+                  ))}
+                </div>
+              </section>
 
               {data.cohorts.length === 0 ? (
                 <EmptyState
@@ -366,10 +431,8 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
                   <Card className="border-border/60 shadow-sm">
                     <CardContent className="p-5 sm:p-6">
                       <div className="mb-4">
-                        <h2 className="font-semibold">Mes classes</h2>
-                        <p className="text-sm text-muted-foreground">
-                          Repérez rapidement les groupes à accompagner.
-                        </p>
+                        <h2 className="font-semibold">{t("my_classes")}</h2>
+                        <p className="text-sm text-muted-foreground">{t("my_classes_help")}</p>
                       </div>
                       <div className="space-y-3">
                         {data.cohorts.map((cohort) => (
@@ -388,7 +451,8 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
                             <div className="min-w-0 flex-1">
                               <p className="truncate font-semibold">{cohort.name}</p>
                               <p className="text-xs text-muted-foreground">
-                                {cohort.learners.length} élèves · {cohort.courses.length} cours
+                                {cohort.learners.length} {t("students")} · {cohort.courses.length}{" "}
+                                {t("courses")}
                               </p>
                               <Progress value={cohort.averageProgress} className="mt-2 h-1.5" />
                             </div>
@@ -406,7 +470,7 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
                     <Card className="border-0 bg-[linear-gradient(135deg,var(--deep-green),var(--deep-green-hi))] text-[color:var(--cream)] shadow-[var(--shadow-elegant)]">
                       <CardContent className="p-5 sm:p-6">
                         <div className="flex items-center gap-2 text-sm text-white/70">
-                          <CalendarClock className="size-4" /> Prochain direct
+                          <CalendarClock className="size-4" /> {t("next_live")}
                         </div>
                         {data.upcomingLives[0] ? (
                           <>
@@ -426,7 +490,7 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
                                   target="_blank"
                                   rel="noreferrer"
                                 >
-                                  <Video className="size-4" /> Ouvrir la salle
+                                  <Video className="size-4" /> {t("open_room")}
                                 </a>
                               </Button>
                             ) : (
@@ -436,7 +500,7 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
                             )}
                           </>
                         ) : (
-                          <p className="mt-4 text-sm text-white/75">Aucune séance planifiée.</p>
+                          <p className="mt-4 text-sm text-white/75">{t("no_session")}</p>
                         )}
                       </CardContent>
                     </Card>
@@ -452,10 +516,9 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
                               <MessageCircle className="size-5" />
                             </div>
                             <div>
-                              <p className="font-semibold">Questions et messages</p>
+                              <p className="font-semibold">{t("questions_messages")}</p>
                               <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                                Répondez aux questions privées de vos élèves dans un espace
-                                sécurisé.
+                                {t("questions_messages_help")}
                               </p>
                             </div>
                           </div>
@@ -495,10 +558,11 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
 
             <TabsContent value="courses" className="mt-0 space-y-5">
               <div>
-                <h2 className="text-xl font-semibold">Cours de mes classes</h2>
-                <p className="text-sm text-muted-foreground">
-                  Consultez les contenus déjà attribués à vos groupes.
-                </p>
+                <h2 className="text-xl font-semibold">{t("course_list_title")}</h2>
+                <p className="text-sm text-muted-foreground">{t("course_list_help")}</p>
+                <Button className="mt-4 min-h-11 rounded-xl" onClick={() => setAssistantOpen(true)}>
+                  <WandSparkles /> {t("create_course")}
+                </Button>
               </div>
               {data.courses.length > 0 ? (
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -510,16 +574,16 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
                             <BookOpen className="size-5" />
                           </div>
                           <Badge variant={course.status === "published" ? "secondary" : "outline"}>
-                            {course.status === "published" ? "Publié" : "Brouillon"}
+                            {course.status === "published" ? t("published") : t("draft")}
                           </Badge>
                         </div>
                         <h3 className="mt-4 font-serif text-lg">{course.title}</h3>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          {course.level || "Tous niveaux"}
+                          {course.level || t("all_levels")}
                         </p>
                         <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
                           <CheckCircle2 className="size-4 text-primary" /> {course.lessonCount}{" "}
-                          leçon{course.lessonCount > 1 ? "s" : ""}
+                          {t("lessons")}
                         </div>
                         <div className="mt-4 flex flex-wrap gap-1.5">
                           {course.cohortNames.map((name) => (
@@ -528,6 +592,15 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
                             </Badge>
                           ))}
                         </div>
+                        {course.createdBy === userId ? (
+                          <Button
+                            variant="outline"
+                            className="mt-4 min-h-11 w-full rounded-xl"
+                            onClick={() => window.location.assign(`/cours/${course.id}`)}
+                          >
+                            <BookOpen className="size-4" /> {t("edit")}
+                          </Button>
+                        ) : null}
                       </CardContent>
                     </Card>
                   ))}
@@ -609,6 +682,17 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
           </Tabs>
         ) : null}
       </main>
+      {data ? (
+        <TeacherCourseAssistant
+          open={assistantOpen}
+          onOpenChange={setAssistantOpen}
+          organizationId={organization.id}
+          userId={userId}
+          cohorts={data.cohorts}
+          lang={lang}
+          onCreated={(courseId) => window.location.assign(`/cours/${courseId}`)}
+        />
+      ) : null}
     </div>
   );
 }
