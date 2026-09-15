@@ -102,6 +102,11 @@ const faqs = [
     answer:
       "Oui. L’espace famille permet de suivre les cours, les résultats et la progression de chaque enfant rattaché au compte.",
   },
+  {
+    question: "Comment les classes sont-elles organisées ?",
+    answer:
+      "Les enfants de 6 à 13 ans suivent des classes mixtes. À partir de 14 ans, les cohortes sont organisées en groupes filles ou garçons, puis en groupes femmes ou hommes à partir de 18 ans.",
+  },
 ] as const;
 
 function Home() {
@@ -167,9 +172,7 @@ function Home() {
               </div>
               <div className="absolute -bottom-5 left-4 max-w-[250px] rounded-2xl border border-white/35 bg-[#FFF9EC]/95 p-4 text-[#242923] shadow-xl backdrop-blur sm:left-8">
                 <p className="font-serif text-lg font-semibold">Karanta</p>
-                <p className="mt-1 text-xs leading-5 text-[#5E625C]">
-                  Cercle d’apprentissage.
-                </p>
+                <p className="mt-1 text-xs leading-5 text-[#5E625C]">Cercle d’apprentissage.</p>
               </div>
             </div>
           </div>
@@ -498,7 +501,7 @@ function PublicHeader() {
   return (
     <header className="relative z-50 border-b border-[#D8C8A8]/70 bg-[#FFFDF7]/95 backdrop-blur">
       <div className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-5 px-5 sm:px-8 lg:px-12">
-        <a href="#" className="flex items-center gap-3" aria-label="Accueil Diakspora Karanta">
+        <Link to="/" className="flex items-center gap-3" aria-label="Accueil Diakspora Karanta">
           <img src="/brands/diakspora/logo.webp" alt="" className="size-11 object-contain" />
           <span className="leading-none">
             <span className="block font-serif text-xl font-semibold text-[#173F2B]">Diakspora</span>
@@ -506,7 +509,7 @@ function PublicHeader() {
               Karanta
             </span>
           </span>
-        </a>
+        </Link>
         <nav
           className="hidden items-center gap-7 text-sm font-semibold text-[#4F554E] lg:flex"
           aria-label="Navigation principale"
@@ -588,6 +591,10 @@ function CoursePreview({
     <article className="group overflow-hidden rounded-[30px] border border-[#D8C8A8] bg-[#FFFDF7] shadow-[0_14px_40px_rgba(63,48,25,0.08)]">
       <div>
         <div className="relative aspect-video overflow-hidden bg-[#EADCC0]">
+          <BookOpen
+            aria-hidden
+            className="absolute left-1/2 top-1/2 size-12 -translate-x-1/2 -translate-y-1/2 text-[#9B855E]"
+          />
           <img
             src={image}
             alt=""

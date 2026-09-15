@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Baby, BookOpen, GraduationCap } from "lucide-react";
+import { Baby, GraduationCap, UsersRound } from "lucide-react";
 import type { ReactNode } from "react";
 
 export const Route = createFileRoute("/parcours")({
@@ -8,8 +8,7 @@ export const Route = createFileRoute("/parcours")({
       { title: "Choisissez votre parcours — Diakspora Karanta" },
       {
         name: "description",
-        content:
-          "Porte d'entrée de la démo Diakspora Karanta : découvrez les parcours Enfant, Intermédiaire et Avancé.",
+        content: "Découvrez les parcours Karanta pour les enfants, les adolescents et les adultes.",
       },
     ],
   }),
@@ -17,39 +16,39 @@ export const Route = createFileRoute("/parcours")({
 });
 
 type Path = {
-  to: string;
   label: string;
   title: string;
   description: string;
+  organization: string;
   visual: ReactNode;
   gradient: string;
 };
 
 const paths: Path[] = [
   {
-    to: "/eleve",
-    label: "Enfant (6-12 ans)",
-    title: "Espace enfant",
+    label: "Enfants · 6 à 13 ans",
+    title: "Premiers apprentissages",
     description:
       "Lecture arabe, Juzʾ ʿAmma et bases de la religion, dans un parcours adapté et chaleureux.",
+    organization: "Classes mixtes, organisées par âge et par niveau.",
     visual: <Baby size={28} aria-hidden="true" />,
     gradient: "var(--gradient-parcours-enfant)",
   },
   {
-    to: "/intermediaire",
-    label: "Intermédiaire",
-    title: "Arabe intermédiaire",
+    label: "Adolescents · 14 à 17 ans",
+    title: "Consolider et progresser",
     description:
-      "Arabe débutant et intermédiaire, grammaire fondamentale et conversation pratique.",
-    visual: <BookOpen size={28} aria-hidden="true" />,
+      "Arabe, Coran et sciences islamiques dans un cadre adapté à l’autonomie progressive.",
+    organization: "Groupes filles et groupes garçons distincts.",
+    visual: <UsersRound size={28} aria-hidden="true" />,
     gradient: "var(--gradient-parcours-intermediaire)",
   },
   {
-    to: "/avance",
-    label: "Avancé",
-    title: "Parcours avancé",
+    label: "Adultes · 18 ans et plus",
+    title: "Apprendre à son niveau",
     description:
-      "Fiqh malikite, nahw et ṣarf, textes classiques et poésie, pour une étude en profondeur.",
+      "De l’alphabétisation aux textes avancés, avec des créneaux adaptés et un suivi enseignant.",
+    organization: "Groupes femmes et groupes hommes distincts.",
     visual: <GraduationCap size={28} aria-hidden="true" />,
     gradient: "var(--gradient-parcours-avance)",
   },
@@ -73,24 +72,19 @@ function ParcoursPage() {
           <h1 className="mt-4 font-serif text-4xl font-semibold sm:text-6xl text-[color:var(--anthracite)]">
             Diakspora <span className="text-[color:var(--gold)]">Karanta</span>
           </h1>
-          <p className="mt-4 text-lg text-muted-foreground">
-            Choisissez votre parcours d'apprentissage
-          </p>
+          <p className="mt-4 text-lg text-muted-foreground">Découvrez l’organisation des classes</p>
         </header>
 
-        <nav className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <section
+          className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          aria-label="Publics accueillis"
+        >
           {paths.map((p) => (
-            <Link
-              key={p.to}
-              to={p.to}
-              className="group relative flex flex-col overflow-hidden rounded-2xl border border-border p-8 sm:p-10 transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-elegant)]"
+            <article
+              key={p.label}
+              className="relative flex flex-col overflow-hidden rounded-2xl border border-border p-8 shadow-[var(--shadow-card)] sm:p-10"
               style={{ background: p.gradient }}
             >
-              <div
-                aria-hidden
-                className="absolute inset-0 bg-[color:var(--anthracite)]/10 opacity-0 transition-opacity group-hover:opacity-100"
-              />
-
               <div className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full border border-[color:var(--cream)]/30 bg-[color:var(--cream)]/15 text-[color:var(--cream)] backdrop-blur-sm">
                 {p.visual}
               </div>
@@ -105,13 +99,29 @@ function ParcoursPage() {
                 <p className="mt-3 text-sm leading-relaxed text-[color:var(--cream)]/85">
                   {p.description}
                 </p>
-                <span className="mt-auto pt-6 text-sm font-medium text-[color:var(--gold-soft)] transition-colors group-hover:text-[color:var(--cream)]">
-                  Explorer →
-                </span>
+                <p className="mt-auto border-t border-white/20 pt-6 text-sm font-semibold text-[color:var(--gold-soft)]">
+                  {p.organization}
+                </p>
               </div>
-            </Link>
+            </article>
           ))}
-        </nav>
+        </section>
+
+        <section className="mx-auto mt-12 max-w-2xl rounded-2xl border border-border bg-card p-6 text-center shadow-[var(--shadow-card)] sm:p-8">
+          <h2 className="font-serif text-2xl text-[color:var(--anthracite)]">
+            Déjà inscrit à une cohorte ?
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Connectez-vous pour retrouver vos cours, vos directs et votre progression.
+          </p>
+          <Link
+            to="/auth"
+            search={{ portal: "family" }}
+            className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-[color:var(--deep-green)] px-6 font-semibold text-[color:var(--cream)]"
+          >
+            Accéder à mon espace
+          </Link>
+        </section>
       </div>
     </div>
   );

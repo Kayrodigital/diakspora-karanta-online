@@ -81,9 +81,7 @@ export function PhotoCapture({ onSend }: { onSend: (files: File[]) => void | Pro
             <span className="font-[family-name:var(--font-display-kid)] text-xl font-bold text-[color:var(--deep-green)]">
               Prendre une photo
             </span>
-            <span className="text-sm text-muted-foreground">
-              Prends ton cahier en photo
-            </span>
+            <span className="text-sm text-muted-foreground">Prends ton cahier en photo</span>
           </button>
 
           <button
@@ -98,11 +96,7 @@ export function PhotoCapture({ onSend }: { onSend: (files: File[]) => void | Pro
       ) : (
         <div className="flex flex-col gap-4">
           <div className="relative overflow-hidden rounded-3xl border-2 border-[color:var(--cream-2)] bg-card">
-            <img
-              src={main.url}
-              alt="Aperçu du devoir"
-              className="h-72 w-full object-cover"
-            />
+            <img src={main.url} alt="Aperçu du devoir" className="h-72 w-full object-cover" />
           </div>
 
           <div className="flex flex-wrap gap-2">

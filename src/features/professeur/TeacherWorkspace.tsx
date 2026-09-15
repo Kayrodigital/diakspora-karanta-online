@@ -674,7 +674,6 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
             <TabsContent value="assessments" className="mt-0 space-y-5">
               <TeacherAssessments
                 organizationId={organization.id}
-                organizationName={organization.name}
                 userId={userId}
                 cohorts={data.cohorts}
               />

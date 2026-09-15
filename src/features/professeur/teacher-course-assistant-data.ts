@@ -137,7 +137,18 @@ export async function saveTeacherCourseDraft(input: {
         .single();
       if (lessonError) throw lessonError;
 
-      const resources = [
+      const resources: Array<{
+        organization_id: string;
+        lesson_id: string;
+        created_by: string;
+        title: string;
+        description: string;
+        resource_type: string;
+        external_url: string | null;
+        transcript: string;
+        order_index: number;
+        status: string;
+      }> = [
         {
           organization_id: input.organizationId,
           lesson_id: lesson.id,

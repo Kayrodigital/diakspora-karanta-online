@@ -86,9 +86,7 @@ function AvancePage() {
 
         {/* Modules */}
         <section className="mt-12">
-          <h2 className="font-serif text-2xl text-[color:var(--anthracite)]">
-            Modules d'étude
-          </h2>
+          <h2 className="font-serif text-2xl text-[color:var(--anthracite)]">Modules d'étude</h2>
           <div className="mt-6 grid gap-5 md:grid-cols-3">
             {modules.map((m) => {
               const isOpen = m.id === openId;
@@ -108,20 +106,13 @@ function AvancePage() {
                   <h3 className="mt-2 font-serif text-2xl text-[color:var(--anthracite)]">
                     {m.title}
                   </h3>
-                  <p
-                    dir="rtl"
-                    className="mt-1 font-arabic text-xl text-[color:var(--deep-green)]"
-                  >
+                  <p dir="rtl" className="mt-1 font-arabic text-xl text-[color:var(--deep-green)]">
                     {m.titleArabic}
                   </p>
                   {m.author && (
-                    <p className="mt-3 text-xs text-muted-foreground italic">
-                      {m.author}
-                    </p>
+                    <p className="mt-3 text-xs text-muted-foreground italic">{m.author}</p>
                   )}
-                  <p className="mt-3 text-sm text-foreground/80 leading-relaxed">
-                    {m.description}
-                  </p>
+                  <p className="mt-3 text-sm text-foreground/80 leading-relaxed">{m.description}</p>
                   <p className="mt-4 border-t border-border pt-3 text-xs text-[color:var(--anthracite)]">
                     <span className="text-muted-foreground">Enseignant · </span>
                     {m.teacher}
@@ -153,16 +144,15 @@ function AvancePage() {
               >
                 {active.id === "akhdari" && (
                   <>
-                    فَرَائِضُ الوُضُوءِ سَبْعَةٌ: النِّيَّةُ عِنْدَ غَسْلِ الوَجْهِ،
-                    وَغَسْلُ الوَجْهِ، وَغَسْلُ اليَدَيْنِ إِلَى المِرْفَقَيْنِ،
-                    وَمَسْحُ الرَّأْسِ، وَغَسْلُ الرِّجْلَيْنِ إِلَى الكَعْبَيْنِ،
-                    وَالدَّلْكُ، وَالفَوْرُ.
+                    فَرَائِضُ الوُضُوءِ سَبْعَةٌ: النِّيَّةُ عِنْدَ غَسْلِ الوَجْهِ، وَغَسْلُ
+                    الوَجْهِ، وَغَسْلُ اليَدَيْنِ إِلَى المِرْفَقَيْنِ، وَمَسْحُ الرَّأْسِ، وَغَسْلُ
+                    الرِّجْلَيْنِ إِلَى الكَعْبَيْنِ، وَالدَّلْكُ، وَالفَوْرُ.
                   </>
                 )}
                 {active.id === "risala" && (
                   <>
-                    بَابُ مَا تَجِبُ بِهِ عَقِيدَةُ القَلْبِ مِمَّا نَطَقَ بِهِ
-                    اللِّسَانُ مِنْ وَاجِبِ أُمُورِ الدِّيَانَاتِ.
+                    بَابُ مَا تَجِبُ بِهِ عَقِيدَةُ القَلْبِ مِمَّا نَطَقَ بِهِ اللِّسَانُ مِنْ
+                    وَاجِبِ أُمُورِ الدِّيَانَاتِ.
                   </>
                 )}
                 {active.id === "burda" && (
@@ -191,9 +181,7 @@ function AvancePage() {
               <div className="mt-8 flex items-center gap-3 border-t border-border pt-5">
                 <span className="inline-block h-1.5 w-6 rounded-full bg-[color:var(--terracotta)]" />
                 <p className="text-xs text-[color:var(--anthracite)]">
-                  <span className="text-muted-foreground">
-                    Validé par{" "}
-                  </span>
+                  <span className="text-muted-foreground">Validé par </span>
                   <span className="font-medium">{active.teacher}</span>
                   <span className="text-muted-foreground">
                     {" · "}
