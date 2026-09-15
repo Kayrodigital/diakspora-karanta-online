@@ -138,12 +138,12 @@ function Home() {
                 famille.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <a
-                  href="#parcours"
+                <Link
+                  to="/parcours"
                   className="inline-flex min-h-13 items-center justify-center gap-2 rounded-full bg-[#E5B95C] px-7 font-bold text-[#173F2B] shadow-[0_14px_35px_rgba(229,185,92,0.24)] transition hover:-translate-y-0.5 hover:bg-[#F0C86D]"
                 >
-                  Découvrir les parcours <ArrowRight className="size-4" />
-                </a>
+                  Trouver mon cours <ArrowRight className="size-4" />
+                </Link>
                 <Link
                   to="/auth"
                   search={{ portal: "family" }}
@@ -474,12 +474,12 @@ function Home() {
               accessible et suivi.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <a
-                href="#parcours"
+              <Link
+                to="/parcours"
                 className="inline-flex min-h-13 items-center justify-center gap-2 rounded-full bg-[#173F2B] px-7 font-bold text-white"
               >
-                Voir les parcours <ArrowRight className="size-4" />
-              </a>
+                Trouver mon cours <ArrowRight className="size-4" />
+              </Link>
               <Link
                 to="/auth"
                 search={{ portal: "family" }}
@@ -535,12 +535,12 @@ function PublicHeader() {
           >
             Se connecter
           </Link>
-          <a
-            href="#parcours"
+          <Link
+            to="/parcours"
             className="inline-flex min-h-11 items-center rounded-full bg-[#173F2B] px-5 text-sm font-bold text-white"
           >
-            Découvrir
-          </a>
+            Trouver mon cours
+          </Link>
         </div>
         <details className="group relative sm:hidden">
           <summary className="grid size-11 cursor-pointer list-none place-items-center rounded-full border border-[#D8C8A8] text-[#173F2B]">
@@ -551,9 +551,9 @@ function PublicHeader() {
             <a href="#methode" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
               La vision
             </a>
-            <a href="#parcours" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
-              Les parcours
-            </a>
+            <Link to="/parcours" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
+              Trouver mon cours
+            </Link>
             <a href="#fonctionnalites" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
               La méthode
             </a>

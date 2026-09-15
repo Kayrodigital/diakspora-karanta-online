@@ -41,6 +41,16 @@ export type LearningItemInput =
       description?: string;
       level?: string;
       maxStudents?: number;
+      isPublic?: boolean;
+      audience?: string;
+      objective?: string;
+      teachingLanguages?: string[];
+      scheduleLabel?: string;
+      sessionPeriod?: string;
+      deliveryFormat?: string;
+      enrollmentStatus?: string;
+      publicSummary?: string;
+      priceCents?: number;
     }
   | {
       kind: "book";
@@ -164,6 +174,16 @@ export async function createLearningItem(
       description: input.description || null,
       level: input.level || null,
       max_students: input.maxStudents || null,
+      is_public: input.isPublic ?? false,
+      audience: input.audience || null,
+      objective: input.objective || null,
+      teaching_languages: input.teachingLanguages ?? [],
+      schedule_label: input.scheduleLabel || null,
+      session_period: input.sessionPeriod || null,
+      delivery_format: input.deliveryFormat || null,
+      enrollment_status: input.enrollmentStatus ?? "closed",
+      public_summary: input.publicSummary || null,
+      price_cents: input.priceCents ?? null,
       status: "active",
     });
     if (error) throw error;

@@ -473,52 +473,82 @@ export type Database = {
       };
       cohorts: {
         Row: {
+          audience: string | null;
           code: string | null;
           created_at: string;
+          delivery_format: string | null;
           description: string | null;
           ends_on: string | null;
+          enrollment_status: string;
           id: string;
+          is_public: boolean;
           level: string | null;
           max_students: number | null;
           name: string;
+          objective: string | null;
           organization_id: string;
+          price_cents: number | null;
           program_level_id: string | null;
+          public_summary: string | null;
+          schedule_label: string | null;
+          session_period: string | null;
           starts_on: string | null;
           status: string;
+          teaching_languages: string[];
           teacher_id: string | null;
           timezone: string;
           updated_at: string;
         };
         Insert: {
+          audience?: string | null;
           code?: string | null;
           created_at?: string;
+          delivery_format?: string | null;
           description?: string | null;
           ends_on?: string | null;
+          enrollment_status?: string;
           id?: string;
+          is_public?: boolean;
           level?: string | null;
           max_students?: number | null;
           name: string;
+          objective?: string | null;
           organization_id: string;
+          price_cents?: number | null;
           program_level_id?: string | null;
+          public_summary?: string | null;
+          schedule_label?: string | null;
+          session_period?: string | null;
           starts_on?: string | null;
           status?: string;
+          teaching_languages?: string[];
           teacher_id?: string | null;
           timezone?: string;
           updated_at?: string;
         };
         Update: {
+          audience?: string | null;
           code?: string | null;
           created_at?: string;
+          delivery_format?: string | null;
           description?: string | null;
           ends_on?: string | null;
+          enrollment_status?: string;
           id?: string;
+          is_public?: boolean;
           level?: string | null;
           max_students?: number | null;
           name?: string;
+          objective?: string | null;
           organization_id?: string;
+          price_cents?: number | null;
           program_level_id?: string | null;
+          public_summary?: string | null;
+          schedule_label?: string | null;
+          session_period?: string | null;
           starts_on?: string | null;
           status?: string;
+          teaching_languages?: string[];
           teacher_id?: string | null;
           timezone?: string;
           updated_at?: string;
@@ -3308,6 +3338,26 @@ export type Database = {
         };
         Returns: Json;
       };
+      list_public_cohorts: {
+        Args: { p_organization_slug?: string };
+        Returns: {
+          audience: string;
+          availability: string;
+          delivery_format: string;
+          id: string;
+          level: string;
+          name: string;
+          objective: string;
+          price_cents: number | null;
+          public_summary: string | null;
+          remaining_places: number | null;
+          schedule_label: string;
+          session_period: string;
+          starts_on: string | null;
+          teaching_languages: string[];
+          timezone: string;
+        }[];
+      };
       mark_shop_order_paid: {
         Args: {
           p_checkout_session_id: string;
@@ -3320,6 +3370,26 @@ export type Database = {
       release_shop_order: {
         Args: { p_order_id: string; p_status?: string };
         Returns: boolean;
+      };
+      submit_enrollment_application: {
+        Args: {
+          p_accompaniment_language: string;
+          p_applicant_name: string;
+          p_audience: string;
+          p_availability: string;
+          p_cohort_id: string | null;
+          p_email: string;
+          p_learner_name: string | null;
+          p_level: string;
+          p_notes: string | null;
+          p_objective: string;
+          p_organization_slug: string;
+          p_phone: string;
+          p_preferred_contact: string;
+          p_privacy_consent: boolean;
+          p_website?: string | null;
+        };
+        Returns: string;
       };
       submit_quiz_attempt: {
         Args: { p_answers: Json; p_quiz_id: string };

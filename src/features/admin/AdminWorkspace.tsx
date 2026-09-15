@@ -239,6 +239,16 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
       level?: string;
       description?: string;
       maxStudents?: number;
+      isPublic?: boolean;
+      audience?: string;
+      objective?: string;
+      teachingLanguages?: string[];
+      scheduleLabel?: string;
+      sessionPeriod?: string;
+      deliveryFormat?: string;
+      enrollmentStatus?: string;
+      publicSummary?: string;
+      priceCents?: number;
     }) => createLearningItem(organization.id, userId, { kind: "cohort", ...input }),
     onSuccess: () => {
       refresh();
@@ -1006,18 +1016,33 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
       </Dialog>
 
       <Dialog open={classOpen} onOpenChange={setClassOpen}>
-        <DialogContent className="rounded-2xl sm:max-w-lg">
+        <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl sm:max-w-2xl">
           <form
             onSubmit={(event) => {
               event.preventDefault();
               const form = new FormData(event.currentTarget);
               const capacity = Number(form.get("maxStudents"));
+              const priceEuros = Number(form.get("priceEuros"));
+              const isPublic = form.get("isPublic") === "on";
               classMutation.mutate({
                 name: String(form.get("name") ?? ""),
                 code: String(form.get("code") ?? "") || undefined,
                 level: String(form.get("level") ?? "") || undefined,
                 description: String(form.get("description") ?? "") || undefined,
                 maxStudents: Number.isFinite(capacity) && capacity > 0 ? capacity : undefined,
+                isPublic,
+                audience: String(form.get("audience") ?? "") || undefined,
+                objective: String(form.get("objective") ?? "") || undefined,
+                teachingLanguages: form.getAll("teachingLanguages").map(String),
+                scheduleLabel: String(form.get("scheduleLabel") ?? "") || undefined,
+                sessionPeriod: String(form.get("sessionPeriod") ?? "") || undefined,
+                deliveryFormat: String(form.get("deliveryFormat") ?? "") || undefined,
+                enrollmentStatus: String(form.get("enrollmentStatus") ?? "closed"),
+                publicSummary: String(form.get("publicSummary") ?? "") || undefined,
+                priceCents:
+                  Number.isFinite(priceEuros) && priceEuros >= 0
+                    ? Math.round(priceEuros * 100)
+                    : undefined,
               });
             }}
           >
@@ -1052,10 +1077,105 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
                 </Field>
               </div>
               <Field label="Niveau" htmlFor="class-level">
-                <Input id="class-level" name="level" />
+                <NativeSelect id="class-level" name="level" defaultValue="">
+                  <option value="">Non défini</option>
+                  <option value="beginner">Débutant</option>
+                  <option value="intermediate">Intermédiaire</option>
+                  <option value="advanced">Avancé</option>
+                </NativeSelect>
               </Field>
               <Field label="Description" htmlFor="class-description">
                 <Textarea id="class-description" name="description" rows={3} />
+              </Field>
+              <label className="flex items-start gap-3 rounded-xl border border-border p-4 text-sm">
+                <input name="isPublic" type="checkbox" className="mt-0.5 size-4" />
+                <span>
+                  <strong className="block">Afficher dans le parcours public</strong>
+                  <span className="text-muted-foreground">
+                    Remplissez tous les champs publics ci-dessous avant de cocher cette option.
+                  </span>
+                </span>
+              </label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Public" htmlFor="class-audience">
+                  <NativeSelect id="class-audience" name="audience" defaultValue="">
+                    <option value="">Non défini</option>
+                    <option value="child">Enfants · mixte · 6–13 ans</option>
+                    <option value="teen_female">Adolescentes · 14–17 ans</option>
+                    <option value="teen_male">Adolescents · 14–17 ans</option>
+                    <option value="adult_female">Femmes · 18 ans et plus</option>
+                    <option value="adult_male">Hommes · 18 ans et plus</option>
+                  </NativeSelect>
+                </Field>
+                <Field label="Objectif" htmlFor="class-objective">
+                  <NativeSelect id="class-objective" name="objective" defaultValue="">
+                    <option value="">Non défini</option>
+                    <option value="arabic_literacy">Lire et écrire l’arabe</option>
+                    <option value="arabic_language">Langue arabe</option>
+                    <option value="quran_tajwid">Coran et tajwid</option>
+                    <option value="islamic_studies">Sciences islamiques</option>
+                    <option value="advanced_texts">Textes avancés</option>
+                  </NativeSelect>
+                </Field>
+              </div>
+              <fieldset className="rounded-xl border border-border p-4">
+                <legend className="px-1 text-sm font-medium">Langues d’enseignement</legend>
+                <div className="mt-2 flex flex-wrap gap-4 text-sm">
+                  {[
+                    ["Français", "Français"],
+                    ["Arabe", "Arabe"],
+                    ["Diakhanké", "Diakhanké"],
+                  ].map(([label, value]) => (
+                    <label key={value} className="flex items-center gap-2">
+                      <input name="teachingLanguages" value={value} type="checkbox" /> {label}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <Field label="Créneau affiché" htmlFor="class-schedule">
+                <Input
+                  id="class-schedule"
+                  name="scheduleLabel"
+                  placeholder="Ex. Mardi 19 h – 20 h 30 (Paris)"
+                />
+              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Période" htmlFor="class-period">
+                  <NativeSelect id="class-period" name="sessionPeriod" defaultValue="">
+                    <option value="">Non définie</option>
+                    <option value="morning">Matin</option>
+                    <option value="daytime">Journée</option>
+                    <option value="evening">Soir</option>
+                    <option value="weekend">Week-end</option>
+                  </NativeSelect>
+                </Field>
+                <Field label="Format" htmlFor="class-format">
+                  <NativeSelect id="class-format" name="deliveryFormat" defaultValue="">
+                    <option value="">Non défini</option>
+                    <option value="live">Direct</option>
+                    <option value="hybrid">Hybride</option>
+                    <option value="on_demand">À la demande</option>
+                  </NativeSelect>
+                </Field>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Inscriptions" htmlFor="class-enrollment-status">
+                  <NativeSelect
+                    id="class-enrollment-status"
+                    name="enrollmentStatus"
+                    defaultValue="closed"
+                  >
+                    <option value="closed">Fermées</option>
+                    <option value="open">Ouvertes</option>
+                    <option value="waitlist">Liste d’attente</option>
+                  </NativeSelect>
+                </Field>
+                <Field label="Tarif en euros (facultatif)" htmlFor="class-price">
+                  <Input id="class-price" name="priceEuros" type="number" min="0" step="0.01" />
+                </Field>
+              </div>
+              <Field label="Résumé public" htmlFor="class-public-summary">
+                <Textarea id="class-public-summary" name="publicSummary" rows={2} maxLength={300} />
               </Field>
             </div>
             <DialogFooter>
