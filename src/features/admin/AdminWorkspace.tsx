@@ -384,9 +384,16 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
               espace.
             </p>
           </div>
-          <Button onClick={() => setInviteOpen(true)} className="h-11 rounded-xl sm:w-auto">
-            <UserPlus className="size-4" /> Inviter une personne
-          </Button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button asChild variant="outline" className="h-11 rounded-xl sm:w-auto">
+              <Link to="/planning">
+                <CalendarClock className="size-4" /> Classes et planning
+              </Link>
+            </Button>
+            <Button onClick={() => setInviteOpen(true)} className="h-11 rounded-xl sm:w-auto">
+              <UserPlus className="size-4" /> Inviter une personne
+            </Button>
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>

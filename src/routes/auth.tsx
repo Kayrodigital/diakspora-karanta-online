@@ -19,6 +19,11 @@ const portalContent: Record<Portal, { eyebrow: string; title: string; descriptio
     title: "Piloter votre organisation",
     description: "Accès réservé aux propriétaires, administrateurs et techniciens autorisés.",
   },
+  planning: {
+    eyebrow: "Classes et planning",
+    title: "Accéder au planning",
+    description: "Accès réservé aux responsables et professeurs autorisés.",
+  },
 };
 
 export const Route = createFileRoute("/auth")({

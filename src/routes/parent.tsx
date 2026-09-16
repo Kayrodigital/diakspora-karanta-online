@@ -4,6 +4,7 @@ import { LearnerProgressDashboard } from "@/features/assessment/LearnerProgressD
 import { supabase } from "@/integrations/supabase/client";
 import { loadPortalAccess } from "@/lib/auth/portal-access";
 import { organizationTheme } from "@/lib/organization-theme";
+import { FamilySchedule } from "@/features/planning/FamilySchedule";
 
 export const Route = createFileRoute("/parent")({
   ssr: false,
@@ -106,6 +107,7 @@ function ParentPage() {
           </h2>
           <LearnerProgressDashboard organizationId={organization.id} />
         </section>
+        <FamilySchedule organizationId={organization.id} userId={user.id} />
       </main>
     </div>
   );

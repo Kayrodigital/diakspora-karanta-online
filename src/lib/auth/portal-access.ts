@@ -13,7 +13,7 @@ export const ORGANIZATION_ROLES = [
 ] as const;
 
 export type OrganizationRole = (typeof ORGANIZATION_ROLES)[number];
-export type Portal = "family" | "teacher" | "admin";
+export type Portal = "family" | "teacher" | "admin" | "planning";
 export type PortalDestination = "/parent" | "/eleve" | "/professeur" | "/admin";
 
 type Membership = {
@@ -42,6 +42,7 @@ const PORTAL_ROLES: Record<Portal, ReadonlySet<OrganizationRole>> = {
   family: new Set(["parent", "learner"]),
   teacher: new Set(["pedagogical_manager", "teacher", "class_manager"]),
   admin: new Set(["owner", "admin", "technician"]),
+  planning: new Set(["owner", "admin", "pedagogical_manager", "teacher", "class_manager"]),
 };
 
 function isOrganizationRole(value: string): value is OrganizationRole {
@@ -121,6 +122,9 @@ export async function resolvePostAuthDestination(
     if (!membership) continue;
 
     if (portal === "admin") return "/admin";
+    if (portal === "planning") {
+      return ["owner", "admin"].includes(membership.role) ? "/admin" : "/professeur";
+    }
     if (portal === "teacher") return "/professeur";
     return membership.role === "parent" ? "/parent" : "/eleve";
   }

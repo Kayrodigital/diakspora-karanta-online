@@ -27,6 +27,7 @@ export type StudentCourseProgress = {
 };
 
 export type StudentHomeData = {
+  learnerId: string | null;
   firstName: string;
   cohortName: string;
   courses: StudentCourseProgress[];
@@ -77,8 +78,14 @@ export async function loadStudentHome(
   organizationId: string,
   userId: string,
 ): Promise<StudentHomeData> {
-  const [profile, courses, lessons, progress, lives] = await Promise.all([
+  const [profile, learnerProfile, courses, lessons, progress, lives] = await Promise.all([
     supabase.from("profiles").select("full_name, cohort_name").eq("id", userId).maybeSingle(),
+    supabase
+      .from("learner_profiles")
+      .select("id")
+      .eq("organization_id", organizationId)
+      .eq("user_id", userId)
+      .maybeSingle(),
     supabase
       .from("courses")
       .select("*")
@@ -108,6 +115,7 @@ export async function loadStudentHome(
 
   const error = firstError([
     profile.error,
+    learnerProfile.error,
     courses.error,
     lessons.error,
     progress.error,
@@ -136,6 +144,7 @@ export async function loadStudentHome(
   const nextLesson = visibleLessons.find((lesson) => !completedIds.has(lesson.id)) ?? null;
 
   return {
+    learnerId: learnerProfile.data?.id ?? null,
     firstName: profile.data?.full_name?.split(" ")[0] || "Élève",
     cohortName: profile.data?.cohort_name || "Mon espace Karanta",
     courses: courseProgress,

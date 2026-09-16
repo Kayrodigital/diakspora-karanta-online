@@ -290,15 +290,22 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
-        <div className="mb-6">
-          <Badge variant="secondary" className="mb-3 rounded-full">
-            {t("dashboard")}
-          </Badge>
-          <h1 className="font-serif text-2xl tracking-tight sm:text-3xl">
-            {t("welcome")}
-            {data ? `, ${firstName(data.teacherName)}` : ""}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground sm:text-base">{t("welcome_help")}</p>
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <Badge variant="secondary" className="mb-3 rounded-full">
+              {t("dashboard")}
+            </Badge>
+            <h1 className="font-serif text-2xl tracking-tight sm:text-3xl">
+              {t("welcome")}
+              {data ? `, ${firstName(data.teacherName)}` : ""}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground sm:text-base">{t("welcome_help")}</p>
+          </div>
+          <Button asChild className="min-h-11 shrink-0">
+            <a href="/planning">
+              <CalendarClock className="size-4" /> {lang === "ar" ? "جدولي" : "Voir mon planning"}
+            </a>
+          </Button>
         </div>
 
         {dashboard.isLoading ? (
