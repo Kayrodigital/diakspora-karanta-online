@@ -46,6 +46,7 @@ type Payload = {
   sendAccess?: boolean;
   fileName?: string;
   rows?: Array<Record<string, string>>;
+  applicationIds?: string[];
 };
 
 function response(body: Record<string, unknown>, status = 200) {
@@ -672,6 +673,68 @@ Deno.serve(async (request) => {
         },
       });
       return response({ ok: true, learnerId, userId: account.id, emailSent });
+    }
+
+    if (payload.action === "bulk_assign_class") {
+      requireRole(["owner", "admin", "class_manager"]);
+      const cohortId = required(payload.cohortId, "La classe");
+      const applicationIds = [...new Set(payload.applicationIds ?? [])];
+      if (!applicationIds.length || applicationIds.length > 100) {
+        throw new Error("Sélectionnez entre 1 et 100 demandes.");
+      }
+      const { data: cohort, error: cohortError } = await serviceClient
+        .from("cohorts")
+        .select("id, name, max_students, enrollment_status")
+        .eq("id", cohortId)
+        .eq("organization_id", organizationId)
+        .single();
+      if (cohortError) throw cohortError;
+      if (cohort.enrollment_status !== "open")
+        throw new Error("Cette classe n’accepte pas d’inscriptions directes.");
+      const { data: applications, error: applicationsError } = await serviceClient
+        .from("enrollment_applications")
+        .select("id, linked_learner_id")
+        .eq("organization_id", organizationId)
+        .in("id", applicationIds);
+      if (applicationsError) throw applicationsError;
+      const ready = (applications ?? []).filter((item) => item.linked_learner_id);
+      const { count, error: countError } = await serviceClient
+        .from("learner_cohort_memberships")
+        .select("id", { count: "exact", head: true })
+        .eq("cohort_id", cohortId)
+        .eq("status", "active");
+      if (countError) throw countError;
+      if (cohort.max_students !== null && (count ?? 0) + ready.length > cohort.max_students) {
+        throw new Error("Il ne reste pas assez de places pour cette action groupée.");
+      }
+      for (const application of ready) {
+        await assignLearner(application.linked_learner_id!, cohortId, "active");
+        await serviceClient
+          .from("enrollment_applications")
+          .update({ proposed_cohort_id: cohortId, updated_at: new Date().toISOString() })
+          .eq("id", application.id);
+        await serviceClient.from("admission_events").insert({
+          organization_id: organizationId,
+          application_id: application.id,
+          actor_user_id: authData.user.id,
+          event_type: "bulk_action",
+          summary: `Inscription groupée dans ${cohort.name}`,
+          metadata: { cohort_id: cohortId },
+        });
+      }
+      await serviceClient.from("audit_logs").insert({
+        organization_id: organizationId,
+        actor_user_id: authData.user.id,
+        action: "admissions.bulk_class_assignment",
+        entity_type: "cohort",
+        entity_id: cohortId,
+        metadata: { requested: applicationIds.length, enrolled: ready.length },
+      });
+      return response({
+        ok: true,
+        enrolled: ready.length,
+        skipped: applicationIds.length - ready.length,
+      });
     }
 
     return response({ error: "Action inconnue." }, 400);

@@ -33,6 +33,7 @@ import {
   Send,
   UserCheck,
   Users,
+  XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -189,6 +190,19 @@ export function AdmissionsWorkspace({ organization, role, userId }: Props) {
   const [audience, setAudience] = useState("all");
   const [payment, setPayment] = useState("all");
   const [owner, setOwner] = useState("all");
+  const [objective, setObjective] = useState("all");
+  const [level, setLevel] = useState("all");
+  const [language, setLanguage] = useState("all");
+  const [availability, setAvailability] = useState("all");
+  const [cohort, setCohort] = useState("all");
+  const [source, setSource] = useState("all");
+  const [priority, setPriority] = useState("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [savedView, setSavedView] = useState("");
+  const [bulkOwner, setBulkOwner] = useState("");
+  const [bulkStage, setBulkStage] = useState("");
+  const [bulkCohort, setBulkCohort] = useState("");
   const [note, setNote] = useState("");
   const [messageOpen, setMessageOpen] = useState(false);
   const [templateId, setTemplateId] = useState("");
@@ -224,10 +238,35 @@ export function AdmissionsWorkspace({ organization, role, userId }: Props) {
           (audience === "all" || item.audience === audience) &&
           (payment === "all" || item.payment_status === payment) &&
           (owner === "all" ||
-            (owner === "unassigned" ? !item.assigned_to : item.assigned_to === owner))
+            (owner === "unassigned" ? !item.assigned_to : item.assigned_to === owner)) &&
+          (objective === "all" || item.objective === objective) &&
+          (level === "all" || item.level === level) &&
+          (language === "all" || item.accompaniment_language === language) &&
+          (availability === "all" || item.availability === availability) &&
+          (cohort === "all" || item.proposed_cohort_id === cohort) &&
+          (source === "all" || item.source === source) &&
+          (priority === "all" || item.priority === priority) &&
+          (!dateFrom || item.created_at >= `${dateFrom}T00:00:00`) &&
+          (!dateTo || item.created_at <= `${dateTo}T23:59:59`)
         );
       }),
-    [data, search, stage, audience, payment, owner],
+    [
+      data,
+      search,
+      stage,
+      audience,
+      payment,
+      owner,
+      objective,
+      level,
+      language,
+      availability,
+      cohort,
+      source,
+      priority,
+      dateFrom,
+      dateTo,
+    ],
   );
 
   const stats = useMemo(() => {
@@ -272,6 +311,15 @@ export function AdmissionsWorkspace({ organization, role, userId }: Props) {
           )
         : 0,
       average,
+      proposals: applications.filter((item) => item.status === "proposal_sent").length,
+      confirmed: applications.filter((item) =>
+        ["confirmed", "access_sent", "first_login_check"].includes(item.status),
+      ).length,
+      closed: applications.filter((item) => item.status === "closed").length,
+      nearCapacity: (data?.cohorts ?? []).filter(
+        (item) =>
+          item.max_students && (data?.activeCounts[item.id] ?? 0) / item.max_students >= 0.8,
+      ).length,
     };
   }, [data]);
 
@@ -331,6 +379,47 @@ export function AdmissionsWorkspace({ organization, role, userId }: Props) {
         setImportOpen(true);
       })
       .catch(() => toast.error("Ce fichier CSV ne peut pas être lu."));
+  }
+
+  function resetFilters() {
+    setSearch("");
+    setStage("active");
+    setAudience("all");
+    setOwner("all");
+    setPayment("all");
+    setObjective("all");
+    setLevel("all");
+    setLanguage("all");
+    setAvailability("all");
+    setCohort("all");
+    setSource("all");
+    setPriority("all");
+    setDateFrom("");
+    setDateTo("");
+    setSavedView("");
+  }
+
+  function applySavedView(id: string) {
+    setSavedView(id);
+    const view = data?.savedFilters.find((item) => item.id === id);
+    if (!view || !view.filters || Array.isArray(view.filters) || typeof view.filters !== "object")
+      return;
+    const filters = view.filters as Record<string, unknown>;
+    const apply = (key: string, setter: (value: string) => void, fallback = "all") =>
+      setter(typeof filters[key] === "string" ? String(filters[key]) : fallback);
+    apply("stage", setStage, "active");
+    apply("audience", setAudience);
+    apply("owner", setOwner);
+    apply("payment", setPayment);
+    apply("objective", setObjective);
+    apply("level", setLevel);
+    apply("language", setLanguage);
+    apply("availability", setAvailability);
+    apply("cohort", setCohort);
+    apply("source", setSource);
+    apply("priority", setPriority);
+    apply("dateFrom", setDateFrom, "");
+    apply("dateTo", setDateTo, "");
   }
 
   if (query.isLoading)
@@ -466,6 +555,25 @@ export function AdmissionsWorkspace({ organization, role, userId }: Props) {
             icon={<CalendarClock />}
             help="Délai moyen"
           />
+          <Metric label="Propositions" value={stats.proposals} icon={<Send />} help="Envoyées" />
+          <Metric
+            label="Confirmées"
+            value={stats.confirmed}
+            icon={<CheckCircle2 />}
+            help="Inscriptions actives"
+          />
+          <Metric
+            label="Clôturées"
+            value={stats.closed}
+            icon={<XCircle />}
+            help="Refus, abandon ou report"
+          />
+          <Metric
+            label="Classes presque pleines"
+            value={stats.nearCapacity}
+            icon={<Users />}
+            help="80 % ou plus"
+          />
         </section>
 
         <Tabs defaultValue="inbox" className="mt-6">
@@ -527,19 +635,83 @@ export function AdmissionsWorkspace({ organization, role, userId }: Props) {
                       </option>
                     ))}
                   </SelectField>
+                  <SelectField id="objective-filter" value={objective} onChange={setObjective}>
+                    <option value="all">Tous les objectifs</option>
+                    {Object.entries(objectiveLabels).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </SelectField>
+                  <SelectField id="level-filter" value={level} onChange={setLevel}>
+                    <option value="all">Tous les niveaux</option>
+                    {Object.entries(levelLabels).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </SelectField>
+                  <SelectField id="language-filter" value={language} onChange={setLanguage}>
+                    <option value="all">Toutes les langues</option>
+                    <option value="fr">Français</option>
+                    <option value="ar">Arabe</option>
+                    <option value="diakhanke">Diakhanké</option>
+                  </SelectField>
+                  <SelectField
+                    id="availability-filter"
+                    value={availability}
+                    onChange={setAvailability}
+                  >
+                    <option value="all">Toutes les disponibilités</option>
+                    <option value="morning">Matin</option>
+                    <option value="daytime">Journée</option>
+                    <option value="evening">Soir</option>
+                    <option value="weekend">Week-end</option>
+                  </SelectField>
+                  <SelectField id="cohort-filter" value={cohort} onChange={setCohort}>
+                    <option value="all">Toutes les classes proposées</option>
+                    {data.cohorts.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.name}
+                      </option>
+                    ))}
+                  </SelectField>
+                  <SelectField id="source-filter" value={source} onChange={setSource}>
+                    <option value="all">Toutes les sources</option>
+                    {[...new Set(data.applications.map((item) => item.source))].map((value) => (
+                      <option key={value} value={value}>
+                        {value}
+                      </option>
+                    ))}
+                  </SelectField>
+                  <SelectField id="priority-filter" value={priority} onChange={setPriority}>
+                    <option value="all">Toutes les priorités</option>
+                    <option value="urgent">Urgente</option>
+                    <option value="high">Haute</option>
+                    <option value="normal">Normale</option>
+                    <option value="low">Basse</option>
+                  </SelectField>
+                  <div>
+                    <Label htmlFor="date-from">Du</Label>
+                    <Input
+                      id="date-from"
+                      type="date"
+                      value={dateFrom}
+                      onChange={(event) => setDateFrom(event.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="date-to">Au</Label>
+                    <Input
+                      id="date-to"
+                      type="date"
+                      value={dateTo}
+                      onChange={(event) => setDateTo(event.target.value)}
+                    />
+                  </div>
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setSearch("");
-                      setStage("active");
-                      setAudience("all");
-                      setOwner("all");
-                      setPayment("all");
-                    }}
-                  >
+                  <Button size="sm" variant="ghost" onClick={resetFilters}>
                     <Filter /> Réinitialiser
                   </Button>
                   <Button
@@ -550,8 +722,22 @@ export function AdmissionsWorkspace({ organization, role, userId }: Props) {
                         saveAdmissionFilter(
                           organization.id,
                           userId,
-                          `Vue ${new Date().toLocaleDateString("fr-FR")}`,
-                          { stage, audience, owner, payment },
+                          `Vue ${new Date().toLocaleDateString("fr-FR")} ${new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`,
+                          {
+                            stage,
+                            audience,
+                            owner,
+                            payment,
+                            objective,
+                            level,
+                            language,
+                            availability,
+                            cohort,
+                            source,
+                            priority,
+                            dateFrom,
+                            dateTo,
+                          },
                         ),
                       )
                     }
@@ -559,9 +745,14 @@ export function AdmissionsWorkspace({ organization, role, userId }: Props) {
                     Enregistrer les filtres
                   </Button>
                   {data.savedFilters.length > 0 && (
-                    <span className="text-xs text-muted-foreground">
-                      {data.savedFilters.length} vue(s) enregistrée(s)
-                    </span>
+                    <SelectField id="saved-view" value={savedView} onChange={applySavedView}>
+                      <option value="">Charger une vue enregistrée</option>
+                      {data.savedFilters.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </SelectField>
                   )}
                 </div>
               </CardContent>
@@ -570,39 +761,88 @@ export function AdmissionsWorkspace({ organization, role, userId }: Props) {
             {bulkIds.length > 0 && (
               <div className="sticky top-16 z-20 mt-3 flex flex-wrap items-center gap-2 rounded-2xl border bg-background p-3 shadow-lg">
                 <Badge>{bulkIds.length} sélectionnée(s)</Badge>
+                <SelectField id="bulk-owner" value={bulkOwner} onChange={setBulkOwner}>
+                  <option value="">Choisir un responsable</option>
+                  {data.managers.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </SelectField>
                 <Button
                   size="sm"
                   variant="outline"
+                  disabled={!bulkOwner}
                   onClick={() =>
                     mutation.mutate(async () => {
-                      if (!window.confirm(`Assigner ${bulkIds.length} demande(s) à vous-même ?`))
-                        return;
+                      if (!window.confirm(`Assigner ${bulkIds.length} demande(s) ?`)) return;
                       await Promise.all(
-                        bulkIds.map((id) => updateAdmission(id, { assigned_to: userId })),
+                        bulkIds.map((id) => updateAdmission(id, { assigned_to: bulkOwner })),
                       );
                       setBulkIds([]);
                     })
                   }
                 >
-                  M’assigner
+                  Assigner
                 </Button>
+                <SelectField id="bulk-stage" value={bulkStage} onChange={setBulkStage}>
+                  <option value="">Choisir une étape</option>
+                  {admissionStages
+                    .filter(([value]) => value !== "closed")
+                    .map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                </SelectField>
                 <Button
                   size="sm"
                   variant="outline"
+                  disabled={!bulkStage}
+                  onClick={() =>
+                    mutation.mutate(async () => {
+                      if (!window.confirm(`Changer l’étape de ${bulkIds.length} demande(s) ?`))
+                        return;
+                      await Promise.all(
+                        bulkIds.map((id) => updateAdmission(id, { status: bulkStage })),
+                      );
+                      setBulkIds([]);
+                    })
+                  }
+                >
+                  Changer l’étape
+                </Button>
+                <SelectField id="bulk-cohort" value={bulkCohort} onChange={setBulkCohort}>
+                  <option value="">Choisir une classe</option>
+                  {data.cohorts.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </SelectField>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={!bulkCohort || !canConfirm}
                   onClick={() =>
                     mutation.mutate(async () => {
                       if (
-                        !window.confirm(`Passer ${bulkIds.length} demande(s) à « À contacter » ?`)
+                        !window.confirm(
+                          `Inscrire les élèves déjà confirmés de ${bulkIds.length} demande(s) dans cette classe ?`,
+                        )
                       )
                         return;
-                      await Promise.all(
-                        bulkIds.map((id) => updateAdmission(id, { status: "to_contact" })),
-                      );
+                      await runAdmissionAction({
+                        action: "bulk_assign_class",
+                        organizationId: organization.id,
+                        applicationIds: bulkIds,
+                        cohortId: bulkCohort,
+                      });
                       setBulkIds([]);
                     })
                   }
                 >
-                  Passer à « À contacter »
+                  Inscrire dans la classe
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => setBulkIds([])}>
                   Annuler
@@ -1222,13 +1462,21 @@ function RequestDetail({
                     mutation.mutate(() =>
                       updateAdmission(application.id, {
                         proposed_cohort_id: item.cohort_id,
-                        status: "proposal_sent",
-                        next_action: "Faire valider la proposition",
+                        status:
+                          item.availability === "waitlist" || item.availability === "full"
+                            ? "class_to_propose"
+                            : "proposal_sent",
+                        next_action:
+                          item.availability === "waitlist" || item.availability === "full"
+                            ? "Prévenir lors de la libération d’une place"
+                            : "Faire valider la proposition",
                       }),
                     )
                   }
                 >
-                  Proposer cette classe
+                  {item.availability === "waitlist" || item.availability === "full"
+                    ? "Placer en liste d’attente"
+                    : "Proposer cette classe"}
                 </Button>
               </div>
             ))}
