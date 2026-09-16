@@ -57,18 +57,19 @@ export async function submitEnrollmentApplication(
 ): Promise<string> {
   const { data, error } = await supabase.rpc("submit_enrollment_application", {
     p_organization_slug: "diakspora",
-    p_cohort_id: input.cohortId,
+    // PostgreSQL accepts NULL here; generated RPC argument types do not encode nullable parameters.
+    p_cohort_id: input.cohortId as string,
     p_audience: input.audience,
     p_objective: input.objective,
     p_level: input.level,
     p_availability: input.availability,
     p_accompaniment_language: input.accompanimentLanguage,
     p_applicant_name: input.applicantName,
-    p_learner_name: input.learnerName,
+    p_learner_name: input.learnerName as string,
     p_email: input.email,
     p_phone: input.phone,
     p_preferred_contact: input.preferredContact,
-    p_notes: input.notes,
+    p_notes: input.notes as string,
     p_privacy_consent: input.privacyConsent,
     p_website: input.website,
   });

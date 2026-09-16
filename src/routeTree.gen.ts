@@ -19,6 +19,7 @@ import { Route as IntermediaireRouteImport } from './routes/intermediaire'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ParcoursRouteImport } from './routes/parcours'
 import { Route as ParentRouteImport } from './routes/parent'
+import { Route as PlanningRouteImport } from './routes/planning'
 import { Route as ProfesseurRouteImport } from './routes/professeur'
 import { Route as RattrapageRouteImport } from './routes/rattrapage'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
@@ -79,6 +80,11 @@ const ParcoursRoute = ParcoursRouteImport.update({
 const ParentRoute = ParentRouteImport.update({
   id: '/parent',
   path: '/parent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanningRoute = PlanningRouteImport.update({
+  id: '/planning',
+  path: '/planning',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfesseurRoute = ProfesseurRouteImport.update({
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/parcours': typeof ParcoursRoute
   '/parent': typeof ParentRoute
+  '/planning': typeof PlanningRoute
   '/professeur': typeof ProfesseurRoute
   '/rattrapage': typeof RattrapageRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/parcours': typeof ParcoursRoute
   '/parent': typeof ParentRoute
+  '/planning': typeof PlanningRoute
   '/professeur': typeof ProfesseurRoute
   '/rattrapage': typeof RattrapageRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -204,6 +212,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/parcours': typeof ParcoursRoute
   '/parent': typeof ParentRoute
+  '/planning': typeof PlanningRoute
   '/professeur': typeof ProfesseurRoute
   '/rattrapage': typeof RattrapageRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/parcours'
     | '/parent'
+    | '/planning'
     | '/professeur'
     | '/rattrapage'
     | '/.mcp/list-tools'
@@ -252,6 +262,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/parcours'
     | '/parent'
+    | '/planning'
     | '/professeur'
     | '/rattrapage'
     | '/.mcp/list-tools'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/parcours'
     | '/parent'
+    | '/planning'
     | '/professeur'
     | '/rattrapage'
     | '/.mcp/list-tools'
@@ -301,6 +313,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   ParcoursRoute: typeof ParcoursRoute
   ParentRoute: typeof ParentRoute
+  PlanningRoute: typeof PlanningRoute
   ProfesseurRoute: typeof ProfesseurRoute
   RattrapageRoute: typeof RattrapageRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
@@ -379,6 +392,13 @@ declare module '@tanstack/react-router' {
       path: '/parent'
       fullPath: '/parent'
       preLoaderRoute: typeof ParentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/planning': {
+      id: '/planning'
+      path: '/planning'
+      fullPath: '/planning'
+      preLoaderRoute: typeof PlanningRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/professeur': {
@@ -500,6 +520,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   ParcoursRoute: ParcoursRoute,
   ParentRoute: ParentRoute,
+  PlanningRoute: PlanningRoute,
   ProfesseurRoute: ProfesseurRoute,
   RattrapageRoute: RattrapageRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,

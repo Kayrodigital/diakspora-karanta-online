@@ -167,6 +167,19 @@ export async function createLearningItem(
   }
 
   if (input.kind === "cohort") {
+    const genderPolicy = input.audience?.endsWith("female")
+      ? "female_only"
+      : input.audience?.endsWith("male")
+        ? "male_only"
+        : "mixed";
+    const ageRange =
+      input.audience === "child"
+        ? { age_min: 6, age_max: 13 }
+        : input.audience?.startsWith("teen")
+          ? { age_min: 14, age_max: 17 }
+          : input.audience?.startsWith("adult")
+            ? { age_min: 18, age_max: null }
+            : { age_min: null, age_max: null };
     const { error } = await supabase.from("cohorts").insert({
       organization_id: organizationId,
       name: input.name,
@@ -176,6 +189,8 @@ export async function createLearningItem(
       max_students: input.maxStudents || null,
       is_public: input.isPublic ?? false,
       audience: input.audience || null,
+      gender_policy: genderPolicy,
+      ...ageRange,
       objective: input.objective || null,
       teaching_languages: input.teachingLanguages ?? [],
       schedule_label: input.scheduleLabel || null,

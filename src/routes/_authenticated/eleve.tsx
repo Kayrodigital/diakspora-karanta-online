@@ -1,11 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { BookOpen, CalendarDays, Clock3, LogOut, Play, Radio, ShoppingBag } from "lucide-react";
 import { BottomNav } from "@/features/eleve/BottomNav";
 import { PortalSwitcher } from "@/components/PortalSwitcher";
 import { loadStudentHome } from "@/features/eleve/student-data";
 import { supabase } from "@/integrations/supabase/client";
 import { organizationTheme } from "@/lib/organization-theme";
+import { reportAbsence, requirementLabels } from "@/features/planning/planning-data";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/eleve")({
   head: () => ({
@@ -49,6 +51,15 @@ function ElevePage() {
   const { data } = useSuspenseQuery({
     queryKey: ["eleve-dashboard", organization.id, user.id],
     queryFn: () => loadStudentHome(organization.id, user.id),
+  });
+  const absenceMutation = useMutation({
+    mutationFn: ({ sessionId, reason }: { sessionId: string; reason: string }) => {
+      if (!data.learnerId)
+        throw new Error("Ton profil élève doit être complété avant de signaler une absence.");
+      return reportAbsence(organization.id, user.id, sessionId, data.learnerId, reason);
+    },
+    onSuccess: () => toast.success("Absence signalée à l’équipe."),
+    onError: (error) => toast.error(error.message),
   });
 
   async function signOut() {
@@ -293,18 +304,37 @@ function ElevePage() {
                         <p className="mt-1 text-xs capitalize text-muted-foreground">
                           {dateFormatter.format(new Date(session.starts_at))} · {session.provider}
                         </p>
+                        <p className="mt-1 text-xs font-semibold text-primary">
+                          {requirementLabels[session.attendance_requirement] ??
+                            "Présence à confirmer"}
+                        </p>
                       </div>
                     </div>
-                    {session.join_url && (
-                      <a
-                        href={session.join_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-4 flex min-h-11 items-center justify-center rounded-xl border border-[color:var(--deep-green)] font-semibold text-[color:var(--deep-green)]"
-                      >
-                        Rejoindre le cours
-                      </a>
-                    )}
+                    {session.join_url &&
+                      new Date(session.starts_at).getTime() - Date.now() <= 30 * 60_000 && (
+                        <a
+                          href={session.join_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-4 flex min-h-11 items-center justify-center rounded-xl border border-[color:var(--deep-green)] font-semibold text-[color:var(--deep-green)]"
+                        >
+                          Rejoindre le cours
+                        </a>
+                      )}
+                    <button
+                      type="button"
+                      disabled={absenceMutation.isPending}
+                      onClick={() => {
+                        const reason =
+                          window.prompt(
+                            "Tu peux préciser la raison de ton absence (facultatif).",
+                          ) ?? "";
+                        absenceMutation.mutate({ sessionId: session.id, reason });
+                      }}
+                      className="mt-2 min-h-11 w-full rounded-xl px-4 text-sm font-semibold text-muted-foreground hover:bg-muted"
+                    >
+                      Signaler une absence
+                    </button>
                   </article>
                 ))
               ) : (

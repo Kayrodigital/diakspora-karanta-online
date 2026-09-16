@@ -300,6 +300,54 @@ export type Database = {
           },
         ];
       };
+      attendance_history: {
+        Row: {
+          attendance_id: string;
+          changed_at: string;
+          changed_by: string | null;
+          id: number;
+          new_status: string;
+          note: string | null;
+          old_status: string | null;
+          organization_id: string;
+        };
+        Insert: {
+          attendance_id: string;
+          changed_at?: string;
+          changed_by?: string | null;
+          id?: number;
+          new_status: string;
+          note?: string | null;
+          old_status?: string | null;
+          organization_id: string;
+        };
+        Update: {
+          attendance_id?: string;
+          changed_at?: string;
+          changed_by?: string | null;
+          id?: number;
+          new_status?: string;
+          note?: string | null;
+          old_status?: string | null;
+          organization_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "attendance_history_attendance_id_fkey";
+            columns: ["attendance_id"];
+            isOneToOne: false;
+            referencedRelation: "session_attendance";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "attendance_history_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       audit_logs: {
         Row: {
           action: string;
@@ -473,6 +521,8 @@ export type Database = {
       };
       cohorts: {
         Row: {
+          age_max: number | null;
+          age_min: number | null;
           audience: string | null;
           code: string | null;
           created_at: string;
@@ -480,6 +530,7 @@ export type Database = {
           description: string | null;
           ends_on: string | null;
           enrollment_status: string;
+          gender_policy: string;
           id: string;
           is_public: boolean;
           level: string | null;
@@ -494,12 +545,18 @@ export type Database = {
           session_period: string | null;
           starts_on: string | null;
           status: string;
-          teaching_languages: string[];
+          subject_id: string | null;
           teacher_id: string | null;
+          teaching_languages: string[];
           timezone: string;
           updated_at: string;
+          usual_end_time: string | null;
+          usual_start_time: string | null;
+          usual_weekday: number | null;
         };
         Insert: {
+          age_max?: number | null;
+          age_min?: number | null;
           audience?: string | null;
           code?: string | null;
           created_at?: string;
@@ -507,6 +564,7 @@ export type Database = {
           description?: string | null;
           ends_on?: string | null;
           enrollment_status?: string;
+          gender_policy?: string;
           id?: string;
           is_public?: boolean;
           level?: string | null;
@@ -521,12 +579,18 @@ export type Database = {
           session_period?: string | null;
           starts_on?: string | null;
           status?: string;
-          teaching_languages?: string[];
+          subject_id?: string | null;
           teacher_id?: string | null;
+          teaching_languages?: string[];
           timezone?: string;
           updated_at?: string;
+          usual_end_time?: string | null;
+          usual_start_time?: string | null;
+          usual_weekday?: number | null;
         };
         Update: {
+          age_max?: number | null;
+          age_min?: number | null;
           audience?: string | null;
           code?: string | null;
           created_at?: string;
@@ -534,6 +598,7 @@ export type Database = {
           description?: string | null;
           ends_on?: string | null;
           enrollment_status?: string;
+          gender_policy?: string;
           id?: string;
           is_public?: boolean;
           level?: string | null;
@@ -548,10 +613,14 @@ export type Database = {
           session_period?: string | null;
           starts_on?: string | null;
           status?: string;
-          teaching_languages?: string[];
+          subject_id?: string | null;
           teacher_id?: string | null;
+          teaching_languages?: string[];
           timezone?: string;
           updated_at?: string;
+          usual_end_time?: string | null;
+          usual_start_time?: string | null;
+          usual_weekday?: number | null;
         };
         Relationships: [
           {
@@ -566,6 +635,13 @@ export type Database = {
             columns: ["program_level_id"];
             isOneToOne: false;
             referencedRelation: "program_levels";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cohorts_subject_id_fkey";
+            columns: ["subject_id"];
+            isOneToOne: false;
+            referencedRelation: "subjects";
             referencedColumns: ["id"];
           },
           {
@@ -967,6 +1043,90 @@ export type Database = {
           },
         ];
       };
+      enrollment_applications: {
+        Row: {
+          accompaniment_language: string;
+          applicant_name: string;
+          assigned_to: string | null;
+          audience: string;
+          availability: string;
+          cohort_id: string | null;
+          created_at: string;
+          email: string;
+          id: string;
+          learner_name: string | null;
+          level: string;
+          notes: string | null;
+          objective: string;
+          organization_id: string;
+          phone: string;
+          preferred_contact: string;
+          privacy_consent: boolean;
+          source: string;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          accompaniment_language: string;
+          applicant_name: string;
+          assigned_to?: string | null;
+          audience: string;
+          availability: string;
+          cohort_id?: string | null;
+          created_at?: string;
+          email: string;
+          id?: string;
+          learner_name?: string | null;
+          level: string;
+          notes?: string | null;
+          objective: string;
+          organization_id: string;
+          phone: string;
+          preferred_contact?: string;
+          privacy_consent: boolean;
+          source?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          accompaniment_language?: string;
+          applicant_name?: string;
+          assigned_to?: string | null;
+          audience?: string;
+          availability?: string;
+          cohort_id?: string | null;
+          created_at?: string;
+          email?: string;
+          id?: string;
+          learner_name?: string | null;
+          level?: string;
+          notes?: string | null;
+          objective?: string;
+          organization_id?: string;
+          phone?: string;
+          preferred_contact?: string;
+          privacy_consent?: boolean;
+          source?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "enrollment_applications_cohort_id_fkey";
+            columns: ["cohort_id"];
+            isOneToOne: false;
+            referencedRelation: "cohorts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "enrollment_applications_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       family_relationships: {
         Row: {
           created_at: string;
@@ -1012,10 +1172,10 @@ export type Database = {
         Row: {
           created_at: string;
           duration_seconds: number | null;
+          external_url: string | null;
           feedback_at: string | null;
           feedback_by: string | null;
           feedback_text: string | null;
-          external_url: string | null;
           file_url: string | null;
           id: string;
           lesson_id: string | null;
@@ -1029,10 +1189,10 @@ export type Database = {
         Insert: {
           created_at?: string;
           duration_seconds?: number | null;
+          external_url?: string | null;
           feedback_at?: string | null;
           feedback_by?: string | null;
           feedback_text?: string | null;
-          external_url?: string | null;
           file_url?: string | null;
           id?: string;
           lesson_id?: string | null;
@@ -1046,10 +1206,10 @@ export type Database = {
         Update: {
           created_at?: string;
           duration_seconds?: number | null;
+          external_url?: string | null;
           feedback_at?: string | null;
           feedback_by?: string | null;
           feedback_text?: string | null;
-          external_url?: string | null;
           file_url?: string | null;
           id?: string;
           lesson_id?: string | null;
@@ -1150,6 +1310,7 @@ export type Database = {
           created_by: string | null;
           email: string | null;
           full_name: string;
+          gender: string;
           guardian_user_id: string | null;
           id: string;
           organization_id: string;
@@ -1166,6 +1327,7 @@ export type Database = {
           created_by?: string | null;
           email?: string | null;
           full_name: string;
+          gender?: string;
           guardian_user_id?: string | null;
           id?: string;
           organization_id: string;
@@ -1182,6 +1344,7 @@ export type Database = {
           created_by?: string | null;
           email?: string | null;
           full_name?: string;
+          gender?: string;
           guardian_user_id?: string | null;
           id?: string;
           organization_id?: string;
@@ -1340,6 +1503,51 @@ export type Database = {
           },
         ];
       };
+      lesson_notes: {
+        Row: {
+          body: string;
+          created_at: string;
+          id: string;
+          lesson_id: string;
+          organization_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          body?: string;
+          created_at?: string;
+          id?: string;
+          lesson_id: string;
+          organization_id: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Update: {
+          body?: string;
+          created_at?: string;
+          id?: string;
+          lesson_id?: string;
+          organization_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lesson_notes_lesson_id_organization_id_fkey";
+            columns: ["lesson_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id", "organization_id"];
+          },
+          {
+            foreignKeyName: "lesson_notes_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       lesson_resources: {
         Row: {
           allow_download: boolean;
@@ -1418,51 +1626,6 @@ export type Database = {
           },
           {
             foreignKeyName: "lesson_resources_organization_id_fkey";
-            columns: ["organization_id"];
-            isOneToOne: false;
-            referencedRelation: "organizations";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      lesson_notes: {
-        Row: {
-          body: string;
-          created_at: string;
-          id: string;
-          lesson_id: string;
-          organization_id: string;
-          updated_at: string;
-          user_id: string;
-        };
-        Insert: {
-          body?: string;
-          created_at?: string;
-          id?: string;
-          lesson_id: string;
-          organization_id: string;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Update: {
-          body?: string;
-          created_at?: string;
-          id?: string;
-          lesson_id?: string;
-          organization_id?: string;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "lesson_notes_lesson_id_organization_id_fkey";
-            columns: ["lesson_id", "organization_id"];
-            isOneToOne: false;
-            referencedRelation: "lessons";
-            referencedColumns: ["id", "organization_id"];
-          },
-          {
-            foreignKeyName: "lesson_notes_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
@@ -1647,7 +1810,12 @@ export type Database = {
       };
       live_sessions: {
         Row: {
+          attendance_requirement: string;
+          change_reason: string | null;
           cohort_id: string | null;
+          conflict_overridden_at: string | null;
+          conflict_overridden_by: string | null;
+          conflict_override_reason: string | null;
           course_id: string | null;
           created_at: string;
           created_by: string | null;
@@ -1656,13 +1824,18 @@ export type Database = {
           external_meeting_id: string | null;
           host_user_id: string | null;
           id: string;
+          internal_notes: string | null;
           join_url: string | null;
           lesson_id: string | null;
+          max_attendees: number | null;
           notification_revision: number;
           organization_id: string;
           provider: string;
           recording_status: string;
+          recurrence_group_id: string | null;
+          recurrence_rule: string | null;
           reminder_sent_at: string | null;
+          replay_due_at: string | null;
           replay_url: string | null;
           starts_at: string;
           status: string;
@@ -1671,7 +1844,12 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          attendance_requirement?: string;
+          change_reason?: string | null;
           cohort_id?: string | null;
+          conflict_overridden_at?: string | null;
+          conflict_overridden_by?: string | null;
+          conflict_override_reason?: string | null;
           course_id?: string | null;
           created_at?: string;
           created_by?: string | null;
@@ -1680,13 +1858,18 @@ export type Database = {
           external_meeting_id?: string | null;
           host_user_id?: string | null;
           id?: string;
+          internal_notes?: string | null;
           join_url?: string | null;
           lesson_id?: string | null;
+          max_attendees?: number | null;
           notification_revision?: number;
           organization_id: string;
           provider?: string;
           recording_status?: string;
+          recurrence_group_id?: string | null;
+          recurrence_rule?: string | null;
           reminder_sent_at?: string | null;
+          replay_due_at?: string | null;
           replay_url?: string | null;
           starts_at: string;
           status?: string;
@@ -1695,7 +1878,12 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          attendance_requirement?: string;
+          change_reason?: string | null;
           cohort_id?: string | null;
+          conflict_overridden_at?: string | null;
+          conflict_overridden_by?: string | null;
+          conflict_override_reason?: string | null;
           course_id?: string | null;
           created_at?: string;
           created_by?: string | null;
@@ -1704,13 +1892,18 @@ export type Database = {
           external_meeting_id?: string | null;
           host_user_id?: string | null;
           id?: string;
+          internal_notes?: string | null;
           join_url?: string | null;
           lesson_id?: string | null;
+          max_attendees?: number | null;
           notification_revision?: number;
           organization_id?: string;
           provider?: string;
           recording_status?: string;
+          recurrence_group_id?: string | null;
+          recurrence_rule?: string | null;
           reminder_sent_at?: string | null;
+          replay_due_at?: string | null;
           replay_url?: string | null;
           starts_at?: string;
           status?: string;
@@ -2017,6 +2210,107 @@ export type Database = {
           },
           {
             foreignKeyName: "pedagogical_messages_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      planning_incidents: {
+        Row: {
+          created_at: string;
+          description: string;
+          id: string;
+          kind: string;
+          live_session_id: string | null;
+          organization_id: string;
+          reported_by: string;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          description: string;
+          id?: string;
+          kind: string;
+          live_session_id?: string | null;
+          organization_id: string;
+          reported_by: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          description?: string;
+          id?: string;
+          kind?: string;
+          live_session_id?: string | null;
+          organization_id?: string;
+          reported_by?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "planning_incidents_live_session_id_fkey";
+            columns: ["live_session_id"];
+            isOneToOne: false;
+            referencedRelation: "live_sessions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "planning_incidents_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      planning_preferences: {
+        Row: {
+          active: boolean;
+          audience_group: string;
+          created_at: string;
+          created_by: string | null;
+          ends_at: string;
+          id: string;
+          label: string;
+          organization_id: string;
+          starts_at: string;
+          updated_at: string;
+          weekday: number;
+        };
+        Insert: {
+          active?: boolean;
+          audience_group: string;
+          created_at?: string;
+          created_by?: string | null;
+          ends_at: string;
+          id?: string;
+          label: string;
+          organization_id: string;
+          starts_at: string;
+          updated_at?: string;
+          weekday: number;
+        };
+        Update: {
+          active?: boolean;
+          audience_group?: string;
+          created_at?: string;
+          created_by?: string | null;
+          ends_at?: string;
+          id?: string;
+          label?: string;
+          organization_id?: string;
+          starts_at?: string;
+          updated_at?: string;
+          weekday?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "planning_preferences_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
@@ -2775,6 +3069,116 @@ export type Database = {
           },
         ];
       };
+      session_absence_reports: {
+        Row: {
+          created_at: string;
+          id: string;
+          learner_id: string;
+          live_session_id: string;
+          organization_id: string;
+          reason: string | null;
+          reported_by: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          learner_id: string;
+          live_session_id: string;
+          organization_id: string;
+          reason?: string | null;
+          reported_by: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          learner_id?: string;
+          live_session_id?: string;
+          organization_id?: string;
+          reason?: string | null;
+          reported_by?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "session_absence_reports_learner_id_fkey";
+            columns: ["learner_id"];
+            isOneToOne: false;
+            referencedRelation: "learner_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "session_absence_reports_live_session_id_fkey";
+            columns: ["live_session_id"];
+            isOneToOne: false;
+            referencedRelation: "live_sessions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "session_absence_reports_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      session_attendance: {
+        Row: {
+          id: string;
+          learner_id: string;
+          live_session_id: string;
+          note: string | null;
+          organization_id: string;
+          recorded_at: string;
+          recorded_by: string | null;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          learner_id: string;
+          live_session_id: string;
+          note?: string | null;
+          organization_id: string;
+          recorded_at?: string;
+          recorded_by?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          learner_id?: string;
+          live_session_id?: string;
+          note?: string | null;
+          organization_id?: string;
+          recorded_at?: string;
+          recorded_by?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "session_attendance_learner_id_fkey";
+            columns: ["learner_id"];
+            isOneToOne: false;
+            referencedRelation: "learner_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "session_attendance_live_session_id_fkey";
+            columns: ["live_session_id"];
+            isOneToOne: false;
+            referencedRelation: "live_sessions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "session_attendance_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       shop_order_items: {
         Row: {
           cover_url: string | null;
@@ -3294,12 +3698,77 @@ export type Database = {
           },
         ];
       };
+      teacher_availabilities: {
+        Row: {
+          availability_type: string;
+          created_at: string;
+          created_by: string | null;
+          ends_at: string;
+          id: string;
+          organization_id: string;
+          starts_at: string;
+          teacher_id: string;
+          timezone: string;
+          updated_at: string;
+          weekday: number;
+        };
+        Insert: {
+          availability_type?: string;
+          created_at?: string;
+          created_by?: string | null;
+          ends_at: string;
+          id?: string;
+          organization_id: string;
+          starts_at: string;
+          teacher_id: string;
+          timezone?: string;
+          updated_at?: string;
+          weekday: number;
+        };
+        Update: {
+          availability_type?: string;
+          created_at?: string;
+          created_by?: string | null;
+          ends_at?: string;
+          id?: string;
+          organization_id?: string;
+          starts_at?: string;
+          teacher_id?: string;
+          timezone?: string;
+          updated_at?: string;
+          weekday?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "teacher_availabilities_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
       accept_my_organization_invitations: { Args: never; Returns: number };
+      check_live_session_conflicts: {
+        Args: {
+          p_cohort_id: string;
+          p_ends_at: string;
+          p_host_user_id: string;
+          p_organization_id: string;
+          p_session_id?: string;
+          p_starts_at: string;
+        };
+        Returns: {
+          code: string;
+          message: string;
+          severity: string;
+        }[];
+      };
       check_shop_checkout_rate_limit: {
         Args: { p_fingerprint: string };
         Returns: boolean;
@@ -3348,12 +3817,12 @@ export type Database = {
           level: string;
           name: string;
           objective: string;
-          price_cents: number | null;
-          public_summary: string | null;
-          remaining_places: number | null;
+          price_cents: number;
+          public_summary: string;
+          remaining_places: number;
           schedule_label: string;
           session_period: string;
-          starts_on: string | null;
+          starts_on: string;
           teaching_languages: string[];
           timezone: string;
         }[];
@@ -3377,17 +3846,17 @@ export type Database = {
           p_applicant_name: string;
           p_audience: string;
           p_availability: string;
-          p_cohort_id: string | null;
+          p_cohort_id: string;
           p_email: string;
-          p_learner_name: string | null;
+          p_learner_name: string;
           p_level: string;
-          p_notes: string | null;
+          p_notes: string;
           p_objective: string;
           p_organization_slug: string;
           p_phone: string;
           p_preferred_contact: string;
           p_privacy_consent: boolean;
-          p_website?: string | null;
+          p_website?: string;
         };
         Returns: string;
       };
