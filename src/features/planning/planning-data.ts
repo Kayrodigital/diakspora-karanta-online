@@ -190,7 +190,6 @@ export type SessionInput = {
   replayDelayHours?: number;
   internalNotes?: string;
   recurrenceWeeks: number;
-  notify: boolean;
   overrideReason?: string;
 };
 

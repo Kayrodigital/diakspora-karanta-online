@@ -407,7 +407,6 @@ function SessionDialog({
       replayDelayHours: Number(form.get("replayDelayHours")) || undefined,
       internalNotes: String(form.get("internalNotes") ?? ""),
       recurrenceWeeks: Number(form.get("recurrenceWeeks")) || 1,
-      notify: form.get("notify") === "on",
       overrideReason: String(form.get("overrideReason") ?? ""),
     };
   }
@@ -585,9 +584,9 @@ function SessionDialog({
               />
             </Field>
           )}
-          <label className="flex min-h-11 items-center gap-3 rounded-xl border p-3 text-sm">
-            <input type="checkbox" name="notify" defaultChecked /> Notifier les personnes concernées
-          </label>
+          <p className="min-h-11 rounded-xl border bg-muted/30 p-3 text-sm text-muted-foreground">
+            Les personnes concernées seront notifiées automatiquement après la programmation.
+          </p>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
               Annuler
