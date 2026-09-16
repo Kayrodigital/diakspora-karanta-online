@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -389,6 +389,9 @@ function SessionDialog({
   const [cohortId, setCohortId] = useState(data.cohorts[0]?.id ?? "");
   const [draft, setDraft] = useState<SessionInput | null>(null);
   const cohort = data.cohorts.find((item) => item.id === cohortId);
+  useEffect(() => {
+    if (!open) setDraft(null);
+  }, [open]);
   function parse(form: FormData): SessionInput {
     return {
       cohortId,
@@ -412,11 +415,19 @@ function SessionDialog({
     event.preventDefault();
     if (!cohort) return;
     const input = parse(new FormData(event.currentTarget));
-    if (draft && conflicts.length === 0) onSubmit(cohort, input);
-    else {
-      setDraft(input);
-      onCheck(cohort, input);
+    const comparable = ({ overrideReason: _overrideReason, ...value }: SessionInput) =>
+      JSON.stringify(value);
+    const hasVerifiedInput = draft && comparable(draft) === comparable(input);
+    if (hasVerifiedInput) {
+      if (conflicts.some((item) => item.severity === "error") && !canManage) {
+        toast.error("Ce conflit doit être traité par un responsable des classes.");
+        return;
+      }
+      onSubmit(cohort, input);
+      return;
     }
+    setDraft(input);
+    onCheck(cohort, input);
   }
   const now = new Date(Date.now() + 24 * 60 * 60 * 1000);
   const end = new Date(now.getTime() + 60 * 60 * 1000);
@@ -800,7 +811,9 @@ export function PlanningWorkspace({ organization, role, userId }: Props) {
   const [conflicts, setConflicts] = useState<PlanningConflict[]>([]);
   const [teacherFilter, setTeacherFilter] = useState("all");
   const [classFilter, setClassFilter] = useState("all");
-  const [audienceFilter, setAudienceFilter] = useState("all");
+  const [publicFilter, setPublicFilter] = useState("all");
+  const [genderFilter, setGenderFilter] = useState("all");
+  const [subjectFilter, setSubjectFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const queryKey = ["planning", organization.id, userId];
   const query = useQuery({ queryKey, queryFn: () => loadPlanningData(organization.id) });
@@ -873,11 +886,24 @@ export function PlanningWorkspace({ organization, role, userId }: Props) {
           date < bounds.end &&
           (teacherFilter === "all" || session.host_user_id === teacherFilter) &&
           (classFilter === "all" || session.cohort_id === classFilter) &&
-          (audienceFilter === "all" || cohort?.audience === audienceFilter) &&
+          (publicFilter === "all" ||
+            cohort?.audience === publicFilter ||
+            cohort?.audience?.startsWith(`${publicFilter}_`)) &&
+          (genderFilter === "all" || cohort?.gender_policy === genderFilter) &&
+          (subjectFilter === "all" || cohort?.subject_id === subjectFilter) &&
           (statusFilter === "all" || session.status === statusFilter)
         );
       }),
-    [data, bounds, teacherFilter, classFilter, audienceFilter, statusFilter],
+    [
+      data,
+      bounds,
+      teacherFilter,
+      classFilter,
+      publicFilter,
+      genderFilter,
+      subjectFilter,
+      statusFilter,
+    ],
   );
   const grouped = useMemo(
     () =>
@@ -1033,7 +1059,7 @@ export function PlanningWorkspace({ organization, role, userId }: Props) {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="calendar" className="mt-5 space-y-4">
-            <div className="grid gap-3 rounded-2xl border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 rounded-2xl border bg-card p-4 sm:grid-cols-2 xl:grid-cols-6">
               <Select id="filter-teacher" value={teacherFilter} onChange={setTeacherFilter}>
                 <option value="all">Tous les professeurs</option>
                 {data.teachers.map((teacher) => (
@@ -1050,11 +1076,23 @@ export function PlanningWorkspace({ organization, role, userId }: Props) {
                   </option>
                 ))}
               </Select>
-              <Select id="filter-audience" value={audienceFilter} onChange={setAudienceFilter}>
+              <Select id="filter-public" value={publicFilter} onChange={setPublicFilter}>
                 <option value="all">Tous les publics</option>
-                {Object.entries(audienceLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
+                <option value="child">Enfants</option>
+                <option value="teen">Adolescents</option>
+                <option value="adult">Adultes</option>
+              </Select>
+              <Select id="filter-gender" value={genderFilter} onChange={setGenderFilter}>
+                <option value="all">Toutes les règles de mixité</option>
+                <option value="mixed">Classes mixtes</option>
+                <option value="female_only">Classes femmes/filles</option>
+                <option value="male_only">Classes hommes/garçons</option>
+              </Select>
+              <Select id="filter-subject" value={subjectFilter} onChange={setSubjectFilter}>
+                <option value="all">Toutes les disciplines</option>
+                {data.subjects.map((subject) => (
+                  <option key={subject.id} value={subject.id}>
+                    {subject.name}
                   </option>
                 ))}
               </Select>
