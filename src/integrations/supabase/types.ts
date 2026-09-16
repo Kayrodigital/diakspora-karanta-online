@@ -8,6 +8,284 @@ export type Database = {
   };
   public: {
     Tables: {
+      admission_events: {
+        Row: {
+          actor_user_id: string | null;
+          application_id: string;
+          created_at: string;
+          event_type: string;
+          id: number;
+          metadata: Json;
+          organization_id: string;
+          summary: string;
+        };
+        Insert: {
+          actor_user_id?: string | null;
+          application_id: string;
+          created_at?: string;
+          event_type: string;
+          id?: number;
+          metadata?: Json;
+          organization_id: string;
+          summary: string;
+        };
+        Update: {
+          actor_user_id?: string | null;
+          application_id?: string;
+          created_at?: string;
+          event_type?: string;
+          id?: number;
+          metadata?: Json;
+          organization_id?: string;
+          summary?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "admission_events_application_id_fkey";
+            columns: ["application_id"];
+            isOneToOne: false;
+            referencedRelation: "enrollment_applications";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "admission_events_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      admission_import_batches: {
+        Row: {
+          completed_at: string | null;
+          created_at: string;
+          created_by: string;
+          duplicate_rows: number;
+          error_rows: number;
+          file_name: string;
+          id: string;
+          imported_rows: number;
+          organization_id: string;
+          status: string;
+          total_rows: number;
+        };
+        Insert: {
+          completed_at?: string | null;
+          created_at?: string;
+          created_by: string;
+          duplicate_rows?: number;
+          error_rows?: number;
+          file_name: string;
+          id?: string;
+          imported_rows?: number;
+          organization_id: string;
+          status?: string;
+          total_rows?: number;
+        };
+        Update: {
+          completed_at?: string | null;
+          created_at?: string;
+          created_by?: string;
+          duplicate_rows?: number;
+          error_rows?: number;
+          file_name?: string;
+          id?: string;
+          imported_rows?: number;
+          organization_id?: string;
+          status?: string;
+          total_rows?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "admission_import_batches_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      admission_message_templates: {
+        Row: {
+          body: string;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          is_active: boolean;
+          locale: string;
+          organization_id: string;
+          template_key: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          body: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          is_active?: boolean;
+          locale?: string;
+          organization_id: string;
+          template_key: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          body?: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          is_active?: boolean;
+          locale?: string;
+          organization_id?: string;
+          template_key?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "admission_message_templates_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      admission_payments: {
+        Row: {
+          application_id: string;
+          cohort_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          currency: string;
+          due_on: string | null;
+          expected_amount_cents: number;
+          id: string;
+          internal_notes: string | null;
+          learner_id: string | null;
+          organization_id: string;
+          payment_method: string | null;
+          payment_reference: string | null;
+          received_amount_cents: number;
+          status: string;
+          stripe_payment_id: string | null;
+          updated_at: string;
+          validated_at: string | null;
+          validated_by: string | null;
+        };
+        Insert: {
+          application_id: string;
+          cohort_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          currency?: string;
+          due_on?: string | null;
+          expected_amount_cents?: number;
+          id?: string;
+          internal_notes?: string | null;
+          learner_id?: string | null;
+          organization_id: string;
+          payment_method?: string | null;
+          payment_reference?: string | null;
+          received_amount_cents?: number;
+          status?: string;
+          stripe_payment_id?: string | null;
+          updated_at?: string;
+          validated_at?: string | null;
+          validated_by?: string | null;
+        };
+        Update: {
+          application_id?: string;
+          cohort_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          currency?: string;
+          due_on?: string | null;
+          expected_amount_cents?: number;
+          id?: string;
+          internal_notes?: string | null;
+          learner_id?: string | null;
+          organization_id?: string;
+          payment_method?: string | null;
+          payment_reference?: string | null;
+          received_amount_cents?: number;
+          status?: string;
+          stripe_payment_id?: string | null;
+          updated_at?: string;
+          validated_at?: string | null;
+          validated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "admission_payments_application_id_fkey";
+            columns: ["application_id"];
+            isOneToOne: false;
+            referencedRelation: "enrollment_applications";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "admission_payments_cohort_id_fkey";
+            columns: ["cohort_id"];
+            isOneToOne: false;
+            referencedRelation: "cohorts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "admission_payments_learner_id_fkey";
+            columns: ["learner_id"];
+            isOneToOne: false;
+            referencedRelation: "learner_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "admission_payments_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      admission_saved_filters: {
+        Row: {
+          created_at: string;
+          filters: Json;
+          id: string;
+          name: string;
+          organization_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          filters?: Json;
+          id?: string;
+          name: string;
+          organization_id: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          filters?: Json;
+          id?: string;
+          name?: string;
+          organization_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "admission_saved_filters_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       assessment_competencies: {
         Row: {
           assessment_id: string;
@@ -1045,68 +1323,125 @@ export type Database = {
       };
       enrollment_applications: {
         Row: {
+          access_sent_at: string | null;
           accompaniment_language: string;
           applicant_name: string;
           assigned_to: string | null;
           audience: string;
           availability: string;
+          close_outcome: string | null;
+          close_reason: string | null;
           cohort_id: string | null;
+          consent_at: string | null;
           created_at: string;
           email: string;
+          first_contacted_at: string | null;
+          first_login_verified_at: string | null;
+          follow_up_at: string | null;
           id: string;
+          imported_batch_id: string | null;
+          internal_notes: string | null;
+          learner_birth_date: string | null;
           learner_name: string | null;
           level: string;
+          linked_learner_id: string | null;
+          linked_user_id: string | null;
+          next_action: string | null;
           notes: string | null;
           objective: string;
           organization_id: string;
+          payment_status: string;
           phone: string;
+          postponed_until: string | null;
           preferred_contact: string;
+          priority: string;
           privacy_consent: boolean;
+          proposed_cohort_id: string | null;
+          retained_until: string | null;
           source: string;
+          source_detail: string | null;
           status: string;
           updated_at: string;
         };
         Insert: {
+          access_sent_at?: string | null;
           accompaniment_language: string;
           applicant_name: string;
           assigned_to?: string | null;
           audience: string;
           availability: string;
+          close_outcome?: string | null;
+          close_reason?: string | null;
           cohort_id?: string | null;
+          consent_at?: string | null;
           created_at?: string;
           email: string;
+          first_contacted_at?: string | null;
+          first_login_verified_at?: string | null;
+          follow_up_at?: string | null;
           id?: string;
+          imported_batch_id?: string | null;
+          internal_notes?: string | null;
+          learner_birth_date?: string | null;
           learner_name?: string | null;
           level: string;
+          linked_learner_id?: string | null;
+          linked_user_id?: string | null;
+          next_action?: string | null;
           notes?: string | null;
           objective: string;
           organization_id: string;
+          payment_status?: string;
           phone: string;
+          postponed_until?: string | null;
           preferred_contact?: string;
+          priority?: string;
           privacy_consent: boolean;
+          proposed_cohort_id?: string | null;
+          retained_until?: string | null;
           source?: string;
+          source_detail?: string | null;
           status?: string;
           updated_at?: string;
         };
         Update: {
+          access_sent_at?: string | null;
           accompaniment_language?: string;
           applicant_name?: string;
           assigned_to?: string | null;
           audience?: string;
           availability?: string;
+          close_outcome?: string | null;
+          close_reason?: string | null;
           cohort_id?: string | null;
+          consent_at?: string | null;
           created_at?: string;
           email?: string;
+          first_contacted_at?: string | null;
+          first_login_verified_at?: string | null;
+          follow_up_at?: string | null;
           id?: string;
+          imported_batch_id?: string | null;
+          internal_notes?: string | null;
+          learner_birth_date?: string | null;
           learner_name?: string | null;
           level?: string;
+          linked_learner_id?: string | null;
+          linked_user_id?: string | null;
+          next_action?: string | null;
           notes?: string | null;
           objective?: string;
           organization_id?: string;
+          payment_status?: string;
           phone?: string;
+          postponed_until?: string | null;
           preferred_contact?: string;
+          priority?: string;
           privacy_consent?: boolean;
+          proposed_cohort_id?: string | null;
+          retained_until?: string | null;
           source?: string;
+          source_detail?: string | null;
           status?: string;
           updated_at?: string;
         };
@@ -1119,10 +1454,31 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "enrollment_applications_imported_batch_fkey";
+            columns: ["imported_batch_id"];
+            isOneToOne: false;
+            referencedRelation: "admission_import_batches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "enrollment_applications_linked_learner_id_fkey";
+            columns: ["linked_learner_id"];
+            isOneToOne: false;
+            referencedRelation: "learner_profiles";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "enrollment_applications_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "enrollment_applications_proposed_cohort_id_fkey";
+            columns: ["proposed_cohort_id"];
+            isOneToOne: false;
+            referencedRelation: "cohorts";
             referencedColumns: ["id"];
           },
         ];
@@ -3835,6 +4191,19 @@ export type Database = {
           p_shipping_address?: Json;
         };
         Returns: boolean;
+      };
+      recommend_classes_for_application: {
+        Args: { p_application_id: string };
+        Returns: {
+          availability: string;
+          cohort_id: string;
+          cohort_name: string;
+          exclusions: string[];
+          reasons: string[];
+          recommended: boolean;
+          remaining_places: number;
+          score: number;
+        }[];
       };
       release_shop_order: {
         Args: { p_order_id: string; p_status?: string };

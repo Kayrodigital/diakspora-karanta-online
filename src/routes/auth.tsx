@@ -24,6 +24,12 @@ const portalContent: Record<Portal, { eyebrow: string; title: string; descriptio
     title: "Accéder au planning",
     description: "Accès réservé aux responsables et professeurs autorisés.",
   },
+  admissions: {
+    eyebrow: "Équipe inscriptions",
+    title: "Retrouvez les demandes à traiter",
+    description:
+      "Qualifiez les besoins, proposez une classe et suivez chaque admission simplement.",
+  },
 };
 
 export const Route = createFileRoute("/auth")({
