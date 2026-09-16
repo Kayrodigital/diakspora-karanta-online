@@ -4,6 +4,9 @@ import type { Tables } from "@/integrations/supabase/types";
 export type AdminRole =
   | "admin"
   | "technician"
+  | "commercial"
+  | "accounting"
+  | "support"
   | "pedagogical_manager"
   | "teacher"
   | "class_manager"

@@ -11,6 +11,7 @@ import {
   CircleUserRound,
   GraduationCap,
   Headphones,
+  Inbox,
   LayoutDashboard,
   LoaderCircle,
   LogOut,
@@ -67,6 +68,9 @@ const roleLabels: Record<string, string> = {
   owner: "Propriétaire",
   admin: "Administrateur",
   technician: "Technicien",
+  commercial: "Équipe inscriptions",
+  accounting: "Comptabilité",
+  support: "Support",
   pedagogical_manager: "Responsable pédagogique",
   teacher: "Professeur",
   class_manager: "Responsable de classe",
@@ -81,6 +85,9 @@ const inviteRoles: Array<{ value: AdminRole; label: string }> = [
   { value: "class_manager", label: "Responsable de classe" },
   { value: "pedagogical_manager", label: "Responsable pédagogique" },
   { value: "technician", label: "Technicien" },
+  { value: "commercial", label: "Équipe inscriptions" },
+  { value: "accounting", label: "Comptabilité" },
+  { value: "support", label: "Support" },
   { value: "admin", label: "Administrateur" },
 ];
 
@@ -385,6 +392,11 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
+            <Button asChild variant="outline" className="h-11 rounded-xl sm:w-auto">
+              <Link to="/inscriptions">
+                <Inbox className="size-4" /> Inscriptions
+              </Link>
+            </Button>
             <Button asChild variant="outline" className="h-11 rounded-xl sm:w-auto">
               <Link to="/planning">
                 <CalendarClock className="size-4" /> Classes et planning

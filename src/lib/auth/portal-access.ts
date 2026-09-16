@@ -5,6 +5,9 @@ export const ORGANIZATION_ROLES = [
   "owner",
   "admin",
   "technician",
+  "commercial",
+  "accounting",
+  "support",
   "pedagogical_manager",
   "teacher",
   "class_manager",
@@ -13,8 +16,8 @@ export const ORGANIZATION_ROLES = [
 ] as const;
 
 export type OrganizationRole = (typeof ORGANIZATION_ROLES)[number];
-export type Portal = "family" | "teacher" | "admin" | "planning";
-export type PortalDestination = "/parent" | "/eleve" | "/professeur" | "/admin";
+export type Portal = "family" | "teacher" | "admin" | "planning" | "admissions";
+export type PortalDestination = "/parent" | "/eleve" | "/professeur" | "/admin" | "/inscriptions";
 
 type Membership = {
   id: string;
@@ -43,6 +46,16 @@ const PORTAL_ROLES: Record<Portal, ReadonlySet<OrganizationRole>> = {
   teacher: new Set(["pedagogical_manager", "teacher", "class_manager"]),
   admin: new Set(["owner", "admin", "technician"]),
   planning: new Set(["owner", "admin", "pedagogical_manager", "teacher", "class_manager"]),
+  admissions: new Set([
+    "owner",
+    "admin",
+    "commercial",
+    "class_manager",
+    "pedagogical_manager",
+    "accounting",
+    "support",
+    "technician",
+  ]),
 };
 
 function isOrganizationRole(value: string): value is OrganizationRole {
@@ -113,15 +126,18 @@ export async function resolvePostAuthDestination(
   const portalOrder: Portal[] = requestedPortal
     ? [
         requestedPortal,
-        ...(["family", "teacher", "admin"] as Portal[]).filter((item) => item !== requestedPortal),
+        ...(["family", "teacher", "admissions", "admin"] as Portal[]).filter(
+          (item) => item !== requestedPortal,
+        ),
       ]
-    : ["family", "teacher", "admin"];
+    : ["family", "teacher", "admissions", "admin"];
 
   for (const portal of portalOrder) {
     const membership = access.memberships.find((item) => PORTAL_ROLES[portal].has(item.role));
     if (!membership) continue;
 
     if (portal === "admin") return "/admin";
+    if (portal === "admissions") return "/inscriptions";
     if (portal === "planning") {
       return ["owner", "admin"].includes(membership.role) ? "/admin" : "/professeur";
     }
@@ -133,5 +149,11 @@ export async function resolvePostAuthDestination(
 }
 
 export function isPortal(value: unknown): value is Portal {
-  return value === "family" || value === "teacher" || value === "admin";
+  return (
+    value === "family" ||
+    value === "teacher" ||
+    value === "admin" ||
+    value === "planning" ||
+    value === "admissions"
+  );
 }
