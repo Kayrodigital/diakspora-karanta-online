@@ -20,7 +20,7 @@ export const Route = createFileRoute("/parcours")({
       {
         name: "description",
         content:
-          "Trouvez une cohorte adaptée à votre âge, votre objectif, votre niveau et vos disponibilités.",
+          "Trouvez une classe adaptée à votre âge, votre objectif, votre niveau et vos disponibilités.",
       },
     ],
   }),
@@ -151,7 +151,7 @@ function ParcoursPage() {
           <h1 className="mt-5 font-serif text-3xl font-semibold text-[#173F2B]">Demande reçue</h1>
           <p className="mx-auto mt-4 max-w-lg text-base leading-7 text-[#565A54]">
             Notre équipe vérifiera votre besoin et les places disponibles avant de vous proposer la
-            cohorte adaptée. Aucun paiement ni compte n’est créé à cette étape.
+            classe adaptée. Aucun paiement ni compte n’est créé à cette étape.
           </p>
           <p className="mt-4 text-sm text-[#71766F]">Référence : {confirmationId.slice(0, 8)}</p>
           <Link
@@ -208,7 +208,7 @@ function ParcoursPage() {
           <StepHeading
             eyebrow="Étape 3 sur 4"
             title="Précisons votre besoin"
-            description="Trois réponses suffisent pour rechercher les cohortes compatibles."
+            description="Trois réponses suffisent pour rechercher les classes compatibles."
           />
           <div className="mt-8 space-y-8 rounded-3xl border border-[#DDD4C3] bg-white p-6 shadow-sm sm:p-9">
             <ChoiceGroup
@@ -235,7 +235,7 @@ function ParcoursPage() {
               onClick={() => setStep(3)}
               className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#173F2B] px-7 font-bold text-white hover:bg-[#24613F] disabled:cursor-not-allowed disabled:opacity-45"
             >
-              Voir les cohortes <ArrowRight className="size-4" aria-hidden="true" />
+              Voir les classes <ArrowRight className="size-4" aria-hidden="true" />
             </button>
           </div>
         </section>
@@ -244,25 +244,25 @@ function ParcoursPage() {
         <section className="mx-auto max-w-4xl">
           <StepHeading
             eyebrow="Étape 4 sur 4"
-            title="Choisissez une cohorte ou demandez conseil"
-            description="Seules les cohortes réellement ouvertes et compatibles sont affichées."
+            title="Choisissez une classe ou demandez conseil"
+            description="Seules les classes réellement ouvertes et compatibles sont affichées."
           />
           {cohortsQuery.isPending ? (
             <p className="mt-8 rounded-2xl border border-[#DDD4C3] bg-white p-6 text-center">
-              Recherche des cohortes…
+              Recherche des classes…
             </p>
           ) : cohortsQuery.isError ? (
             <p
               role="alert"
               className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-6 text-red-800"
             >
-              Les cohortes ne peuvent pas être chargées pour le moment. Vous pouvez tout de même
+              Les classes ne peuvent pas être chargées pour le moment. Vous pouvez tout de même
               envoyer une demande générale ci-dessous.
             </p>
           ) : matches.length === 0 ? (
             <div className="mt-8 rounded-2xl border border-[#E4D5B7] bg-[#FFF9EC] p-6 text-center">
               <h2 className="font-serif text-2xl font-semibold text-[#173F2B]">
-                Aucune cohorte ouverte ne correspond exactement à vos critères
+                Aucune classe ouverte ne correspond exactement à vos critères
               </h2>
               <p className="mt-2 text-base leading-7 text-[#565A54]">
                 Envoyez votre demande : l’équipe vérifiera les prochaines ouvertures et pourra vous
@@ -455,7 +455,7 @@ function ApplicationForm({
       className="mt-8 rounded-3xl border border-[#DDD4C3] bg-white p-6 shadow-sm sm:p-9"
     >
       <h2 className="font-serif text-2xl font-semibold text-[#173F2B]">
-        {selectedCohort ? "Demander cette cohorte" : "Recevoir une proposition adaptée"}
+        {selectedCohort ? "Demander cette classe" : "Recevoir une proposition adaptée"}
       </h2>
       <p className="mt-2 text-sm leading-6 text-[#62675F]">
         Un membre de l’équipe vérifiera votre demande avant toute inscription.

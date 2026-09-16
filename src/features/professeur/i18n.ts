@@ -89,10 +89,10 @@ const ar: Dict = {
 const fr: Dict = {
   eyebrow_teacher: "Espace Professeur",
   greeting: "As-salāmu ʿalaykum, Ustadh",
-  cohort: "Cohorte",
+  cohort: "Classe",
   language: "Langue",
 
-  overview_title: "Vue d'ensemble de la cohorte",
+  overview_title: "Vue d'ensemble de la classe",
   overview_students: "élèves",
   status_regular: "Régulier",
   status_watch: "À surveiller",

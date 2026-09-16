@@ -105,7 +105,7 @@ const faqs = [
   {
     question: "Comment les classes sont-elles organisées ?",
     answer:
-      "Les enfants de 6 à 13 ans suivent des classes mixtes. À partir de 14 ans, les cohortes sont organisées en groupes filles ou garçons, puis en groupes femmes ou hommes à partir de 18 ans.",
+      "Les enfants de 6 à 13 ans suivent des classes mixtes. À partir de 14 ans, les classes sont organisées en groupes filles ou garçons, puis en groupes femmes ou hommes à partir de 18 ans.",
   },
 ] as const;
 
