@@ -278,7 +278,7 @@ function CourseOutline({
 
 function LeconPage() {
   const { id } = Route.useSearch();
-  const { organization, user } = Route.useRouteContext();
+  const { organization, user, activeProfileId } = Route.useRouteContext();
   const brandLogoUrl =
     organization.logo_url ||
     (organization.slug === "diakspora" ? "/brands/diakspora/logo.webp" : null);
@@ -289,15 +289,15 @@ function LeconPage() {
   const [learningTab, setLearningTab] = useState<"notes" | "messages">("notes");
 
   const { data } = useSuspenseQuery({
-    queryKey: ["student-lesson", organization.id, user.id, id ?? "next"],
+    queryKey: ["student-lesson", organization.id, activeProfileId, id ?? "next"],
     queryFn: async () => {
       let lessonId = id;
       if (!lessonId) {
-        const home = await loadStudentHome(organization.id, user.id);
+        const home = await loadStudentHome(organization.id, user.id, activeProfileId);
         lessonId = home.nextLesson?.id;
       }
       if (!lessonId) throw new Error("Aucune leçon n’est disponible pour le moment.");
-      return loadStudentLesson(organization.id, user.id, lessonId);
+      return loadStudentLesson(organization.id, user.id, activeProfileId, lessonId);
     },
   });
 
@@ -343,7 +343,7 @@ function LeconPage() {
   );
 
   const invalidateLearning = async () => {
-    const dashboardKey = ["eleve-dashboard", organization.id, user.id] as const;
+    const dashboardKey = ["eleve-dashboard", organization.id, activeProfileId] as const;
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: dashboardKey, exact: true }),
       queryClient.invalidateQueries({ queryKey: ["student-lesson", organization.id] }),
@@ -352,7 +352,7 @@ function LeconPage() {
   };
 
   const completeMutation = useMutation({
-    mutationFn: () => markLessonComplete(organization.id, user.id, data.lesson.id),
+    mutationFn: () => markLessonComplete(organization.id, activeProfileId, data.lesson.id),
     onSuccess: invalidateLearning,
   });
 
@@ -361,6 +361,7 @@ function LeconPage() {
       if (!data.quiz) throw new Error("Ce quiz n’est plus disponible.");
       return submitStudentQuiz(
         data.quiz.id,
+        activeProfileId,
         data.quiz.questions.map((question) => ({
           question_id: question.id,
           selected_option_ids: answers[question.id] ? [answers[question.id]] : [],

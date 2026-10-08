@@ -17,7 +17,7 @@ export type PlanningData = {
   courseAssignments: Row<"course_cohorts">[];
   learners: Row<"learner_profiles">[];
   learnerMemberships: Row<"learner_cohort_memberships">[];
-  teachers: Array<{ id: string; name: string }>;
+  teachers: Array<{ id: string; profileId: string; name: string }>;
   preferences: Row<"planning_preferences">[];
   attendance: Row<"session_attendance">[];
   absenceReports: Row<"session_absence_reports">[];
@@ -26,6 +26,31 @@ export type PlanningData = {
 
 function firstError(errors: Array<{ message: string } | null>) {
   return errors.find(Boolean) ?? null;
+}
+
+async function getTeacherProfileId(organizationId: string, authUserId: string) {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("organization_id", organizationId)
+    .eq("auth_user_id", authUserId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data)
+    throw new Error("Le compte professeur n’a pas de profil canonique dans cette organisation.");
+  return data.id;
+}
+
+async function getCohortTeacherAuthId(organizationId: string, profileId: string | null) {
+  if (!profileId) return null;
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("auth_user_id")
+    .eq("organization_id", organizationId)
+    .eq("id", profileId)
+    .maybeSingle();
+  if (error) throw error;
+  return data?.auth_user_id ?? null;
 }
 
 export async function loadPlanningData(organizationId: string): Promise<PlanningData> {
@@ -61,7 +86,11 @@ export async function loadPlanningData(organizationId: string): Promise<Planning
       .eq("organization_id", organizationId)
       .eq("role", "teacher")
       .eq("status", "active"),
-    supabase.from("profiles").select("id, full_name, preferred_name").order("full_name"),
+    supabase
+      .from("profiles")
+      .select("id, auth_user_id, full_name, preferred_name")
+      .eq("organization_id", organizationId)
+      .order("full_name"),
     supabase
       .from("planning_preferences")
       .select("*")
@@ -94,7 +123,9 @@ export async function loadPlanningData(organizationId: string): Promise<Planning
   if (error) throw error;
 
   const teacherIds = new Set((memberships.data ?? []).map((item) => item.user_id));
-  const teacherProfiles = (profiles.data ?? []).filter((profile) => teacherIds.has(profile.id));
+  const teacherProfiles = (profiles.data ?? []).filter(
+    (profile) => profile.auth_user_id && teacherIds.has(profile.auth_user_id),
+  );
 
   return {
     cohorts: cohorts.data ?? [],
@@ -105,7 +136,8 @@ export async function loadPlanningData(organizationId: string): Promise<Planning
     learners: learners.data ?? [],
     learnerMemberships: learnerMemberships.data ?? [],
     teachers: teacherProfiles.map((profile) => ({
-      id: profile.id,
+      id: profile.auth_user_id!,
+      profileId: profile.id,
       name: profile.preferred_name || profile.full_name || "Professeur",
     })),
     preferences: preferences.data ?? [],
@@ -141,6 +173,9 @@ export type ClassInput = {
 };
 
 export async function createClass(organizationId: string, input: ClassInput) {
+  const teacherProfileId = input.teacherId
+    ? await getTeacherProfileId(organizationId, input.teacherId)
+    : null;
   const { error } = await supabase.from("cohorts").insert({
     organization_id: organizationId,
     name: input.name.trim(),
@@ -153,7 +188,7 @@ export async function createClass(organizationId: string, input: ClassInput) {
     objective: input.objective,
     level: input.level.trim() || null,
     teaching_languages: input.teachingLanguages,
-    teacher_id: input.teacherId || null,
+    teacher_id: teacherProfileId,
     max_students: input.maxStudents,
     starts_on: input.startsOn || null,
     ends_on: input.endsOn || null,
@@ -198,10 +233,11 @@ export async function checkSessionConflicts(
   cohort: Row<"cohorts">,
   input: SessionInput,
 ): Promise<PlanningConflict[]> {
+  const hostUserId = await getCohortTeacherAuthId(organizationId, cohort.teacher_id);
   const { data, error } = await supabase.rpc("check_live_session_conflicts", {
     p_organization_id: organizationId,
     p_cohort_id: cohort.id,
-    p_host_user_id: cohort.teacher_id ?? "00000000-0000-0000-0000-000000000000",
+    p_host_user_id: hostUserId ?? "00000000-0000-0000-0000-000000000000",
     p_starts_at: new Date(input.startsAt).toISOString(),
     p_ends_at: new Date(input.endsAt).toISOString(),
   });
@@ -222,6 +258,7 @@ export async function createSessions(
     throw new Error("La récurrence doit comprendre entre 1 et 52 séances.");
   }
   const groupId = input.recurrenceWeeks > 1 ? crypto.randomUUID() : null;
+  const hostUserId = await getCohortTeacherAuthId(organizationId, cohort.teacher_id);
   const rows = Array.from({ length: input.recurrenceWeeks }, (_, index) => {
     const start = new Date(startsAt.getTime() + index * 7 * 24 * 60 * 60 * 1000);
     const end = new Date(endsAt.getTime() + index * 7 * 24 * 60 * 60 * 1000);
@@ -229,7 +266,7 @@ export async function createSessions(
       organization_id: organizationId,
       cohort_id: cohort.id,
       course_id: input.courseId || null,
-      host_user_id: cohort.teacher_id,
+      host_user_id: hostUserId,
       created_by: userId,
       title: input.title.trim(),
       starts_at: start.toISOString(),

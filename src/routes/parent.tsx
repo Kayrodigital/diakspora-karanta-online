@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { loadPortalAccess } from "@/lib/auth/portal-access";
 import { organizationTheme } from "@/lib/organization-theme";
 import { FamilySchedule } from "@/features/planning/FamilySchedule";
+import { ActiveProfileSwitcher } from "@/components/ActiveProfileSwitcher";
 
 export const Route = createFileRoute("/parent")({
   ssr: false,
@@ -28,7 +29,7 @@ export const Route = createFileRoute("/parent")({
 
 function ParentPage() {
   const navigate = useNavigate();
-  const { organization, user } = Route.useRouteContext();
+  const { organization, user, accessibleProfiles, activeProfileId } = Route.useRouteContext();
   const displayName =
     typeof user.user_metadata.full_name === "string" && user.user_metadata.full_name.trim()
       ? user.user_metadata.full_name.trim().split(" ")[0]
@@ -70,6 +71,14 @@ function ParentPage() {
           </button>
         </header>
 
+        <div className="mt-5 flex justify-end">
+          <ActiveProfileSwitcher
+            organizationId={organization.id}
+            profiles={accessibleProfiles}
+            activeProfileId={activeProfileId}
+          />
+        </div>
+
         <section className="mt-8 grid gap-4 md:grid-cols-2" aria-label="Informations du suivi">
           <article className="rounded-2xl border border-[color:var(--cream-2)] bg-card p-5 shadow-[var(--shadow-card)]">
             <div className="flex items-start gap-3">
@@ -105,7 +114,10 @@ function ParentPage() {
           <h2 id="progress-title" className="sr-only">
             Progression de mes enfants
           </h2>
-          <LearnerProgressDashboard organizationId={organization.id} />
+          <LearnerProgressDashboard
+            organizationId={organization.id}
+            activeProfileId={activeProfileId}
+          />
         </section>
         <FamilySchedule organizationId={organization.id} userId={user.id} />
       </main>

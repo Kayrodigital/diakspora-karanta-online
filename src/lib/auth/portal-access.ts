@@ -1,5 +1,12 @@
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
+import {
+  getAccessibleProfiles,
+  getOwnProfile,
+  resolveActiveProfile,
+  type AccessibleProfile,
+} from "@/lib/identity/profile-identity";
 
 export const ORGANIZATION_ROLES = [
   "owner",
@@ -33,12 +40,17 @@ export type OrganizationBrand = {
   logo_url: string | null;
   primary_color: string;
   accent_color: string;
+  feature_flags: Json;
 };
 
 export type PortalAccess = {
   user: User;
   membership: Membership;
   organization: OrganizationBrand;
+  ownProfile: AccessibleProfile;
+  accessibleProfiles: AccessibleProfile[];
+  activeProfileId: string;
+  profileIdentityV2: boolean;
 };
 
 const PORTAL_ROLES: Record<Portal, ReadonlySet<OrganizationRole>> = {
@@ -86,7 +98,7 @@ async function loadActiveMemberships(): Promise<{
     .eq("user_id", user.id)
     .eq("status", "active");
 
-  if (membershipsError || !rawMemberships?.length) return null;
+  if (membershipsError) return null;
 
   const memberships = orderMemberships(
     rawMemberships.flatMap((membership) =>
@@ -101,20 +113,61 @@ export async function loadPortalAccess(portal: Portal): Promise<PortalAccess | n
   const access = await loadActiveMemberships();
   if (!access) return null;
 
-  const membership = access.memberships.find((item) => PORTAL_ROLES[portal].has(item.role));
+  let membership = access.memberships.find((item) => PORTAL_ROLES[portal].has(item.role));
+
+  // M5 family compatibility: canonical family links can open the family portal even when
+  // an old parent/learner membership role is absent. Staff portals remain membership-only.
+  if (!membership && portal === "family") {
+    const own = await getOwnProfile(access.user.id);
+    if (own?.organization_id) {
+      const profiles = await getAccessibleProfiles(own.organization_id);
+      if (profiles.some((profile) => profile.id !== own.id)) {
+        membership = {
+          id: `canonical-family:${own.id}`,
+          organization_id: own.organization_id,
+          role: "parent",
+          is_default: false,
+        };
+      }
+    }
+  }
 
   if (!membership) return null;
 
   const { data: organization, error: organizationError } = await supabase
     .from("organizations")
-    .select("id, name, slug, logo_url, primary_color, accent_color")
+    .select("id, name, slug, logo_url, primary_color, accent_color, feature_flags")
     .eq("id", membership.organization_id)
     .eq("status", "active")
     .maybeSingle();
 
   if (organizationError || !organization) return null;
 
-  return { user: access.user, membership, organization };
+  const ownProfile = await getOwnProfile(access.user.id, organization.id);
+  if (!ownProfile) return null;
+  const flags =
+    organization.feature_flags && typeof organization.feature_flags === "object"
+      ? organization.feature_flags
+      : {};
+  const profileIdentityV2 = !Array.isArray(flags) && flags.profile_identity_v2 === true;
+  const accessibleProfiles = profileIdentityV2
+    ? await getAccessibleProfiles(organization.id)
+    : [ownProfile];
+  const activeProfile = await resolveActiveProfile({
+    authUserId: access.user.id,
+    organizationId: organization.id,
+    profileIdentityV2,
+  });
+
+  return {
+    user: access.user,
+    membership,
+    organization,
+    ownProfile,
+    accessibleProfiles,
+    activeProfileId: activeProfile.id,
+    profileIdentityV2,
+  };
 }
 
 export async function resolvePostAuthDestination(
@@ -143,6 +196,11 @@ export async function resolvePostAuthDestination(
     }
     if (portal === "teacher") return "/professeur";
     return membership.role === "parent" ? "/parent" : "/eleve";
+  }
+
+  const canonicalFamily = await loadPortalAccess("family");
+  if (canonicalFamily) {
+    return canonicalFamily.membership.role === "parent" ? "/parent" : "/eleve";
   }
 
   return null;

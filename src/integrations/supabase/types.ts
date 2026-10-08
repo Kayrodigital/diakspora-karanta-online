@@ -1485,41 +1485,61 @@ export type Database = {
       };
       family_relationships: {
         Row: {
+          child_profile_id: string;
           created_at: string;
           created_by: string | null;
           id: string;
-          learner_user_id: string;
+          learner_user_id: string | null;
           organization_id: string;
-          parent_user_id: string;
+          parent_profile_id: string;
+          parent_user_id: string | null;
           relationship: string;
           status: string;
         };
         Insert: {
+          child_profile_id: string;
           created_at?: string;
           created_by?: string | null;
           id?: string;
-          learner_user_id: string;
+          learner_user_id?: string | null;
           organization_id: string;
-          parent_user_id: string;
+          parent_profile_id: string;
+          parent_user_id?: string | null;
           relationship?: string;
           status?: string;
         };
         Update: {
+          child_profile_id?: string;
           created_at?: string;
           created_by?: string | null;
           id?: string;
-          learner_user_id?: string;
+          learner_user_id?: string | null;
           organization_id?: string;
-          parent_user_id?: string;
+          parent_profile_id?: string;
+          parent_user_id?: string | null;
           relationship?: string;
           status?: string;
         };
         Relationships: [
           {
+            foreignKeyName: "family_relationships_child_profile_id_fkey";
+            columns: ["child_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "family_relationships_organization_id_fkey";
             columns: ["organization_id"];
             isOneToOne: false;
             referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "family_relationships_parent_profile_id_fkey";
+            columns: ["parent_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -1609,6 +1629,7 @@ export type Database = {
           joined_at: string;
           learner_id: string;
           organization_id: string;
+          profile_id: string | null;
           status: string;
           updated_at: string;
         };
@@ -1620,6 +1641,7 @@ export type Database = {
           joined_at?: string;
           learner_id: string;
           organization_id: string;
+          profile_id?: string | null;
           status?: string;
           updated_at?: string;
         };
@@ -1631,6 +1653,7 @@ export type Database = {
           joined_at?: string;
           learner_id?: string;
           organization_id?: string;
+          profile_id?: string | null;
           status?: string;
           updated_at?: string;
         };
@@ -1656,6 +1679,13 @@ export type Database = {
             referencedRelation: "organizations";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "learner_cohort_memberships_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
         ];
       };
       learner_profiles: {
@@ -1672,6 +1702,7 @@ export type Database = {
           organization_id: string;
           phone: string | null;
           preferred_name: string | null;
+          profile_id: string | null;
           status: string;
           updated_at: string;
           user_id: string | null;
@@ -1689,6 +1720,7 @@ export type Database = {
           organization_id: string;
           phone?: string | null;
           preferred_name?: string | null;
+          profile_id?: string | null;
           status?: string;
           updated_at?: string;
           user_id?: string | null;
@@ -1706,11 +1738,19 @@ export type Database = {
           organization_id?: string;
           phone?: string | null;
           preferred_name?: string | null;
+          profile_id?: string | null;
           status?: string;
           updated_at?: string;
           user_id?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "learner_profiles_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "learner_profiles_organization_id_fkey";
             columns: ["organization_id"];
@@ -2694,6 +2734,7 @@ export type Database = {
       };
       profiles: {
         Row: {
+          auth_user_id: string | null;
           avatar_url: string | null;
           cohort_name: string | null;
           created_at: string;
@@ -2708,6 +2749,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          auth_user_id?: string | null;
           avatar_url?: string | null;
           cohort_name?: string | null;
           created_at?: string;
@@ -2722,6 +2764,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          auth_user_id?: string | null;
           avatar_url?: string | null;
           cohort_name?: string | null;
           created_at?: string;
@@ -2936,6 +2979,7 @@ export type Database = {
           graded_at: string | null;
           id: string;
           organization_id: string;
+          profile_id: string;
           quiz_id: string;
           score: number | null;
           started_at: string;
@@ -2948,6 +2992,7 @@ export type Database = {
           graded_at?: string | null;
           id?: string;
           organization_id: string;
+          profile_id: string;
           quiz_id: string;
           score?: number | null;
           started_at?: string;
@@ -2960,6 +3005,7 @@ export type Database = {
           graded_at?: string | null;
           id?: string;
           organization_id?: string;
+          profile_id?: string;
           quiz_id?: string;
           score?: number | null;
           started_at?: string;
@@ -2968,6 +3014,13 @@ export type Database = {
           user_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "quiz_attempts_organization_id_fkey";
             columns: ["organization_id"];
@@ -4110,6 +4163,20 @@ export type Database = {
     };
     Functions: {
       accept_my_organization_invitations: { Args: never; Returns: number };
+      assign_learner_to_cohort: {
+        Args: {
+          p_actor_user_id: string;
+          p_cohort_id: string;
+          p_learner_id?: string | null;
+          p_organization_id: string;
+          p_profile_id?: string | null;
+          p_status?: string;
+        };
+        Returns: {
+          learner_id: string;
+          profile_id: string;
+        }[];
+      };
       check_live_session_conflicts: {
         Args: {
           p_cohort_id: string;
@@ -4230,7 +4297,7 @@ export type Database = {
         Returns: string;
       };
       submit_quiz_attempt: {
-        Args: { p_answers: Json; p_quiz_id: string };
+        Args: { p_answers: Json; p_profile_id?: string; p_quiz_id: string };
         Returns: {
           attempt_id: string;
           score: number;

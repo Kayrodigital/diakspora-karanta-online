@@ -7,6 +7,7 @@ type Row<Name extends keyof Tables> = Tables[Name]["Row"];
 
 export type TeacherLearner = {
   id: string;
+  profileId: string;
   userId: string | null;
   fullName: string;
   preferredName: string | null;
@@ -100,26 +101,24 @@ export async function loadTeacherDashboard(
 ): Promise<TeacherDashboardData> {
   const canViewAllCohorts = ["owner", "admin", "technician", "pedagogical_manager"].includes(role);
   const [profileResult, directCohortsResult, staffMembershipsResult] = await Promise.all([
-    supabase.from("profiles").select("full_name, preferred_name").eq("id", userId).maybeSingle(),
-    canViewAllCohorts
-      ? supabase
-          .from("cohorts")
-          .select("*")
-          .eq("organization_id", organizationId)
-          .neq("status", "archived")
-      : supabase
-          .from("cohorts")
-          .select("*")
-          .eq("organization_id", organizationId)
-          .eq("teacher_id", userId)
-          .neq("status", "archived"),
+    supabase
+      .from("profiles")
+      .select("id, full_name, preferred_name")
+      .eq("auth_user_id", userId)
+      .eq("organization_id", organizationId)
+      .maybeSingle(),
+    supabase
+      .from("cohorts")
+      .select("*")
+      .eq("organization_id", organizationId)
+      .neq("status", "archived"),
     supabase
       .from("cohort_memberships")
       .select("cohort_id")
       .eq("organization_id", organizationId)
       .eq("user_id", userId)
       .eq("status", "active")
-      .in("role", ["class_manager", "assistant_teacher"]),
+      .in("role", ["teacher", "class_manager", "assistant_teacher"]),
   ]);
 
   const initialError = firstError([
@@ -129,23 +128,17 @@ export async function loadTeacherDashboard(
   ]);
   if (initialError) throw initialError;
 
-  const directCohorts = directCohortsResult.data ?? [];
-  const extraCohortIds = (staffMembershipsResult.data ?? [])
-    .map((membership) => membership.cohort_id)
-    .filter((id) => !directCohorts.some((cohort) => cohort.id === id));
-  const extraCohortsResult = extraCohortIds.length
-    ? await supabase
-        .from("cohorts")
-        .select("*")
-        .eq("organization_id", organizationId)
-        .in("id", extraCohortIds)
-        .neq("status", "archived")
-    : { data: [], error: null };
-  if (extraCohortsResult.error) throw extraCohortsResult.error;
-
-  const cohorts = [...directCohorts, ...(extraCohortsResult.data ?? [])].sort((left, right) =>
-    left.name.localeCompare(right.name, "fr"),
+  const staffCohortIds = new Set(
+    (staffMembershipsResult.data ?? []).map((membership) => membership.cohort_id),
   );
+  const cohorts = (directCohortsResult.data ?? [])
+    .filter(
+      (cohort) =>
+        canViewAllCohorts ||
+        staffCohortIds.has(cohort.id) ||
+        (staffCohortIds.size === 0 && cohort.teacher_id === profileResult.data?.id),
+    )
+    .sort((left, right) => left.name.localeCompare(right.name, "fr"));
   const cohortIds = cohorts.map((cohort) => cohort.id);
 
   if (cohortIds.length === 0) {
@@ -163,7 +156,7 @@ export async function loadTeacherDashboard(
   const [learnerMemberships, courseAssignments, liveSessions] = await Promise.all([
     supabase
       .from("learner_cohort_memberships")
-      .select("learner_id, cohort_id")
+      .select("learner_id, profile_id, cohort_id")
       .eq("organization_id", organizationId)
       .eq("status", "active")
       .in("cohort_id", cohortIds),
@@ -220,33 +213,40 @@ export async function loadTeacherDashboard(
 
   const learners = learnersResult.data ?? [];
   const lessons = lessonsResult.data ?? [];
-  const learnerUserIds = learners
-    .map((learner) => learner.user_id)
-    .filter((id): id is string => Boolean(id));
+  const learnerProfileIds = [
+    ...new Set(
+      (learnerMemberships.data ?? [])
+        .map((membership) => membership.profile_id)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
   const [progressResult, attemptsResult, homeworkResult] = await Promise.all([
-    learnerUserIds.length
+    learnerProfileIds.length
       ? supabase
           .from("progress")
           .select("user_id, lesson_id, status, completed_at")
           .eq("organization_id", organizationId)
-          .in("user_id", learnerUserIds)
+          .in("user_id", learnerProfileIds)
       : emptyResult<Pick<Row<"progress">, "user_id" | "lesson_id" | "status" | "completed_at">>(),
-    learnerUserIds.length
+    learnerProfileIds.length
       ? supabase
           .from("quiz_attempts")
-          .select("user_id, score, status, submitted_at, graded_at")
+          .select("profile_id, score, status, submitted_at, graded_at")
           .eq("organization_id", organizationId)
-          .in("user_id", learnerUserIds)
+          .in("profile_id", learnerProfileIds)
           .in("status", ["submitted", "graded"])
       : emptyResult<
-          Pick<Row<"quiz_attempts">, "user_id" | "score" | "status" | "submitted_at" | "graded_at">
+          Pick<
+            Row<"quiz_attempts">,
+            "profile_id" | "score" | "status" | "submitted_at" | "graded_at"
+          >
         >(),
-    learnerUserIds.length
+    learnerProfileIds.length
       ? supabase
           .from("homework_submissions")
           .select("*")
           .eq("organization_id", organizationId)
-          .in("user_id", learnerUserIds)
+          .in("user_id", learnerProfileIds)
           .order("created_at", { ascending: false })
       : emptyResult<Row<"homework_submissions">>(),
   ]);
@@ -263,7 +263,11 @@ export async function loadTeacherDashboard(
   const courseRows = coursesResult.data ?? [];
   const courseMap = new Map(courseRows.map((course) => [course.id, course]));
 
-  const summarizeLearner = (learner: Row<"learner_profiles">, cohortId: string) => {
+  const summarizeLearner = (
+    learner: Row<"learner_profiles">,
+    cohortId: string,
+    profileId: string,
+  ) => {
     const cohortCourseIds = new Set(
       (courseAssignments.data ?? [])
         .filter((item) => item.cohort_id === cohortId)
@@ -275,22 +279,21 @@ export async function loadTeacherDashboard(
         .map((lesson) => lesson.id),
     );
     const learnerProgress = (progressResult.data ?? []).filter(
-      (item) =>
-        item.user_id === learner.user_id && item.lesson_id && cohortLessonIds.has(item.lesson_id),
+      (item) => item.user_id === profileId && item.lesson_id && cohortLessonIds.has(item.lesson_id),
     );
     const completedLessons = new Set(
       learnerProgress.filter((item) => item.status === "completed").map((item) => item.lesson_id),
     ).size;
     const scores = (attemptsResult.data ?? [])
-      .filter((attempt) => attempt.user_id === learner.user_id && attempt.score !== null)
+      .filter((attempt) => attempt.profile_id === profileId && attempt.score !== null)
       .map((attempt) => Number(attempt.score));
     const learnerHomework = (homeworkResult.data ?? []).filter(
-      (item) =>
-        item.user_id === learner.user_id && item.lesson_id && cohortLessonIds.has(item.lesson_id),
+      (item) => item.user_id === profileId && item.lesson_id && cohortLessonIds.has(item.lesson_id),
     );
 
     return {
       id: learner.id,
+      profileId,
       userId: learner.user_id,
       fullName: learner.full_name,
       preferredName: learner.preferred_name,
@@ -306,7 +309,7 @@ export async function loadTeacherDashboard(
       lastActivityAt: latestDate([
         ...learnerProgress.map((item) => item.completed_at),
         ...(attemptsResult.data ?? [])
-          .filter((attempt) => attempt.user_id === learner.user_id)
+          .filter((attempt) => attempt.profile_id === profileId)
           .flatMap((attempt) => [attempt.graded_at, attempt.submitted_at]),
       ]),
       pendingHomework: learnerHomework.filter((item) =>
@@ -337,7 +340,9 @@ export async function loadTeacherDashboard(
       .filter((membership) => membership.cohort_id === cohort.id)
       .flatMap((membership) => {
         const learner = learnerMap.get(membership.learner_id);
-        return learner ? [summarizeLearner(learner, cohort.id)] : [];
+        return learner && membership.profile_id
+          ? [summarizeLearner(learner, cohort.id, membership.profile_id)]
+          : [];
       });
     const cohortCourses = (courseAssignments.data ?? [])
       .filter((assignment) => assignment.cohort_id === cohort.id)
@@ -373,8 +378,17 @@ export async function loadTeacherDashboard(
         : null;
       return {
         ...item,
-        learnerName:
-          learners.find((learner) => learner.user_id === item.user_id)?.full_name ?? "Élève",
+        learnerName: (learnerMemberships.data ?? []).find(
+          (membership) => membership.profile_id === item.user_id,
+        )
+          ? (learners.find(
+              (learner) =>
+                learner.id ===
+                (learnerMemberships.data ?? []).find(
+                  (membership) => membership.profile_id === item.user_id,
+                )?.learner_id,
+            )?.full_name ?? "Élève")
+          : "Élève",
         lessonTitle: item.lesson_id
           ? lessonMap.get(item.lesson_id)?.title || "Leçon"
           : "Devoir général",

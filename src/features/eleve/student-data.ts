@@ -76,15 +76,16 @@ function firstError(errors: Array<Error | null>): Error | null {
 
 export async function loadStudentHome(
   organizationId: string,
-  userId: string,
+  _authUserId: string,
+  profileId: string,
 ): Promise<StudentHomeData> {
   const [profile, learnerProfile, courses, lessons, progress, lives] = await Promise.all([
-    supabase.from("profiles").select("full_name, cohort_name").eq("id", userId).maybeSingle(),
+    supabase.from("profiles").select("full_name, cohort_name").eq("id", profileId).maybeSingle(),
     supabase
       .from("learner_profiles")
       .select("id")
       .eq("organization_id", organizationId)
-      .eq("user_id", userId)
+      .eq("profile_id", profileId)
       .maybeSingle(),
     supabase
       .from("courses")
@@ -102,7 +103,7 @@ export async function loadStudentHome(
       .from("progress")
       .select("lesson_id, status")
       .eq("organization_id", organizationId)
-      .eq("user_id", userId),
+      .eq("user_id", profileId),
     supabase
       .from("live_sessions")
       .select("*")
@@ -219,7 +220,8 @@ async function createPlaybackUrl(resource: Row<"lesson_resources">): Promise<Stu
 
 export async function loadStudentLesson(
   organizationId: string,
-  userId: string,
+  authUserId: string,
+  profileId: string,
   lessonId: string,
 ): Promise<StudentLessonData> {
   const [lesson, resources, quizzes, progress, note] = await Promise.all([
@@ -249,12 +251,12 @@ export async function loadStudentLesson(
       .from("progress")
       .select("lesson_id, status")
       .eq("organization_id", organizationId)
-      .eq("user_id", userId),
+      .eq("user_id", profileId),
     supabase
       .from("lesson_notes")
       .select("body")
       .eq("organization_id", organizationId)
-      .eq("user_id", userId)
+      .eq("user_id", authUserId)
       .eq("lesson_id", lessonId)
       .maybeSingle(),
   ]);
@@ -397,14 +399,14 @@ export async function saveStudentLessonNote(
 
 export async function markLessonComplete(
   organizationId: string,
-  userId: string,
+  profileId: string,
   lessonId: string,
 ): Promise<void> {
   const { data: existing, error: readError } = await supabase
     .from("progress")
     .select("id")
     .eq("organization_id", organizationId)
-    .eq("user_id", userId)
+    .eq("user_id", profileId)
     .eq("lesson_id", lessonId)
     .maybeSingle();
   if (readError) throw readError;
@@ -416,7 +418,7 @@ export async function markLessonComplete(
         .eq("id", existing.id)
     : await supabase.from("progress").insert({
         organization_id: organizationId,
-        user_id: userId,
+        user_id: profileId,
         lesson_id: lessonId,
         status: "completed",
         completed_at: new Date().toISOString(),
@@ -426,11 +428,13 @@ export async function markLessonComplete(
 
 export async function submitStudentQuiz(
   quizId: string,
+  profileId: string,
   answers: Array<{ question_id: string; selected_option_ids: string[] }>,
 ): Promise<number> {
   const { data, error } = await supabase.rpc("submit_quiz_attempt", {
     p_quiz_id: quizId,
     p_answers: answers as Json,
+    p_profile_id: profileId,
   });
   if (error) throw error;
   const result = data?.[0];

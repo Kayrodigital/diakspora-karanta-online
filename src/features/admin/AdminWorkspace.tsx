@@ -329,15 +329,21 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
         organizationId: organization.id,
         fullName: String(form.get("fullName") ?? ""),
         phone: String(form.get("phone") ?? "") || undefined,
+        birthDate: String(form.get("birthDate") ?? "") || undefined,
+        gender: (String(form.get("gender") ?? "") || undefined) as
+          "female" | "male" | "unspecified" | undefined,
         guardianUserId: String(form.get("guardianUserId") ?? ""),
         cohortId: String(form.get("cohortId") ?? "") || undefined,
       });
     }
     if (action === "assign_learner") {
+      const learnerId = String(form.get("learnerId") ?? "");
       actionMutation.mutate({
         action,
         organizationId: organization.id,
-        learnerId: String(form.get("learnerId") ?? ""),
+        learnerId,
+        profileId:
+          data?.learners.find((learner) => learner.id === learnerId)?.profile_id ?? undefined,
         cohortId: selectedCohortId,
       });
     }
@@ -794,7 +800,7 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
                       (item) => item.cohort_id === cohort.id,
                     );
                     const responsibleTeacher = data.members.find(
-                      (member) => member.user_id === cohort.teacher_id,
+                      (member) => member.profile?.id === cohort.teacher_id,
                     );
                     return (
                       <Card
@@ -1000,6 +1006,17 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
                       {personName(parent)}
                     </option>
                   ))}
+                </NativeSelect>
+              </Field>
+              <Field label="Date de naissance (facultatif)" htmlFor="child-birth-date">
+                <Input id="child-birth-date" name="birthDate" type="date" />
+              </Field>
+              <Field label="Genre (facultatif)" htmlFor="child-gender">
+                <NativeSelect id="child-gender" name="gender" defaultValue="">
+                  <option value="">Non renseigné</option>
+                  <option value="female">Fille</option>
+                  <option value="male">Garçon</option>
+                  <option value="unspecified">Non précisé</option>
                 </NativeSelect>
               </Field>
               <Field label="Classe (facultatif)" htmlFor="child-cohort">
@@ -1329,7 +1346,10 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
                 <NativeSelect
                   id="assign-teacher"
                   name="teacherId"
-                  defaultValue={selectedCohort?.teacher_id ?? ""}
+                  defaultValue={
+                    data.members.find((member) => member.profile?.id === selectedCohort?.teacher_id)
+                      ?.user_id ?? ""
+                  }
                 >
                   <option value="">Aucun professeur</option>
                   {teacherMembers.map((teacher) => (

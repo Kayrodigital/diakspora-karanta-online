@@ -36,10 +36,13 @@ type Payload = {
   email?: string;
   fullName?: string;
   phone?: string;
+  birthDate?: string;
+  gender?: "female" | "male" | "unspecified";
   role?: string;
   cohortId?: string;
   guardianUserId?: string;
   learnerId?: string;
+  profileId?: string;
   userId?: string;
   status?: string;
   applicationId?: string;
@@ -114,45 +117,87 @@ Deno.serve(async (request) => {
       if (!data) throw new Error("Cette classe n'appartient pas à l'organisation.");
     };
 
-    const assignLearner = async (learnerId: string, cohortId: string, status = "active") => {
+    const assignLearner = async (
+      learnerId: string | undefined,
+      cohortId: string,
+      status = "active",
+      profileId?: string,
+    ) => {
       await ensureCohort(cohortId);
-      const { data: learner, error: learnerError } = await serviceClient
+      if (!learnerId && !profileId) throw new Error("L'élève est obligatoire.");
+
+      let learnerQuery = serviceClient
         .from("learner_profiles")
-        .select("id, user_id")
-        .eq("id", learnerId)
-        .eq("organization_id", organizationId)
-        .maybeSingle();
+        .select("id, profile_id")
+        .eq("organization_id", organizationId);
+      if (learnerId) learnerQuery = learnerQuery.eq("id", learnerId);
+      if (profileId) learnerQuery = learnerQuery.eq("profile_id", profileId);
+      const { data: learner, error: learnerError } = await learnerQuery.maybeSingle();
       if (learnerError) throw learnerError;
-      if (!learner) throw new Error("Élève introuvable.");
+      if (!learner?.profile_id) throw new Error("Mapping élève/profil absent ou incohérent.");
 
-      const { error: classError } = await serviceClient.from("learner_cohort_memberships").upsert(
-        {
-          organization_id: organizationId,
-          cohort_id: cohortId,
-          learner_id: learner.id,
-          status,
-          created_by: authData.user.id,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "cohort_id,learner_id" },
-      );
-      if (classError) throw classError;
+      const { error: assignmentError } = await serviceClient.rpc("assign_learner_to_cohort", {
+        p_organization_id: organizationId,
+        p_actor_user_id: authData.user.id,
+        p_cohort_id: cohortId,
+        p_learner_id: learner.id,
+        p_profile_id: learner.profile_id,
+        p_status: status,
+      });
+      if (assignmentError) throw assignmentError;
+      return { learnerId: learner.id, profileId: learner.profile_id };
+    };
 
-      if (learner.user_id) {
-        const { error: legacyError } = await serviceClient.from("cohort_memberships").upsert(
-          {
-            organization_id: organizationId,
-            cohort_id: cohortId,
-            user_id: learner.user_id,
-            role: "learner",
-            status,
-            created_by: authData.user.id,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "cohort_id,user_id,role" },
-        );
-        if (legacyError) throw legacyError;
+    const resolveAuthProfile = async (
+      userId: string,
+      values: { full_name: string; email: string; phone: string | null },
+    ) => {
+      const { data: profiles, error: lookupError } = await serviceClient
+        .from("profiles")
+        .select("id")
+        .eq("auth_user_id", userId)
+        .limit(2);
+      if (lookupError) throw lookupError;
+      if (profiles.length !== 1) {
+        throw new Error("Le profil Auth canonique est absent ou ambigu.");
       }
+
+      const profileId = profiles[0].id;
+      const { error: updateError } = await serviceClient
+        .from("profiles")
+        .update({
+          ...values,
+          organization_id: organizationId,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", profileId)
+        .eq("auth_user_id", userId);
+      if (updateError) throw updateError;
+      return profileId;
+    };
+
+    const createManagedLearner = async (input: {
+      guardianUserId: string;
+      fullName: string;
+      phone?: string | null;
+      birthDate?: string | null;
+      gender?: "female" | "male" | "unspecified" | null;
+    }) => {
+      const { data, error } = await serviceClient.rpc("create_managed_learner_profile", {
+        p_organization_id: organizationId,
+        p_created_by: authData.user.id,
+        p_guardian_user_id: input.guardianUserId,
+        p_full_name: input.fullName,
+        p_phone: input.phone || null,
+        p_birth_date: input.birthDate || null,
+        p_gender: input.gender || null,
+      });
+      if (error) throw error;
+      const created = Array.isArray(data) ? data[0] : data;
+      if (!created?.profile_id || !created?.learner_id) {
+        throw new Error("La création atomique du profil élève a échoué.");
+      }
+      return { profileId: created.profile_id as string, learnerId: created.learner_id as string };
     };
 
     if (payload.action === "invite") {
@@ -182,14 +227,11 @@ Deno.serve(async (request) => {
         emailSent = true;
       }
 
-      const { error: profileError } = await serviceClient.from("profiles").upsert({
-        id: invitedUser.id,
+      const profileId = await resolveAuthProfile(invitedUser.id, {
         full_name: fullName,
         email,
         phone: payload.phone?.trim() || null,
-        updated_at: new Date().toISOString(),
       });
-      if (profileError) throw profileError;
 
       const { error: membershipError } = await serviceClient
         .from("organization_memberships")
@@ -221,6 +263,7 @@ Deno.serve(async (request) => {
           const { error } = await serviceClient
             .from("learner_profiles")
             .update({
+              profile_id: profileId,
               full_name: fullName,
               email,
               phone: payload.phone?.trim() || null,
@@ -234,6 +277,7 @@ Deno.serve(async (request) => {
             .insert({
               organization_id: organizationId,
               user_id: invitedUser.id,
+              profile_id: profileId,
               full_name: fullName,
               email,
               phone: payload.phone?.trim() || null,
@@ -284,7 +328,7 @@ Deno.serve(async (request) => {
         entity_id: invitedUser.id,
         metadata: { email, role, cohort_id: payload.cohortId ?? null, email_sent: emailSent },
       });
-      return response({ ok: true, userId: invitedUser.id, learnerId, emailSent });
+      return response({ ok: true, userId: invitedUser.id, profileId, learnerId, emailSent });
     }
 
     if (payload.action === "create_managed_learner") {
@@ -303,45 +347,44 @@ Deno.serve(async (request) => {
       if (guardianError) throw guardianError;
       if (!guardian) throw new Error("Le responsable choisi n'a pas de compte parent actif.");
 
-      const { data: learner, error: learnerError } = await serviceClient
-        .from("learner_profiles")
-        .insert({
-          organization_id: organizationId,
-          guardian_user_id: guardianUserId,
-          full_name: fullName,
-          phone: payload.phone?.trim() || null,
-          access_mode: "guardian_managed",
-          status: "active",
-          created_by: authData.user.id,
-        })
-        .select("id")
-        .single();
-      if (learnerError) throw learnerError;
-      if (payload.cohortId) await assignLearner(learner.id, payload.cohortId);
+      const created = await createManagedLearner({
+        guardianUserId,
+        fullName,
+        phone: payload.phone?.trim() || null,
+        birthDate: payload.birthDate?.trim() || null,
+        gender: payload.gender || null,
+      });
+      if (payload.cohortId) await assignLearner(created.learnerId, payload.cohortId);
 
       await serviceClient.from("audit_logs").insert({
         organization_id: organizationId,
         actor_user_id: authData.user.id,
         action: "learner.created",
         entity_type: "learner_profile",
-        entity_id: learner.id,
-        metadata: { guardian_user_id: guardianUserId, cohort_id: payload.cohortId ?? null },
+        entity_id: created.learnerId,
+        metadata: {
+          profile_id: created.profileId,
+          guardian_user_id: guardianUserId,
+          cohort_id: payload.cohortId ?? null,
+        },
       });
-      return response({ ok: true, learnerId: learner.id });
+      return response({ ok: true, profileId: created.profileId, learnerId: created.learnerId });
     }
 
     if (payload.action === "assign_learner") {
       requireRole(legacyManagerRoles);
-      const learnerId = required(payload.learnerId, "L'élève");
+      const learnerId = payload.learnerId?.trim() || undefined;
+      const profileId = payload.profileId?.trim() || undefined;
+      if (!learnerId && !profileId) throw new Error("L'élève est obligatoire.");
       const cohortId = required(payload.cohortId, "La classe");
-      await assignLearner(learnerId, cohortId, "active");
+      const assigned = await assignLearner(learnerId, cohortId, "active", profileId);
       await serviceClient.from("audit_logs").insert({
         organization_id: organizationId,
         actor_user_id: authData.user.id,
         action: "learner.assigned_to_cohort",
         entity_type: "learner_profile",
-        entity_id: learnerId,
-        metadata: { cohort_id: cohortId },
+        entity_id: assigned.learnerId,
+        metadata: { cohort_id: cohortId, profile_id: assigned.profileId },
       });
       return response({ ok: true });
     }
@@ -556,12 +599,10 @@ Deno.serve(async (request) => {
         account = invited.data.user;
         emailSent = true;
       }
-      await serviceClient.from("profiles").upsert({
-        id: account.id,
+      const accountProfileId = await resolveAuthProfile(account.id, {
         full_name: application.applicant_name,
         email,
         phone: application.phone,
-        updated_at: new Date().toISOString(),
       });
       const accountRole = isMinor ? "parent" : "learner";
       const { error: membershipError } = await serviceClient
@@ -579,57 +620,112 @@ Deno.serve(async (request) => {
         );
       if (membershipError) throw membershipError;
 
-      let learnerQuery = serviceClient
-        .from("learner_profiles")
-        .select("id")
-        .eq("organization_id", organizationId);
-      learnerQuery = isMinor
-        ? learnerQuery
-            .eq("guardian_user_id", account.id)
-            .ilike("full_name", application.learner_name)
-        : learnerQuery.eq("user_id", account.id);
-      const { data: existingLearner, error: existingLearnerError } = await learnerQuery
-        .limit(1)
-        .maybeSingle();
-      if (existingLearnerError) throw existingLearnerError;
-      let learnerId = existingLearner?.id;
       const learnerValues = {
         full_name: application.learner_name || application.applicant_name,
         email: isMinor ? null : email,
         phone: application.phone,
         birth_date: application.learner_birth_date,
-        gender,
+        gender: gender ?? "unspecified",
         status: "active",
         access_mode: isMinor ? "guardian_managed" : "individual",
       };
-      if (learnerId) {
-        const { error } = await serviceClient
-          .from("learner_profiles")
-          .update(learnerValues)
-          .eq("id", learnerId);
-        if (error) throw error;
+
+      let learnerId: string;
+      let learnerProfileId: string;
+      if (isMinor) {
+        if (Boolean(application.linked_learner_id) !== Boolean(application.linked_profile_id)) {
+          throw new Error("Le bridge profil/élève de la demande est incomplet.");
+        }
+
+        if (application.linked_learner_id && application.linked_profile_id) {
+          const { data: linkedLearner, error: linkedError } = await serviceClient
+            .from("learner_profiles")
+            .select("id, profile_id")
+            .eq("id", application.linked_learner_id)
+            .eq("profile_id", application.linked_profile_id)
+            .eq("organization_id", organizationId)
+            .eq("guardian_user_id", account.id)
+            .is("user_id", null)
+            .maybeSingle();
+          if (linkedError) throw linkedError;
+          if (!linkedLearner) throw new Error("Le bridge enfant existant est incohérent.");
+          learnerId = linkedLearner.id;
+          learnerProfileId = linkedLearner.profile_id;
+
+          const { error: profileUpdateError } = await serviceClient
+            .from("profiles")
+            .update({
+              full_name: learnerValues.full_name,
+              phone: learnerValues.phone,
+              birth_date: learnerValues.birth_date,
+              gender,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", learnerProfileId)
+            .eq("organization_id", organizationId)
+            .eq("profile_type", "child")
+            .is("auth_user_id", null);
+          if (profileUpdateError) throw profileUpdateError;
+
+          const { error: learnerUpdateError } = await serviceClient
+            .from("learner_profiles")
+            .update(learnerValues)
+            .eq("id", learnerId)
+            .eq("profile_id", learnerProfileId);
+          if (learnerUpdateError) throw learnerUpdateError;
+        } else {
+          const created = await createManagedLearner({
+            guardianUserId: account.id,
+            fullName: learnerValues.full_name,
+            phone: learnerValues.phone,
+            birthDate: learnerValues.birth_date,
+            gender,
+          });
+          learnerId = created.learnerId;
+          learnerProfileId = created.profileId;
+        }
       } else {
-        const { data: learner, error } = await serviceClient
+        learnerProfileId = accountProfileId;
+        const { data: existingLearner, error: existingLearnerError } = await serviceClient
           .from("learner_profiles")
-          .insert({
-            organization_id: organizationId,
-            user_id: isMinor ? null : account.id,
-            guardian_user_id: isMinor ? account.id : null,
-            ...learnerValues,
-            created_by: authData.user.id,
-          })
           .select("id")
-          .single();
-        if (error) throw error;
-        learnerId = learner.id;
+          .eq("organization_id", organizationId)
+          .eq("user_id", account.id)
+          .maybeSingle();
+        if (existingLearnerError) throw existingLearnerError;
+
+        if (existingLearner) {
+          learnerId = existingLearner.id;
+          const { error } = await serviceClient
+            .from("learner_profiles")
+            .update({ ...learnerValues, profile_id: learnerProfileId })
+            .eq("id", learnerId);
+          if (error) throw error;
+        } else {
+          const { data: learner, error } = await serviceClient
+            .from("learner_profiles")
+            .insert({
+              organization_id: organizationId,
+              user_id: account.id,
+              guardian_user_id: null,
+              profile_id: learnerProfileId,
+              ...learnerValues,
+              created_by: authData.user.id,
+            })
+            .select("id")
+            .single();
+          if (error) throw error;
+          learnerId = learner.id;
+        }
       }
-      await assignLearner(learnerId!, cohort.id, "active");
+      await assignLearner(learnerId, cohort.id, "active");
       const now = new Date().toISOString();
       const { error: updateError } = await serviceClient
         .from("enrollment_applications")
         .update({
           linked_user_id: account.id,
           linked_learner_id: learnerId,
+          linked_profile_id: learnerProfileId,
           status: emailSent ? "access_sent" : "first_login_check",
           access_sent_at: emailSent ? now : application.access_sent_at,
           next_action: "Vérifier la première connexion",
@@ -645,7 +741,11 @@ Deno.serve(async (request) => {
           actor_user_id: authData.user.id,
           event_type: "learner_enrolled",
           summary: `Inscription confirmée dans ${cohort.name}`,
-          metadata: { cohort_id: cohort.id, learner_id: learnerId },
+          metadata: {
+            cohort_id: cohort.id,
+            profile_id: learnerProfileId,
+            learner_id: learnerId,
+          },
         },
         ...(emailSent
           ? [
@@ -667,12 +767,19 @@ Deno.serve(async (request) => {
         entity_id: application.id,
         metadata: {
           cohort_id: cohort.id,
+          profile_id: learnerProfileId,
           learner_id: learnerId,
           account_role: accountRole,
           email_sent: emailSent,
         },
       });
-      return response({ ok: true, learnerId, userId: account.id, emailSent });
+      return response({
+        ok: true,
+        profileId: learnerProfileId,
+        learnerId,
+        userId: account.id,
+        emailSent,
+      });
     }
 
     if (payload.action === "bulk_assign_class") {

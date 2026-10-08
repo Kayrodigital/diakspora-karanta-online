@@ -14,7 +14,10 @@ export type AdminRole =
   | "learner";
 
 export type DirectoryMember = Tables<"organization_memberships"> & {
-  profile: Pick<Tables<"profiles">, "full_name" | "preferred_name" | "email" | "phone"> | null;
+  profile: Pick<
+    Tables<"profiles">,
+    "id" | "auth_user_id" | "full_name" | "preferred_name" | "email" | "phone"
+  > | null;
 };
 
 export type LearnerDirectoryItem = Tables<"learner_profiles"> & {
@@ -50,7 +53,7 @@ export async function loadAdminDashboard(organizationId: string): Promise<AdminD
       .select("*")
       .eq("organization_id", organizationId)
       .order("created_at", { ascending: false }),
-    supabase.from("profiles").select("id, full_name, preferred_name, email, phone"),
+    supabase.from("profiles").select("id, auth_user_id, full_name, preferred_name, email, phone"),
     supabase
       .from("learner_profiles")
       .select("*")
@@ -92,22 +95,34 @@ export async function loadAdminDashboard(organizationId: string): Promise<AdminD
   const failed = results.find((result) => result.error);
   if (failed?.error) throw new Error(failed.error.message);
 
-  const profiles = new Map((profilesResult.data ?? []).map((profile) => [profile.id, profile]));
+  const profilesByAuth = new Map(
+    (profilesResult.data ?? [])
+      .filter((profile) => profile.auth_user_id)
+      .map((profile) => [profile.auth_user_id as string, profile]),
+  );
+  const profilesById = new Map((profilesResult.data ?? []).map((profile) => [profile.id, profile]));
   const learnerClasses = learnerClassesResult.data ?? [];
 
   return {
     members: (membershipsResult.data ?? []).map((membership) => ({
       ...membership,
-      profile: profiles.get(membership.user_id) ?? null,
+      profile: profilesByAuth.get(membership.user_id) ?? null,
     })),
-    learners: (learnersResult.data ?? []).map((learner) => ({
-      ...learner,
-      cohorts: learnerClasses
-        .filter(
-          (membership) => membership.learner_id === learner.id && membership.status === "active",
-        )
-        .map((membership) => membership.cohort_id),
-    })),
+    learners: (learnersResult.data ?? []).map((learner) => {
+      const canonical = learner.profile_id ? profilesById.get(learner.profile_id) : null;
+      return {
+        ...learner,
+        full_name: canonical?.full_name || learner.full_name,
+        preferred_name: canonical?.preferred_name ?? learner.preferred_name,
+        email: canonical?.email ?? learner.email,
+        phone: canonical?.phone ?? learner.phone,
+        cohorts: learnerClasses
+          .filter(
+            (membership) => membership.learner_id === learner.id && membership.status === "active",
+          )
+          .map((membership) => membership.cohort_id),
+      };
+    }),
     cohorts: cohortsResult.data ?? [],
     courses: coursesResult.data ?? [],
     invitations: invitationsResult.data ?? [],
@@ -130,6 +145,8 @@ export type AdminMemberAction =
       organizationId: string;
       fullName: string;
       phone?: string;
+      birthDate?: string;
+      gender?: "female" | "male" | "unspecified";
       guardianUserId: string;
       cohortId?: string;
     }
@@ -137,6 +154,7 @@ export type AdminMemberAction =
       action: "assign_learner";
       organizationId: string;
       learnerId: string;
+      profileId?: string;
       cohortId: string;
     }
   | {
@@ -182,9 +200,21 @@ export async function assignTeacherToCohort(input: {
   cohortId: string;
   teacherId: string | null;
 }) {
+  let teacherProfileId: string | null = null;
+  if (input.teacherId) {
+    const { data: teacherProfile, error: profileError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("organization_id", input.organizationId)
+      .eq("auth_user_id", input.teacherId)
+      .maybeSingle();
+    if (profileError) throw new Error(message(profileError));
+    if (!teacherProfile) throw new Error("Le professeur n’a pas de profil canonique.");
+    teacherProfileId = teacherProfile.id;
+  }
   const { error } = await supabase
     .from("cohorts")
-    .update({ teacher_id: input.teacherId, updated_at: new Date().toISOString() })
+    .update({ teacher_id: teacherProfileId, updated_at: new Date().toISOString() })
     .eq("organization_id", input.organizationId)
     .eq("id", input.cohortId);
   if (error) throw new Error(message(error));

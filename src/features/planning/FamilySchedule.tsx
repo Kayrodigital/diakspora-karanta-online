@@ -5,20 +5,30 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { reportAbsence, requirementLabels } from "./planning-data";
+import { getAccessibleProfiles, getOwnProfile } from "@/lib/identity/profile-identity";
 
 type Props = { organizationId: string; userId: string };
 
 async function loadFamilySchedule(organizationId: string, userId: string) {
+  const [ownProfile, accessibleProfiles] = await Promise.all([
+    getOwnProfile(userId, organizationId),
+    getAccessibleProfiles(organizationId),
+  ]);
+  const childProfiles = accessibleProfiles.filter((profile) => profile.id !== ownProfile?.id);
+  const childProfileIds = childProfiles.map((profile) => profile.id);
   const [learners, memberships, sessions, attendance, reports] = await Promise.all([
     supabase
       .from("learner_profiles")
-      .select("id, full_name, preferred_name")
+      .select("id, profile_id, full_name, preferred_name")
       .eq("organization_id", organizationId)
-      .eq("guardian_user_id", userId)
+      .in(
+        "profile_id",
+        childProfileIds.length ? childProfileIds : ["00000000-0000-0000-0000-000000000000"],
+      )
       .eq("status", "active"),
     supabase
       .from("learner_cohort_memberships")
-      .select("learner_id, cohort_id")
+      .select("learner_id, profile_id, cohort_id")
       .eq("organization_id", organizationId)
       .eq("status", "active"),
     supabase
@@ -40,7 +50,14 @@ async function loadFamilySchedule(organizationId: string, userId: string) {
   ].find(Boolean);
   if (error) throw error;
   return {
-    learners: learners.data ?? [],
+    learners: (learners.data ?? []).map((learner) => {
+      const profile = childProfiles.find((item) => item.id === learner.profile_id);
+      return {
+        ...learner,
+        full_name: profile?.full_name || learner.full_name,
+        preferred_name: profile?.preferred_name ?? learner.preferred_name,
+      };
+    }),
     memberships: memberships.data ?? [],
     sessions: sessions.data ?? [],
     attendance: attendance.data ?? [],
@@ -114,7 +131,7 @@ export function FamilySchedule({ organizationId, userId }: Props) {
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {learners.map((learner) => {
           const cohortIds = memberships
-            .filter((item) => item.learner_id === learner.id)
+            .filter((item) => item.profile_id === learner.profile_id)
             .map((item) => item.cohort_id);
           const learnerSessions = sessions.filter(
             (session) => session.cohort_id && cohortIds.includes(session.cohort_id),

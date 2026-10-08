@@ -26,10 +26,7 @@ export const Route = createFileRoute("/_authenticated/devoir")({
 
 type Tab = "audio" | "photo" | "document" | "link";
 
-async function fetchHomeworkData(organizationId: string) {
-  const { data: userResult } = await supabase.auth.getUser();
-  const userId = userResult.user?.id;
-  if (!userId) throw new Error("Votre session a expiré.");
+async function fetchHomeworkData(organizationId: string, profileId: string) {
   const [lessonsResult, historyResult] = await Promise.all([
     supabase
       .from("lessons")
@@ -41,7 +38,7 @@ async function fetchHomeworkData(organizationId: string) {
       .from("homework_submissions")
       .select("*")
       .eq("organization_id", organizationId)
-      .eq("user_id", userId)
+      .eq("user_id", profileId)
       .order("created_at", { ascending: false })
       .limit(20),
   ]);
@@ -74,6 +71,7 @@ async function uploadFile(organizationId: string, file: Blob, extension: string)
 
 async function insertSubmission(input: {
   organizationId: string;
+  profileId: string;
   fileUrl?: string;
   externalUrl?: string;
   type: "photo" | "audio" | "document";
@@ -81,12 +79,9 @@ async function insertSubmission(input: {
   durationSeconds?: number;
   notes?: string;
 }) {
-  const { data: userResult } = await supabase.auth.getUser();
-  const userId = userResult.user?.id;
-  if (!userId) throw new Error("Votre session a expiré.");
   const { error } = await supabase.from("homework_submissions").insert({
     organization_id: input.organizationId,
-    user_id: userId,
+    user_id: input.profileId,
     type: input.type,
     file_url: input.fileUrl ?? null,
     external_url: input.externalUrl ?? null,
@@ -106,7 +101,7 @@ function statusLabel(status: string) {
 }
 
 function DevoirPage() {
-  const { organization } = Route.useRouteContext();
+  const { organization, activeProfileId } = Route.useRouteContext();
   const [tab, setTab] = useState<Tab>("audio");
   const [lessonId, setLessonId] = useState("");
   const [notes, setNotes] = useState("");
@@ -115,8 +110,8 @@ function DevoirPage() {
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const homework = useQuery({
-    queryKey: ["homework", organization.id],
-    queryFn: () => fetchHomeworkData(organization.id),
+    queryKey: ["homework", organization.id, activeProfileId],
+    queryFn: () => fetchHomeworkData(organization.id, activeProfileId),
   });
 
   useEffect(() => {
@@ -126,7 +121,9 @@ function DevoirPage() {
   }, [sent]);
 
   async function refresh() {
-    await queryClient.invalidateQueries({ queryKey: ["homework", organization.id] });
+    await queryClient.invalidateQueries({
+      queryKey: ["homework", organization.id, activeProfileId],
+    });
   }
 
   async function handlePhotos(files: File[]) {
@@ -137,6 +134,7 @@ function DevoirPage() {
         const path = await uploadFile(organization.id, file, extension);
         await insertSubmission({
           organizationId: organization.id,
+          profileId: activeProfileId,
           fileUrl: path,
           type: "photo",
           lessonId: lessonId || null,
@@ -163,6 +161,7 @@ function DevoirPage() {
       const path = await uploadFile(organization.id, blob, extension);
       await insertSubmission({
         organizationId: organization.id,
+        profileId: activeProfileId,
         fileUrl: path,
         type: "audio",
         lessonId: lessonId || null,
@@ -184,6 +183,7 @@ function DevoirPage() {
       const path = await uploadFile(organization.id, file, "pdf");
       await insertSubmission({
         organizationId: organization.id,
+        profileId: activeProfileId,
         fileUrl: path,
         type: "document",
         lessonId: lessonId || null,
@@ -211,6 +211,7 @@ function DevoirPage() {
       }
       await insertSubmission({
         organizationId: organization.id,
+        profileId: activeProfileId,
         externalUrl: url.toString(),
         type: "document",
         lessonId: lessonId || null,

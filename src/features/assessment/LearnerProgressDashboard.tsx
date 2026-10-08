@@ -14,8 +14,9 @@ import {
   saveSelfAssessment,
   type MasteryLevel,
 } from "./assessment-data";
+import { rememberActiveProfile } from "@/lib/identity/profile-identity";
 
-type Props = { organizationId: string; allowSelfAssessment?: boolean };
+type Props = { organizationId: string; activeProfileId?: string; allowSelfAssessment?: boolean };
 const decisionLabels: Record<string, string> = {
   continue: "Poursuite du niveau",
   advance: "Passage au niveau suivant",
@@ -23,7 +24,11 @@ const decisionLabels: Record<string, string> = {
   review_required: "Réévaluation nécessaire",
 };
 
-export function LearnerProgressDashboard({ organizationId, allowSelfAssessment = false }: Props) {
+export function LearnerProgressDashboard({
+  organizationId,
+  activeProfileId,
+  allowSelfAssessment = false,
+}: Props) {
   const queryClient = useQueryClient();
   const queryKey = ["learner-assessment-progress", organizationId];
   const query = useQuery({ queryKey, queryFn: () => loadLearnerProgress(organizationId) });
@@ -37,7 +42,10 @@ export function LearnerProgressDashboard({ organizationId, allowSelfAssessment =
     onError: (error: Error) => toast.error(error.message),
   });
   const data = query.data;
-  const learner = data?.learners.find((item) => item.id === learnerId) ?? data?.learners[0];
+  const learner =
+    data?.learners.find((item) => item.id === learnerId) ??
+    data?.learners.find((item) => item.profile_id === activeProfileId) ??
+    data?.learners[0];
   const learnerResults = useMemo(
     () => data?.results.filter((item) => item.learner_id === learner?.id) ?? [],
     [data, learner?.id],
@@ -110,7 +118,11 @@ export function LearnerProgressDashboard({ organizationId, allowSelfAssessment =
             aria-label="Élève suivi"
             className="min-h-11 rounded-xl border border-border bg-background px-3 text-sm"
             value={learner.id}
-            onChange={(event) => setLearnerId(event.target.value)}
+            onChange={(event) => {
+              setLearnerId(event.target.value);
+              const selected = data.learners.find((item) => item.id === event.target.value);
+              if (selected?.profile_id) rememberActiveProfile(organizationId, selected.profile_id);
+            }}
           >
             {data.learners.map((item) => (
               <option key={item.id} value={item.id}>

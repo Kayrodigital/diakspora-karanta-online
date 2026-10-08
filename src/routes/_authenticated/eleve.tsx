@@ -47,10 +47,10 @@ function progressPercent(completed: number, total: number) {
 
 function ElevePage() {
   const navigate = useNavigate();
-  const { organization, membership, user } = Route.useRouteContext();
+  const { organization, membership, user, activeProfileId } = Route.useRouteContext();
   const { data } = useSuspenseQuery({
-    queryKey: ["eleve-dashboard", organization.id, user.id],
-    queryFn: () => loadStudentHome(organization.id, user.id),
+    queryKey: ["eleve-dashboard", organization.id, activeProfileId],
+    queryFn: () => loadStudentHome(organization.id, user.id, activeProfileId),
   });
   const absenceMutation = useMutation({
     mutationFn: ({ sessionId, reason }: { sessionId: string; reason: string }) => {
