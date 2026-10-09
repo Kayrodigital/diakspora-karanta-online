@@ -48,3 +48,18 @@ export function sessionsForBook(catalog: LearningCatalog, bookId: string) {
     .filter((session) => lessonIds.has(session.lesson_id))
     .sort((left, right) => left.order_index - right.order_index || left.id.localeCompare(right.id));
 }
+
+export function nextSessionForBook(catalog: LearningCatalog, bookId: string) {
+  const orderedSessions = sessionsForBook(catalog, bookId);
+  const statusBySession = new Map(
+    catalog.progress.map((item) => [item.session_id, item.status] as const),
+  );
+  return (
+    orderedSessions.find((session) => statusBySession.get(session.id) === "in_progress") ??
+    orderedSessions.find((session) => {
+      const status = statusBySession.get(session.id);
+      return status !== "completed" && status !== "validated";
+    }) ??
+    null
+  );
+}

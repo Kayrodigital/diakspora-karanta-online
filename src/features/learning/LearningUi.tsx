@@ -2,7 +2,9 @@ import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
   BookOpen,
+  CheckCircle2,
   ChevronRight,
+  Circle,
   Clock3,
   GraduationCap,
   Home,
@@ -10,6 +12,8 @@ import {
   LockKeyhole,
   Menu,
   MessageCircleMore,
+  Play,
+  ShieldCheck,
   ShoppingBag,
   UserRound,
 } from "lucide-react";
@@ -46,51 +50,70 @@ const navigation = [
 export function LearningShell({
   children,
   active = "Apprendre",
+  variant = "default",
 }: {
   children: ReactNode;
   active?: "Apprendre" | "Majliss";
+  variant?: "default" | "heritage";
 }) {
+  const heritage = variant === "heritage";
   return (
-    <div className="min-h-screen bg-[color:var(--cream)] pb-20 text-foreground md:pb-0">
-      <header className="sticky top-0 z-40 border-b border-[#D8C8A8]/70 bg-[#FFFDF7]/95 backdrop-blur-xl">
+    <div
+      className={`min-h-screen pb-20 md:pb-0 ${heritage ? "learning-direction-a bg-[var(--learning-ivory)]" : "bg-[color:var(--cream)] text-foreground"}`}
+    >
+      <header
+        className={`sticky top-0 z-40 border-b backdrop-blur-xl ${heritage ? "border-[var(--learning-sand)] bg-[var(--learning-ivory)]/95" : "border-[#D8C8A8]/70 bg-[#FFFDF7]/95"}`}
+      >
         <div className="mx-auto flex min-h-18 max-w-7xl items-center justify-between gap-4 px-4 sm:px-8 lg:px-12">
           <Link
             to="/"
             className="flex min-h-12 items-center gap-3"
             aria-label="Accueil Diakspora Karanta"
           >
-            <img src="/brands/diakspora/logo.webp" alt="" className="size-10 object-contain" />
-            <span className="leading-none">
-              <span className="block font-serif text-xl font-semibold text-[#173F2B]">
-                Diakspora
+            {heritage ? (
+              <span className="text-xl font-extrabold tracking-[0.04em] text-[var(--learning-green)]">
+                KARANTA
               </span>
-              <span className="mt-1 block text-[9px] font-bold uppercase tracking-[0.2em] text-[#B56E26]">
-                Karanta
-              </span>
-            </span>
+            ) : (
+              <>
+                <img src="/brands/diakspora/logo.webp" alt="" className="size-10 object-contain" />
+                <span className="leading-none">
+                  <span className="block font-serif text-xl font-semibold text-[#173F2B]">
+                    Diakspora
+                  </span>
+                  <span className="mt-1 block text-[9px] font-bold uppercase tracking-[0.2em] text-[#B56E26]">
+                    Karanta
+                  </span>
+                </span>
+              </>
+            )}
           </Link>
           <nav className="hidden items-center gap-1 lg:flex" aria-label="Navigation principale">
             {navigation.map((item) => (
               <a
                 key={item.label}
                 href={item.href}
-                className={`rounded-full px-4 py-3 text-sm font-semibold transition hover:bg-[#F2E8D5] hover:text-[#173F2B] ${item.label === active ? "bg-[#E6F0E8] text-[#173F2B]" : "text-[#565C55]"}`}
+                className={`rounded-full px-4 py-3 text-sm font-semibold transition ${heritage ? "hover:bg-[var(--learning-sand)] hover:text-[var(--learning-green)]" : "hover:bg-[#F2E8D5] hover:text-[#173F2B]"} ${item.label === active ? (heritage ? "bg-[var(--learning-soft-green)] text-[var(--learning-green)]" : "bg-[#E6F0E8] text-[#173F2B]") : heritage ? "text-[var(--learning-muted)]" : "text-[#565C55]"}`}
               >
                 {item.label}
               </a>
             ))}
           </nav>
           <details className="group relative lg:hidden">
-            <summary className="grid size-11 cursor-pointer list-none place-items-center rounded-full border border-[#D8C8A8] text-[#173F2B] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#173F2B]">
+            <summary
+              className={`grid size-11 cursor-pointer list-none place-items-center rounded-full border focus-visible:outline-2 focus-visible:outline-offset-2 ${heritage ? "border-transparent text-[var(--learning-green)] focus-visible:outline-[var(--learning-green)]" : "border-[#D8C8A8] text-[#173F2B] focus-visible:outline-[#173F2B]"}`}
+            >
               <Menu className="size-5" aria-hidden="true" />
               <span className="sr-only">Ouvrir le menu</span>
             </summary>
-            <nav className="absolute right-0 top-14 grid w-64 gap-1 rounded-2xl border border-[#D8C8A8] bg-[#FFFDF7] p-3 text-sm font-semibold shadow-2xl">
+            <nav
+              className={`absolute right-0 top-14 grid w-64 gap-1 rounded-2xl border p-3 text-sm font-semibold shadow-2xl ${heritage ? "border-[var(--learning-sand)] bg-[var(--learning-paper)]" : "border-[#D8C8A8] bg-[#FFFDF7]"}`}
+            >
               {navigation.map((item) => (
                 <a
                   key={item.label}
                   href={item.href}
-                  className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]"
+                  className={`rounded-xl px-4 py-3 ${heritage ? "hover:bg-[var(--learning-sand)]" : "hover:bg-[#F3E8D3]"}`}
                 >
                   {item.label}
                 </a>
@@ -100,21 +123,23 @@ export function LearningShell({
         </div>
       </header>
       <main>{children}</main>
-      <footer className="mt-16 hidden border-t border-[#D8C8A8]/70 bg-[#FFFDF7] md:block">
+      <footer
+        className={`mt-16 hidden border-t md:block ${heritage ? "border-[var(--learning-sand)] bg-[var(--learning-paper)]" : "border-[#D8C8A8]/70 bg-[#FFFDF7]"}`}
+      >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-8 py-8 text-sm text-[#666A63] lg:px-12">
           <p>© 2026 Diakspora Karanta</p>
           <p>Apprendre, pratiquer et transmettre.</p>
         </div>
       </footer>
       <nav
-        className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-[#D8C8A8] bg-[#FFFDF7]/95 px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 backdrop-blur-xl md:hidden"
+        className={`fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 backdrop-blur-xl md:hidden ${heritage ? "border-[var(--learning-sand)] bg-[var(--learning-paper)]/95" : "border-[#D8C8A8] bg-[#FFFDF7]/95"}`}
         aria-label="Navigation mobile"
       >
         {navigation.map(({ label, href, icon: Icon }) => (
           <a
             key={label}
             href={href}
-            className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-semibold ${label === active ? "text-[#173F2B]" : "text-[#72766F]"}`}
+            className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-semibold ${label === active ? (heritage ? "text-[var(--learning-green)]" : "text-[#173F2B]") : heritage ? "text-[var(--learning-muted)]" : "text-[#72766F]"}`}
           >
             <Icon className="size-5" aria-hidden="true" />
             <span className="truncate">{label}</span>
@@ -214,13 +239,15 @@ export function EmptyState({
 export function CatalogState({
   query,
   children,
+  variant = "default",
 }: {
   query: ReturnType<typeof useLearningCatalog>;
   children: (catalog: LearningCatalog) => ReactNode;
+  variant?: "default" | "heritage";
 }) {
   if (query.isPending)
     return (
-      <LearningShell>
+      <LearningShell variant={variant}>
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-8">
           <div className="h-8 w-48 animate-pulse rounded-full bg-[#E8DECC]" />
           <div className="mt-5 h-32 animate-pulse rounded-3xl bg-[#EFE7D8]" />
@@ -229,7 +256,7 @@ export function CatalogState({
     );
   if (query.isError)
     return (
-      <LearningShell>
+      <LearningShell variant={variant}>
         <div className="mx-auto max-w-3xl px-4 py-20 sm:px-8">
           <EmptyState
             title="Le catalogue ne peut pas être chargé"
@@ -240,7 +267,7 @@ export function CatalogState({
     );
   if (!query.data.enabled)
     return (
-      <LearningShell>
+      <LearningShell variant={variant}>
         <div className="mx-auto max-w-3xl px-4 py-20 sm:px-8">
           <EmptyState
             title="Le catalogue revient bientôt"
@@ -314,8 +341,9 @@ export function LearningCard({
 export function BookCard({ book }: { book: LearningBook }) {
   return (
     <article className="overflow-hidden rounded-3xl border border-[#D9CEB9] bg-[#FFFDF7] shadow-[var(--shadow-card)]">
-      <a
-        href={`/apprendre/livre/${book.id}`}
+      <Link
+        to="/apprendre/livre/$bookId"
+        params={{ bookId: book.id }}
         className="group grid min-h-44 grid-cols-[7rem_1fr] focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-[#173F2B] sm:grid-cols-[9rem_1fr]"
       >
         <div className="relative bg-[#E9DFC9]">
@@ -351,6 +379,45 @@ export function BookCard({ book }: { book: LearningBook }) {
             />
           </span>
         </div>
+      </Link>
+    </article>
+  );
+}
+
+export function HeritageBookCard({
+  book,
+  subject,
+  index,
+  sessionCount,
+}: {
+  book: LearningBook;
+  subject?: LearningSubject;
+  index: number;
+  sessionCount: number;
+}) {
+  return (
+    <article className="rounded-xl bg-[var(--learning-paper)]">
+      <a
+        href={`/apprendre/livre/${book.id}`}
+        className="group flex min-h-18 items-center gap-3 rounded-xl px-3 py-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--learning-green)]"
+      >
+        <span className="grid size-12 shrink-0 place-items-center rounded-lg bg-[var(--learning-sand)] text-2xl font-extrabold text-[var(--learning-green)]">
+          {String(index + 1).padStart(2, "0")}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-base font-bold text-[var(--learning-green)]">
+            {book.title}
+          </span>
+          <span className="mt-1 block truncate text-[11px] text-[var(--learning-muted)]">
+            {[subject?.name, book.level, sessionCount ? `${sessionCount} cours` : null]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+        </span>
+        <ArrowRight
+          className="size-4 shrink-0 text-[var(--learning-gold-text)] transition-transform group-hover:translate-x-0.5"
+          aria-hidden="true"
+        />
       </a>
     </article>
   );
@@ -400,11 +467,15 @@ export function ChapterList({
   lessons,
   sessions,
   progress = [],
+  variant = "default",
+  nextSessionId,
 }: {
   chapters: LearningChapter[];
   lessons: LearningLesson[];
   sessions: LearningSession[];
   progress?: SessionProgress[];
+  variant?: "default" | "heritage";
+  nextSessionId?: string | null;
 }) {
   if (chapters.length === 0)
     return (
@@ -413,6 +484,111 @@ export function ChapterList({
         description="La structure de ce livre est en préparation."
       />
     );
+  if (variant === "heritage") {
+    const chapterIds = new Set(chapters.map((chapter) => chapter.id));
+    const lessonById = new Map(lessons.map((lesson) => [lesson.id, lesson] as const));
+    const orderedSessions = [...sessions]
+      .filter((session) => {
+        const chapterId = lessonById.get(session.lesson_id)?.chapter_id;
+        return Boolean(chapterId && chapterIds.has(chapterId));
+      })
+      .sort(
+        (left, right) => left.order_index - right.order_index || left.id.localeCompare(right.id),
+      );
+    const courseNumber = new Map(
+      orderedSessions.map((session, index) => [session.id, index + 1] as const),
+    );
+
+    return (
+      <div className="space-y-3">
+        {chapters.map((chapter, index) => {
+          const chapterLessons = lessons.filter((lesson) => lesson.chapter_id === chapter.id);
+          const chapterLessonIds = new Set(chapterLessons.map((lesson) => lesson.id));
+          const chapterSessions = orderedSessions.filter((session) =>
+            chapterLessonIds.has(session.lesson_id),
+          );
+          const completedCount = chapterSessions.filter((session) => {
+            const status = sessionStatus(progress, session.id);
+            return status === "completed" || status === "validated";
+          }).length;
+          const isCurrentChapter = chapterSessions.some((session) => session.id === nextSessionId);
+          const chapterTitle = chapter.title.replace(/^Chapitre\s+\d+\s*[—-]\s*/i, "");
+
+          return (
+            <details
+              key={chapter.id}
+              open={isCurrentChapter || (!nextSessionId && index === 0)}
+              className="group rounded-xl bg-[var(--learning-paper)]"
+            >
+              <summary className="flex min-h-20 cursor-pointer list-none items-center gap-3 rounded-xl px-4 py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--learning-green)]">
+                <span className="text-lg font-extrabold text-[var(--learning-green)]">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-bold text-[var(--learning-green)]">
+                    {chapterTitle}
+                  </span>
+                  <span className="mt-1 block text-xs text-[var(--learning-muted)]">
+                    {chapterSessions.length} cours
+                    {chapterSessions.length
+                      ? ` · ${completedCount}/${chapterSessions.length} achevés`
+                      : ""}
+                  </span>
+                </span>
+                <ChevronRight
+                  className="size-4 shrink-0 text-[var(--learning-muted)] transition group-open:rotate-90"
+                  aria-hidden="true"
+                />
+              </summary>
+              {chapterSessions.length ? (
+                <div className="px-2 pb-2">
+                  {chapterSessions.map((session) => {
+                    const status = sessionStatus(progress, session.id);
+                    const active = session.id === nextSessionId;
+                    const StatusIcon =
+                      status === "validated"
+                        ? ShieldCheck
+                        : status === "completed"
+                          ? CheckCircle2
+                          : status === "in_progress"
+                            ? Play
+                            : Circle;
+                    const statusLabel =
+                      status === "validated"
+                        ? "Validé"
+                        : status === "completed"
+                          ? "Terminé"
+                          : status === "in_progress"
+                            ? "En cours"
+                            : "Non commencé";
+                    const title = session.title.replace(/^\d{1,3}\s*[—-]\s*/, "");
+                    return (
+                      <Link
+                        key={session.id}
+                        to="/apprendre/seance/$sessionId"
+                        params={{ sessionId: session.id }}
+                        className={`flex min-h-10 items-center gap-2 rounded-lg px-3 py-2 text-xs focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--learning-green)] ${active ? "bg-[var(--learning-soft-green)] font-bold" : "hover:bg-[var(--learning-ivory)]"}`}
+                      >
+                        <span className="w-7 shrink-0 font-bold text-[var(--learning-gold-text)]">
+                          {String(courseNumber.get(session.id) ?? 0).padStart(2, "0")}
+                        </span>
+                        <span className="min-w-0 flex-1 text-[var(--learning-green)]">{title}</span>
+                        <span className="inline-flex shrink-0 items-center gap-1 text-[10px] text-[var(--learning-muted)]">
+                          <StatusIcon className="size-3.5" aria-hidden="true" />
+                          <span className="sr-only sm:not-sr-only">{statusLabel}</span>
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </details>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {chapters.map((chapter, index) => {

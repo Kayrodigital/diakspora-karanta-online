@@ -23,6 +23,7 @@ export type SessionExperience = {
   resources: SessionResource[];
   activities: SessionActivity[];
   progress: SessionProgress | null;
+  note: string;
 };
 
 function activitiesFlag(flags: Json): boolean {
@@ -45,7 +46,11 @@ async function playbackUrl(resource: ResourceRow): Promise<SessionResource> {
   return { ...resource, playbackUrl: error ? null : data.signedUrl };
 }
 
-export async function loadSessionExperience(sessionId: string): Promise<SessionExperience> {
+export async function loadSessionExperience(
+  sessionId: string,
+  lessonId: string,
+  organizationId: string,
+): Promise<SessionExperience> {
   const [organizationResult, resourcesResult, activitiesResult, userResult] = await Promise.all([
     supabase.from("organizations").select("feature_flags").eq("slug", "diakspora").maybeSingle(),
     supabase
@@ -79,6 +84,7 @@ export async function loadSessionExperience(sessionId: string): Promise<SessionE
       resources: [],
       activities: [],
       progress: null,
+      note: "",
     };
   }
 
@@ -89,7 +95,7 @@ export async function loadSessionExperience(sessionId: string): Promise<SessionE
     Promise.all((resourcesResult.data ?? []).map(playbackUrl)),
   ]);
 
-  const [attemptsResult, progressResult] = await Promise.all([
+  const [attemptsResult, progressResult, noteResult] = await Promise.all([
     access && activityIds.length
       ? supabase
           .from("activity_attempts")
@@ -105,9 +111,19 @@ export async function loadSessionExperience(sessionId: string): Promise<SessionE
           .eq("session_id", sessionId)
           .maybeSingle()
       : Promise.resolve({ data: null, error: null }),
+    userResult.data.user
+      ? supabase
+          .from("lesson_notes")
+          .select("body")
+          .eq("organization_id", organizationId)
+          .eq("user_id", userResult.data.user.id)
+          .eq("lesson_id", lessonId)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
   ]);
   if (attemptsResult.error) throw attemptsResult.error;
   if (progressResult.error) throw progressResult.error;
+  if (noteResult.error) throw noteResult.error;
 
   const attempts = new Map(
     (attemptsResult.data ?? []).map((attempt) => [attempt.activity_id, attempt] as const),
@@ -126,7 +142,27 @@ export async function loadSessionExperience(sessionId: string): Promise<SessionE
       attempt: attempts.get(activity.id) ?? null,
     })),
     progress: (progressResult.data as SessionProgress | null) ?? null,
+    note: noteResult.data?.body ?? "",
   };
+}
+
+export async function saveSessionLessonNote(input: {
+  organizationId: string;
+  userId: string;
+  lessonId: string;
+  body: string;
+}): Promise<void> {
+  const { error } = await supabase.from("lesson_notes").upsert(
+    {
+      organization_id: input.organizationId,
+      user_id: input.userId,
+      lesson_id: input.lessonId,
+      body: input.body.slice(0, 10000),
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "organization_id,user_id,lesson_id" },
+  );
+  if (error) throw error;
 }
 
 export async function saveSelfCorrection(input: {

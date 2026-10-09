@@ -67,12 +67,12 @@
   /* Brand tokens — Diakspora Karanta design system */
   --cream: #faf9f5;
   --cream-2: #ece6d8;
-  --gold: #E5B95C;
+  --gold: #e5b95c;
   --gold-soft: #f0d18a;
-  --gold-dark: #C9932F;
+  --gold-dark: #c9932f;
   --anthracite: #2b2f36;
-  --deep-green: #1E5631;
-  --deep-green-hi: #4F8F5B;
+  --deep-green: #1e5631;
+  --deep-green-hi: #4f8f5b;
 
   /* Semantic */
   --background: var(--cream);
@@ -102,8 +102,16 @@
   --gradient-gold: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
   --gradient-lesson: linear-gradient(135deg, var(--deep-green) 0%, var(--deep-green-hi) 100%);
   --gradient-parcours-enfant: linear-gradient(135deg, var(--deep-green) 0%, var(--gold-dark) 100%);
-  --gradient-parcours-intermediaire: linear-gradient(135deg, var(--teal-deep) 0%, var(--teal-hi) 100%);
-  --gradient-parcours-avance: linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta-hi) 100%);
+  --gradient-parcours-intermediaire: linear-gradient(
+    135deg,
+    var(--teal-deep) 0%,
+    var(--teal-hi) 100%
+  );
+  --gradient-parcours-avance: linear-gradient(
+    135deg,
+    var(--terracotta) 0%,
+    var(--terracotta-hi) 100%
+  );
   --shadow-elegant: 0 20px 50px -20px color-mix(in oklab, var(--deep-green) 40%, transparent);
   --shadow-gold: 0 10px 30px -12px color-mix(in oklab, var(--gold) 55%, transparent);
   --shadow-card: 0 6px 20px -12px color-mix(in oklab, var(--anthracite) 40%, transparent);
@@ -113,6 +121,31 @@
   --teal-hi: oklch(0.55 0.1 190);
   --terracotta: oklch(0.5 0.12 45);
   --terracotta-hi: oklch(0.75 0.11 60);
+}
+
+/* Direction A — Héritage & Savoir.
+ * Scoped to the three learning pilot screens so the rest of Karanta, notably
+ * Majliss and the authenticated portals, keeps its current visual system.
+ */
+.learning-direction-a {
+  --learning-ivory: #f8f5ed;
+  --learning-paper: #fffdf8;
+  --learning-green: #163f31;
+  --learning-sand: #f0e7d4;
+  --learning-gold: #b48b4a;
+  --learning-gold-text: #80622f;
+  --learning-muted: #66736d;
+  --learning-soft-green: #e9f0e9;
+  --learning-track: #d4d9ce;
+
+  background: var(--learning-ivory);
+  color: var(--learning-green);
+  font-family: var(--font-sans);
+}
+
+.learning-direction-a :where(h1, h2, h3, h4) {
+  font-family: var(--font-sans);
+  letter-spacing: -0.02em;
 }
 
 .dark {
@@ -147,7 +180,10 @@
     font-feature-settings: "ss01", "cv11";
   }
 
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     font-family: var(--font-serif);
     letter-spacing: -0.01em;
   }

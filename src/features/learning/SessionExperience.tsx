@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import {
   CheckCircle2,
   Download,
@@ -10,8 +11,10 @@ import {
   LoaderCircle,
   LockKeyhole,
   Mic,
+  NotebookPen,
   PlayCircle,
   RotateCcw,
+  Save,
   Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -21,6 +24,7 @@ import { EmptyState } from "@/features/learning/LearningUi";
 import { ProgressBadge } from "@/features/learning/ProgressUi";
 import {
   loadSessionExperience,
+  saveSessionLessonNote,
   saveSelfCorrection,
   type SessionActivity,
   type SessionResource,
@@ -49,7 +53,13 @@ function youtubeEmbedUrl(url: string | null): string | null {
   }
 }
 
-function ResourceCard({ resource }: { resource: SessionResource }) {
+function ResourceCard({
+  resource,
+  featured = false,
+}: {
+  resource: SessionResource;
+  featured?: boolean;
+}) {
   const youtube =
     resource.resource_type === "youtube" ? youtubeEmbedUrl(resource.playbackUrl) : null;
   const isAudio = resource.resource_type === "audio";
@@ -57,19 +67,25 @@ function ResourceCard({ resource }: { resource: SessionResource }) {
   const isText = resource.resource_type === "text";
   const Icon = isAudio ? Headphones : isVideo || youtube ? PlayCircle : FileText;
   return (
-    <article className="overflow-hidden rounded-3xl border border-[#E4D8C3] bg-white p-4 shadow-sm sm:p-6">
-      <div className="flex items-start gap-3">
+    <article
+      className={
+        featured
+          ? "overflow-hidden rounded-[14px] border border-[var(--learning-border)] bg-[var(--learning-paper)]"
+          : "overflow-hidden rounded-3xl border border-[#E4D8C3] bg-white p-4 shadow-sm sm:p-6"
+      }
+    >
+      <div className={featured ? "flex items-start gap-3 px-4 py-3" : "flex items-start gap-3"}>
         <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#F7E9C8] text-[#7D5A20]">
           <Icon className="size-5" aria-hidden="true" />
         </span>
         <div className="min-w-0">
           <h3 className="font-semibold text-[#173F2B]">{resource.title}</h3>
-          {resource.description ? (
+          {!featured && resource.description ? (
             <p className="mt-1 text-sm leading-6 text-[#686D65]">{resource.description}</p>
           ) : null}
           <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#686D65]">
             {resource.author_name ? <span>Par {resource.author_name}</span> : null}
-            {resource.source_name ? <span>• {resource.source_name}</span> : null}
+            {!featured && resource.source_name ? <span>• {resource.source_name}</span> : null}
             {resource.access_tier ? (
               <span className="rounded-full bg-[#EEF4EF] px-2 py-1 font-semibold uppercase">
                 {resource.access_tier === "free" ? "Gratuit" : "Premium"}
@@ -87,7 +103,11 @@ function ResourceCard({ resource }: { resource: SessionResource }) {
         <video
           controls
           preload="metadata"
-          className="mt-4 aspect-video w-full rounded-2xl bg-black"
+          className={
+            featured
+              ? "aspect-video w-full bg-black"
+              : "mt-4 aspect-video w-full rounded-2xl bg-black"
+          }
           src={resource.playbackUrl}
         >
           Votre navigateur ne peut pas lire cette vidéo.
@@ -97,7 +117,11 @@ function ResourceCard({ resource }: { resource: SessionResource }) {
         <iframe
           src={youtube}
           title={resource.title}
-          className="mt-4 aspect-video w-full rounded-2xl bg-black"
+          className={
+            featured
+              ? "aspect-video w-full bg-black"
+              : "mt-4 aspect-video w-full rounded-2xl bg-black"
+          }
           loading="lazy"
           referrerPolicy="strict-origin-when-cross-origin"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -236,6 +260,73 @@ function ActivityCard({
   );
 }
 
+function PersonalNotes({
+  initialBody,
+  lessonId,
+  organizationId,
+  userId,
+}: {
+  initialBody: string;
+  lessonId: string;
+  organizationId: string;
+  userId: string | null;
+}) {
+  const [body, setBody] = useState(initialBody);
+  const [savedBody, setSavedBody] = useState(initialBody);
+  const mutation = useMutation({
+    mutationFn: () => {
+      if (!userId) throw new Error("Connectez-vous pour enregistrer une note.");
+      return saveSessionLessonNote({ organizationId, userId, lessonId, body });
+    },
+    onSuccess: () => {
+      setSavedBody(body);
+      toast.success("Note personnelle enregistrée.");
+    },
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Enregistrement impossible."),
+  });
+
+  return (
+    <details className="rounded-[14px] border border-[var(--learning-border)] bg-[var(--learning-paper)] px-4 py-3">
+      <summary className="flex min-h-8 cursor-pointer list-none items-center gap-2 font-bold text-[var(--learning-green)] marker:hidden">
+        <NotebookPen className="size-4" aria-hidden="true" /> Mes notes personnelles
+      </summary>
+      {userId ? (
+        <div className="mt-3">
+          <label htmlFor="personal-lesson-note" className="sr-only">
+            Mes notes personnelles pour cette leçon
+          </label>
+          <textarea
+            id="personal-lesson-note"
+            value={body}
+            onChange={(event) => setBody(event.target.value)}
+            rows={5}
+            maxLength={10000}
+            placeholder="Écrivez ici ce que vous souhaitez retenir…"
+            className="w-full resize-y rounded-xl border border-[var(--learning-border)] bg-white px-3 py-3 text-sm leading-6 text-[var(--learning-ink)] outline-none focus:border-[var(--learning-green)] focus:ring-2 focus:ring-[var(--learning-green)]/15"
+          />
+          <Button
+            type="button"
+            size="sm"
+            disabled={mutation.isPending || body === savedBody}
+            onClick={() => mutation.mutate()}
+            className="mt-3 min-h-10 rounded-xl bg-[var(--learning-green)] px-4 text-white"
+          >
+            <Save className="size-4" aria-hidden="true" /> Enregistrer ma note
+          </Button>
+        </div>
+      ) : (
+        <p className="mt-3 text-sm leading-6 text-[var(--learning-muted)]">
+          <Link to="/auth" search={{ portal: "family" }} className="font-bold underline">
+            Connectez-vous
+          </Link>{" "}
+          pour retrouver vos notes sur tous vos appareils.
+        </p>
+      )}
+    </details>
+  );
+}
+
 export function SessionExperience({
   sessionId,
   lessonId,
@@ -243,6 +334,7 @@ export function SessionExperience({
   requiresValidation,
   learningPoints,
   reflectionQuestions,
+  variant = "default",
 }: {
   sessionId: string;
   lessonId: string;
@@ -250,10 +342,14 @@ export function SessionExperience({
   requiresValidation: boolean;
   learningPoints: string[];
   reflectionQuestions: string[];
+  variant?: "default" | "heritage";
 }) {
   const queryClient = useQueryClient();
-  const queryKey = ["session-experience", sessionId] as const;
-  const query = useQuery({ queryKey, queryFn: () => loadSessionExperience(sessionId) });
+  const queryKey = ["session-experience", sessionId, lessonId] as const;
+  const query = useQuery({
+    queryKey,
+    queryFn: () => loadSessionExperience(sessionId, lessonId, organizationId),
+  });
   const mutation = useMutation({
     mutationFn: ({
       activity,
@@ -323,6 +419,160 @@ export function SessionExperience({
   const supportingResources = query.data.resources.filter(
     (resource) => resource.id !== featuredResource?.id,
   );
+
+  if (variant === "heritage") {
+    return (
+      <div className="mt-5 space-y-5">
+        {featuredResource ? (
+          <section aria-label="Cours principal">
+            <ResourceCard resource={featuredResource} featured />
+          </section>
+        ) : null}
+
+        {query.data.progressEnabled ? (
+          <section
+            className="rounded-[14px] border border-[var(--learning-border)] bg-[var(--learning-paper)] p-4"
+            aria-labelledby="session-progress-title"
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2
+                  id="session-progress-title"
+                  className="text-sm font-extrabold text-[var(--learning-green)]"
+                >
+                  Ma progression
+                </h2>
+                <div className="mt-2">
+                  <ProgressBadge status={progressStatus} />
+                </div>
+              </div>
+              {!query.data.activeProfileId ? (
+                <Button asChild variant="outline" size="sm" className="min-h-10 rounded-xl">
+                  <Link to="/auth" search={{ portal: "family" }}>
+                    Se connecter
+                  </Link>
+                </Button>
+              ) : progressStatus === "not_started" ? (
+                <Button
+                  size="sm"
+                  className="min-h-10 rounded-xl bg-[var(--learning-green)]"
+                  disabled={progressMutation.isPending}
+                  onClick={() => progressMutation.mutate("start")}
+                >
+                  Commencer
+                </Button>
+              ) : progressStatus === "in_progress" ? (
+                <Button
+                  size="sm"
+                  className="min-h-10 rounded-xl bg-[var(--learning-green)]"
+                  disabled={progressMutation.isPending}
+                  onClick={() => progressMutation.mutate("complete")}
+                >
+                  Marquer comme terminé
+                </Button>
+              ) : progressStatus === "completed" && requiresValidation ? (
+                <span className="text-right text-xs font-bold text-[var(--learning-muted)]">
+                  Terminé · validation en attente
+                </span>
+              ) : (
+                <span className="text-right text-xs font-bold text-[var(--learning-muted)]">
+                  {progressStatus === "validated" ? "Validé" : "Terminé"}
+                </span>
+              )}
+            </div>
+          </section>
+        ) : null}
+
+        {learningPoints.length ? (
+          <section
+            className="rounded-[14px] bg-[var(--learning-active)] p-4"
+            aria-labelledby="learning-points-title"
+          >
+            <h2
+              id="learning-points-title"
+              className="text-sm font-extrabold text-[var(--learning-green)]"
+            >
+              À retenir
+            </h2>
+            <ul className="mt-3 space-y-2 text-sm leading-6 text-[var(--learning-ink)]">
+              {learningPoints.map((point, index) => (
+                <li key={`${index}-${point}`} className="flex gap-3">
+                  <span className="text-[var(--learning-gold-text)]" aria-hidden="true">
+                    •
+                  </span>
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        {reflectionQuestions.length ? (
+          <section
+            className="rounded-[14px] bg-[var(--learning-sand)] p-4"
+            aria-labelledby="reflection-title"
+          >
+            <h2
+              id="reflection-title"
+              className="text-sm font-extrabold text-[var(--learning-green)]"
+            >
+              Questions à se poser
+            </h2>
+            <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-[var(--learning-ink)]">
+              {reflectionQuestions.map((question, index) => (
+                <li key={`${index}-${question}`}>{question}</li>
+              ))}
+            </ol>
+          </section>
+        ) : null}
+
+        <PersonalNotes
+          initialBody={query.data.note}
+          lessonId={lessonId}
+          organizationId={organizationId}
+          userId={query.data.userId}
+        />
+
+        {supportingResources.length ? (
+          <details className="rounded-[14px] border border-[var(--learning-border)] bg-[var(--learning-paper)] px-4 py-3">
+            <summary className="min-h-8 cursor-pointer list-none font-bold text-[var(--learning-green)] marker:hidden">
+              Ressources complémentaires ({supportingResources.length})
+            </summary>
+            <div className="mt-4 grid gap-4">
+              {supportingResources.map((resource) => (
+                <ResourceCard key={resource.id} resource={resource} />
+              ))}
+            </div>
+          </details>
+        ) : null}
+
+        {query.data.activities.length ? (
+          <section aria-labelledby="activities-title">
+            <h2
+              id="activities-title"
+              className="text-lg font-extrabold text-[var(--learning-green)]"
+            >
+              Exercices et autocorrection
+            </h2>
+            <div className="mt-3 grid gap-4">
+              {query.data.activities.map((activity) => (
+                <ActivityCard
+                  key={activity.id}
+                  activity={activity}
+                  lessonId={lessonId}
+                  profileId={query.data.activeProfileId}
+                  userId={query.data.userId}
+                  pending={mutation.isPending}
+                  onEvaluate={(item, evaluation) => mutation.mutate({ activity: item, evaluation })}
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div className="mt-8 space-y-9">
       {featuredResource ? (
