@@ -102,14 +102,17 @@ export async function updateEditorialSession(
     reflection_questions: string[];
   },
 ): Promise<void> {
-  const { error } = await supabase
-    .from("sessions")
-    .update({
-      ...input,
-      published_at: input.status === "published" ? new Date().toISOString() : null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", id);
+  const { error } = await supabase.rpc("update_editorial_session", {
+    p_session_id: id,
+    p_title: input.title,
+    p_summary: input.summary,
+    p_lesson_id: input.lesson_id,
+    p_order_index: input.order_index,
+    p_duration_minutes: input.duration_minutes,
+    p_status: input.status,
+    p_learning_points: input.learning_points,
+    p_reflection_questions: input.reflection_questions,
+  });
   if (error) throw error;
 }
 

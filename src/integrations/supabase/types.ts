@@ -4758,6 +4758,20 @@ export type Database = {
           score: number;
         }[];
       };
+      update_editorial_session: {
+        Args: {
+          p_duration_minutes: number | null;
+          p_learning_points: Json;
+          p_lesson_id: string;
+          p_order_index: number;
+          p_reflection_questions: Json;
+          p_session_id: string;
+          p_status: string;
+          p_summary: string | null;
+          p_title: string;
+        };
+        Returns: undefined;
+      };
       update_shop_order_fulfillment: {
         Args: {
           p_internal_notes?: string;
