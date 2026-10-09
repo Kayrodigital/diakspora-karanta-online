@@ -17,6 +17,7 @@ import {
   Plus,
   Radio,
   Settings2,
+  Sparkles,
   Users,
   Video,
 } from "lucide-react";
@@ -48,6 +49,7 @@ import type { OrganizationBrand } from "@/lib/auth/portal-access";
 import {
   addExternalResource,
   createBasicQuiz,
+  createCourseActivity,
   createCourseLesson,
   createCourseModule,
   loadCourseEditor,
@@ -66,6 +68,7 @@ type EditorDialog =
   | { kind: "lesson"; moduleId: string }
   | { kind: "resource"; lessonId: string }
   | { kind: "quiz"; lessonId: string }
+  | { kind: "activity"; lessonId: string; sessionId: string }
   | { kind: "settings" }
   | null;
 
@@ -287,6 +290,37 @@ function ResourceForm({
       <Field label="Description (facultatif)" htmlFor="description">
         <Textarea id="description" name="description" rows={2} />
       </Field>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Accès" htmlFor="accessTier">
+          <NativeSelect id="accessTier" name="accessTier" defaultValue="">
+            <option value="">Non déterminé</option>
+            <option value="free">Gratuit</option>
+            <option value="premium">Premium</option>
+          </NativeSelect>
+        </Field>
+        <Field label="Type de licence" htmlFor="licenseType">
+          <Input id="licenseType" name="licenseType" placeholder="Ex. propriétaire, CC BY" />
+        </Field>
+        <Field label="Auteur / autrice" htmlFor="authorName">
+          <Input id="authorName" name="authorName" />
+        </Field>
+        <Field label="Source" htmlFor="sourceName">
+          <Input id="sourceName" name="sourceName" />
+        </Field>
+      </div>
+      <Field label="Provenance (facultatif)" htmlFor="provenance">
+        <Textarea id="provenance" name="provenance" rows={2} />
+      </Field>
+      <div className="grid gap-3 rounded-xl border p-4 text-sm">
+        <label className="flex min-h-11 items-center gap-3">
+          <input type="checkbox" name="distributionAuthorized" className="size-4" />
+          <span>Je confirme que la diffusion est autorisée</span>
+        </label>
+        <label className="flex min-h-11 items-center gap-3">
+          <input type="checkbox" name="allowDownload" className="size-4" />
+          <span>Autoriser le téléchargement</span>
+        </label>
+      </div>
     </EditorForm>
   );
 }
@@ -330,6 +364,47 @@ function QuizForm({ onSubmit, pending }: { onSubmit: (data: FormData) => void; p
       <Field label="Explication après réponse (facultatif)" htmlFor="explanation">
         <Textarea id="explanation" name="explanation" rows={2} />
       </Field>
+    </EditorForm>
+  );
+}
+
+function ActivityForm({
+  onSubmit,
+  pending,
+}: {
+  onSubmit: (data: FormData) => void;
+  pending: boolean;
+}) {
+  return (
+    <EditorForm
+      title="Créer une activité"
+      description="Préparez un exercice, un entraînement ou un devoir. Il restera en brouillon jusqu’à validation."
+      pending={pending}
+      onSubmit={onSubmit}
+    >
+      <Field label="Titre" htmlFor="title">
+        <Input id="title" name="title" required autoFocus placeholder="Ex. Lecture guidée" />
+      </Field>
+      <Field label="Consigne" htmlFor="instructions">
+        <Textarea id="instructions" name="instructions" rows={4} />
+      </Field>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Type" htmlFor="activityType">
+          <NativeSelect id="activityType" name="activityType" defaultValue="exercise">
+            <option value="exercise">Exercice</option>
+            <option value="training">Entraînement</option>
+            <option value="submission">Devoir à déposer</option>
+            <option value="final_assessment">Évaluation finale</option>
+          </NativeSelect>
+        </Field>
+        <Field label="Correction" htmlFor="correctionMode">
+          <NativeSelect id="correctionMode" name="correctionMode" defaultValue="self_correction">
+            <option value="self_correction">Auto-correction</option>
+            <option value="collective">Collective</option>
+            <option value="teacher">Par le professeur</option>
+          </NativeSelect>
+        </Field>
+      </div>
     </EditorForm>
   );
 }
@@ -441,18 +516,22 @@ function LessonCard({
   lesson,
   resources,
   quizCount,
+  activityCount,
   pending,
   onAddResource,
   onAddQuiz,
+  onAddActivity,
   onPublish,
   canPublish,
 }: {
   lesson: CourseLesson;
   resources: LessonResource[];
   quizCount: number;
+  activityCount: number;
   pending: boolean;
   onAddResource: () => void;
   onAddQuiz: () => void;
+  onAddActivity: () => void;
   onPublish: (published: boolean) => void;
   canPublish: boolean;
 }) {
@@ -499,7 +578,7 @@ function LessonCard({
           {lesson.summary ? (
             <p className="mt-3 text-sm text-muted-foreground">{lesson.summary}</p>
           ) : null}
-          {resources.length || quizCount ? (
+          {resources.length || quizCount || activityCount ? (
             <div className="mt-4 grid gap-2">
               {resources.map((resource) => (
                 <ResourceRow key={resource.id} resource={resource} />
@@ -512,13 +591,21 @@ function LessonCard({
                   </span>
                 </div>
               ) : null}
+              {activityCount ? (
+                <div className="flex items-center gap-3 rounded-xl bg-primary/10 p-3">
+                  <Sparkles size={18} className="text-primary" aria-hidden />
+                  <span className="text-sm font-medium">
+                    {activityCount} activité{activityCount > 1 ? "s" : ""}
+                  </span>
+                </div>
+              ) : null}
             </div>
           ) : (
             <p className="mt-4 rounded-xl border border-dashed p-3 text-center text-xs text-muted-foreground">
               Aucun contenu associé.
             </p>
           )}
-          <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
             <Button variant="outline" className="min-h-10" onClick={onAddResource}>
               <Plus aria-hidden />
               Ressource
@@ -526,6 +613,10 @@ function LessonCard({
             <Button variant="outline" className="min-h-10" onClick={onAddQuiz}>
               <HelpCircle aria-hidden />
               Quiz
+            </Button>
+            <Button variant="outline" className="min-h-10" onClick={onAddActivity}>
+              <Sparkles aria-hidden />
+              Activité
             </Button>
           </div>
         </div>
@@ -594,21 +685,45 @@ function CourseStructure({
             </AccordionTrigger>
             <AccordionContent className="pb-4">
               <div className="grid gap-3">
-                {lessons.map((lesson) => (
-                  <LessonCard
-                    key={lesson.id}
-                    lesson={lesson}
-                    resources={data.resources.filter(
-                      (resource) => resource.lesson_id === lesson.id,
-                    )}
-                    quizCount={data.quizzes.filter((quiz) => quiz.lesson_id === lesson.id).length}
-                    pending={pending}
-                    canPublish={canPublish}
-                    onAddResource={() => onDialog({ kind: "resource", lessonId: lesson.id })}
-                    onAddQuiz={() => onDialog({ kind: "quiz", lessonId: lesson.id })}
-                    onPublish={(published) => onPublishLesson(lesson.id, published)}
-                  />
-                ))}
+                {lessons.map((lesson) =>
+                  (() => {
+                    const session = data.sessions.find((item) => item.lesson_id === lesson.id);
+                    const activityCount = session
+                      ? data.activities.filter(
+                          (item) => item.session_id === session.id && item.activity_type !== "quiz",
+                        ).length
+                      : 0;
+                    return (
+                      <LessonCard
+                        key={lesson.id}
+                        lesson={lesson}
+                        resources={data.resources.filter(
+                          (resource) => resource.lesson_id === lesson.id,
+                        )}
+                        quizCount={
+                          data.quizzes.filter((quiz) => quiz.lesson_id === lesson.id).length
+                        }
+                        activityCount={activityCount}
+                        pending={pending}
+                        canPublish={canPublish}
+                        onAddResource={() => onDialog({ kind: "resource", lessonId: lesson.id })}
+                        onAddQuiz={() => onDialog({ kind: "quiz", lessonId: lesson.id })}
+                        onAddActivity={() => {
+                          if (!session) {
+                            toast.error("Cette leçon n’a pas encore de séance canonique.");
+                            return;
+                          }
+                          onDialog({
+                            kind: "activity",
+                            lessonId: lesson.id,
+                            sessionId: session.id,
+                          });
+                        }}
+                        onPublish={(published) => onPublishLesson(lesson.id, published)}
+                      />
+                    );
+                  })(),
+                )}
                 <Button
                   variant="outline"
                   className="min-h-11 border-dashed"
@@ -714,6 +829,16 @@ export function CourseEditor({
         (resource) => resource.lesson_id === dialog.lessonId,
       );
       const mode = formValue(formData, "mode");
+      const accessTierValue = formValue(formData, "accessTier");
+      const metadata = {
+        accessTier: accessTierValue ? (accessTierValue as "free" | "premium") : undefined,
+        sourceName: formValue(formData, "sourceName"),
+        authorName: formValue(formData, "authorName"),
+        provenance: formValue(formData, "provenance"),
+        licenseType: formValue(formData, "licenseType"),
+        distributionAuthorized: formData.get("distributionAuthorized") === "on",
+        allowDownload: formData.get("allowDownload") === "on",
+      };
       if (mode === "file") {
         const file = formData.get("file");
         if (!(file instanceof File) || !file.size) {
@@ -730,6 +855,7 @@ export function CourseEditor({
             description: formValue(formData, "description"),
             file,
             orderIndex: lessonResources.length,
+            ...metadata,
           }),
         );
       } else
@@ -747,6 +873,7 @@ export function CourseEditor({
             externalUrl: formValue(formData, "externalUrl"),
             transcript: formValue(formData, "transcript"),
             orderIndex: lessonResources.length,
+            ...metadata,
           }),
         );
     }
@@ -769,6 +896,25 @@ export function CourseEditor({
           explanation: formValue(formData, "explanation"),
           options,
           correctIndex,
+        }),
+      );
+    }
+    if (dialog.kind === "activity") {
+      const sessionActivities = data.activities.filter(
+        (activity) => activity.session_id === dialog.sessionId,
+      );
+      mutation.mutate(() =>
+        createCourseActivity({
+          organizationId: organization.id,
+          sessionId: dialog.sessionId,
+          userId,
+          title: formValue(formData, "title"),
+          instructions: formValue(formData, "instructions"),
+          activityType: formValue(formData, "activityType") as
+            "exercise" | "training" | "submission" | "final_assessment",
+          correctionMode: formValue(formData, "correctionMode") as
+            "self_correction" | "collective" | "teacher",
+          orderIndex: sessionActivities.length,
         }),
       );
     }
@@ -987,6 +1133,9 @@ export function CourseEditor({
           ) : null}
           {dialog?.kind === "quiz" ? (
             <QuizForm onSubmit={submitDialog} pending={mutation.isPending} />
+          ) : null}
+          {dialog?.kind === "activity" ? (
+            <ActivityForm onSubmit={submitDialog} pending={mutation.isPending} />
           ) : null}
           {dialog?.kind === "settings" ? (
             <SettingsForm data={data} onSubmit={submitDialog} pending={mutation.isPending} />

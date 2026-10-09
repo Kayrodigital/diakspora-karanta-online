@@ -8,6 +8,8 @@ export type CourseModule = Row<"course_modules">;
 export type CourseLesson = Row<"lessons">;
 export type LessonResource = Row<"lesson_resources">;
 export type CourseQuiz = Row<"quizzes">;
+export type CourseSession = Row<"sessions">;
+export type CourseActivity = Row<"activities">;
 export type CourseCohort = Row<"cohorts">;
 
 export type CourseEditorData = {
@@ -16,11 +18,22 @@ export type CourseEditorData = {
   lessons: CourseLesson[];
   resources: LessonResource[];
   quizzes: CourseQuiz[];
+  sessions: CourseSession[];
+  activities: CourseActivity[];
   cohorts: CourseCohort[];
   assignedCohortIds: string[];
 };
 
 type ResourceType = "audio" | "video" | "youtube" | "document" | "link" | "text" | "replay";
+type ResourceMetadata = {
+  accessTier?: "free" | "premium";
+  sourceName?: string;
+  authorName?: string;
+  provenance?: string;
+  licenseType?: string;
+  distributionAuthorized: boolean;
+  allowDownload: boolean;
+};
 
 function firstError(errors: Array<Error | null>): Error | null {
   return errors.find((error): error is Error => Boolean(error)) ?? null;
@@ -73,7 +86,7 @@ export async function loadCourseEditor(
   if (!course.data) throw new Error("Ce cours est introuvable ou vous n'y avez pas accès.");
 
   const lessonIds = (lessons.data ?? []).map((lesson) => lesson.id);
-  const [resources, quizzes] = lessonIds.length
+  const [resources, quizzes, sessions] = lessonIds.length
     ? await Promise.all([
         supabase
           .from("lesson_resources")
@@ -87,14 +100,31 @@ export async function loadCourseEditor(
           .eq("organization_id", organizationId)
           .in("lesson_id", lessonIds)
           .order("created_at", { ascending: true }),
+        supabase
+          .from("sessions")
+          .select("*")
+          .eq("organization_id", organizationId)
+          .in("lesson_id", lessonIds)
+          .order("order_index", { ascending: true }),
       ])
     : [
         { data: [], error: null },
         { data: [], error: null },
+        { data: [], error: null },
       ];
 
-  const secondaryError = firstError([resources.error, quizzes.error]);
+  const secondaryError = firstError([resources.error, quizzes.error, sessions.error]);
   if (secondaryError) throw secondaryError;
+  const sessionIds = (sessions.data ?? []).map((session) => session.id);
+  const activities = sessionIds.length
+    ? await supabase
+        .from("activities")
+        .select("*")
+        .eq("organization_id", organizationId)
+        .in("session_id", sessionIds)
+        .order("order_index", { ascending: true })
+    : { data: [], error: null };
+  if (activities.error) throw activities.error;
 
   return {
     course: course.data,
@@ -102,9 +132,37 @@ export async function loadCourseEditor(
     lessons: lessons.data ?? [],
     resources: resources.data ?? [],
     quizzes: quizzes.data ?? [],
+    sessions: sessions.data ?? [],
+    activities: activities.data ?? [],
     cohorts: cohorts.data ?? [],
     assignedCohortIds: (assignments.data ?? []).map((assignment) => assignment.cohort_id),
   };
+}
+
+export async function createCourseActivity(input: {
+  organizationId: string;
+  sessionId: string;
+  userId: string;
+  title: string;
+  instructions?: string;
+  activityType: "exercise" | "training" | "submission" | "final_assessment";
+  correctionMode: "self_correction" | "collective" | "teacher";
+  orderIndex: number;
+}): Promise<void> {
+  const { error } = await supabase.from("activities").insert({
+    organization_id: input.organizationId,
+    session_id: input.sessionId,
+    created_by: input.userId,
+    title: input.title,
+    instructions: input.instructions || null,
+    activity_type: input.activityType,
+    correction_mode: input.correctionMode,
+    requires_submission: ["submission", "final_assessment"].includes(input.activityType),
+    requires_validation: input.correctionMode === "teacher",
+    order_index: input.orderIndex,
+    status: "draft",
+  });
+  if (error) throw error;
 }
 
 export async function createCourseModule(input: {
@@ -151,17 +209,19 @@ export async function createCourseLesson(input: {
   if (error) throw error;
 }
 
-export async function addExternalResource(input: {
-  organizationId: string;
-  lessonId: string;
-  userId: string;
-  title: string;
-  description?: string;
-  resourceType: Exclude<ResourceType, "audio" | "document">;
-  externalUrl?: string;
-  transcript?: string;
-  orderIndex: number;
-}): Promise<void> {
+export async function addExternalResource(
+  input: {
+    organizationId: string;
+    lessonId: string;
+    userId: string;
+    title: string;
+    description?: string;
+    resourceType: Exclude<ResourceType, "audio" | "document">;
+    externalUrl?: string;
+    transcript?: string;
+    orderIndex: number;
+  } & ResourceMetadata,
+): Promise<void> {
   const { error } = await supabase.from("lesson_resources").insert({
     organization_id: input.organizationId,
     lesson_id: input.lessonId,
@@ -171,6 +231,15 @@ export async function addExternalResource(input: {
     resource_type: input.resourceType,
     external_url: input.externalUrl || null,
     transcript: input.transcript || null,
+    access_tier: input.accessTier || null,
+    source_name: input.sourceName || null,
+    source_type: input.resourceType === "text" ? "original" : "external",
+    author_name: input.authorName || null,
+    provenance: input.provenance || null,
+    license_type: input.licenseType || null,
+    distribution_authorized: input.distributionAuthorized,
+    allow_download: input.allowDownload,
+    published_at: input.distributionAuthorized ? new Date().toISOString() : null,
     order_index: input.orderIndex,
     status: "active",
   });
@@ -187,16 +256,18 @@ function safeFileName(name: string): string {
     .slice(-100);
 }
 
-export async function uploadLessonResource(input: {
-  organizationId: string;
-  courseId: string;
-  lessonId: string;
-  userId: string;
-  title: string;
-  description?: string;
-  file: File;
-  orderIndex: number;
-}): Promise<void> {
+export async function uploadLessonResource(
+  input: {
+    organizationId: string;
+    courseId: string;
+    lessonId: string;
+    userId: string;
+    title: string;
+    description?: string;
+    file: File;
+    orderIndex: number;
+  } & ResourceMetadata,
+): Promise<void> {
   const isAudio = input.file.type.startsWith("audio/");
   const isDocument = input.file.type === "application/pdf";
   const isVideo = input.file.type.startsWith("video/");
@@ -222,6 +293,15 @@ export async function uploadLessonResource(input: {
     storage_path: storagePath,
     mime_type: input.file.type,
     file_size_bytes: input.file.size,
+    access_tier: input.accessTier || null,
+    source_name: input.sourceName || null,
+    source_type: "upload",
+    author_name: input.authorName || null,
+    provenance: input.provenance || null,
+    license_type: input.licenseType || null,
+    distribution_authorized: input.distributionAuthorized,
+    allow_download: input.allowDownload,
+    published_at: input.distributionAuthorized ? new Date().toISOString() : null,
     order_index: input.orderIndex,
     status: "active",
   });

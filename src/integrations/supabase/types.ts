@@ -8,6 +8,131 @@ export type Database = {
   };
   public: {
     Tables: {
+      activities: {
+        Row: {
+          activity_type: string;
+          correction_mode: string;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          instructions: string | null;
+          legacy_quiz_id: string | null;
+          order_index: number;
+          organization_id: string;
+          published_at: string | null;
+          requires_submission: boolean;
+          requires_validation: boolean;
+          session_id: string;
+          status: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          activity_type: string;
+          correction_mode: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          instructions?: string | null;
+          legacy_quiz_id?: string | null;
+          order_index?: number;
+          organization_id: string;
+          published_at?: string | null;
+          requires_submission?: boolean;
+          requires_validation?: boolean;
+          session_id: string;
+          status?: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          activity_type?: string;
+          correction_mode?: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          instructions?: string | null;
+          legacy_quiz_id?: string | null;
+          order_index?: number;
+          organization_id?: string;
+          published_at?: string | null;
+          requires_submission?: boolean;
+          requires_validation?: boolean;
+          session_id?: string;
+          status?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "activities_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: false;
+            referencedRelation: "sessions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      activity_attempts: {
+        Row: {
+          activity_id: string;
+          completed_at: string | null;
+          created_at: string;
+          id: string;
+          organization_id: string;
+          profile_id: string;
+          self_evaluation: string | null;
+          started_at: string;
+          status: string;
+          submitted_at: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          activity_id: string;
+          completed_at?: string | null;
+          created_at?: string;
+          id?: string;
+          organization_id: string;
+          profile_id: string;
+          self_evaluation?: string | null;
+          started_at?: string;
+          status?: string;
+          submitted_at?: string | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          activity_id?: string;
+          completed_at?: string | null;
+          created_at?: string;
+          id?: string;
+          organization_id?: string;
+          profile_id?: string;
+          self_evaluation?: string | null;
+          started_at?: string;
+          status?: string;
+          submitted_at?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "activity_attempts_activity_id_fkey";
+            columns: ["activity_id"];
+            isOneToOne: false;
+            referencedRelation: "activities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "activity_attempts_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       admission_events: {
         Row: {
           actor_user_id: string | null;
@@ -1626,6 +1751,7 @@ export type Database = {
       };
       homework_submissions: {
         Row: {
+          activity_id: string | null;
           created_at: string;
           duration_seconds: number | null;
           external_url: string | null;
@@ -1643,6 +1769,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          activity_id?: string | null;
           created_at?: string;
           duration_seconds?: number | null;
           external_url?: string | null;
@@ -1660,6 +1787,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          activity_id?: string | null;
           created_at?: string;
           duration_seconds?: number | null;
           external_url?: string | null;
@@ -1677,6 +1805,13 @@ export type Database = {
           user_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "homework_submissions_activity_id_fkey";
+            columns: ["activity_id"];
+            isOneToOne: false;
+            referencedRelation: "activities";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "homework_submissions_lesson_id_fkey";
             columns: ["lesson_id"];
@@ -2026,66 +2161,106 @@ export type Database = {
       };
       lesson_resources: {
         Row: {
+          access_tier: string | null;
           allow_download: boolean;
+          author_name: string | null;
+          correction_activity_id: string | null;
           created_at: string;
           created_by: string | null;
           description: string | null;
           duration_seconds: number | null;
+          distribution_authorized: boolean | null;
           external_url: string | null;
           file_size_bytes: number | null;
           id: string;
           lesson_id: string;
+          license_type: string | null;
           mime_type: string | null;
           order_index: number;
           organization_id: string;
+          provenance: string | null;
+          published_at: string | null;
           resource_type: string;
+          session_id: string;
+          source_name: string | null;
+          source_type: string | null;
           status: string;
           storage_path: string | null;
           title: string;
           transcript: string | null;
           updated_at: string;
+          version: number;
         };
         Insert: {
+          access_tier?: string | null;
           allow_download?: boolean;
+          author_name?: string | null;
+          correction_activity_id?: string | null;
           created_at?: string;
           created_by?: string | null;
           description?: string | null;
           duration_seconds?: number | null;
+          distribution_authorized?: boolean | null;
           external_url?: string | null;
           file_size_bytes?: number | null;
           id?: string;
           lesson_id: string;
+          license_type?: string | null;
           mime_type?: string | null;
           order_index?: number;
           organization_id: string;
+          provenance?: string | null;
+          published_at?: string | null;
           resource_type: string;
+          session_id?: string;
+          source_name?: string | null;
+          source_type?: string | null;
           status?: string;
           storage_path?: string | null;
           title: string;
           transcript?: string | null;
           updated_at?: string;
+          version?: number;
         };
         Update: {
+          access_tier?: string | null;
           allow_download?: boolean;
+          author_name?: string | null;
+          correction_activity_id?: string | null;
           created_at?: string;
           created_by?: string | null;
           description?: string | null;
           duration_seconds?: number | null;
+          distribution_authorized?: boolean | null;
           external_url?: string | null;
           file_size_bytes?: number | null;
           id?: string;
           lesson_id?: string;
+          license_type?: string | null;
           mime_type?: string | null;
           order_index?: number;
           organization_id?: string;
+          provenance?: string | null;
+          published_at?: string | null;
           resource_type?: string;
+          session_id?: string;
+          source_name?: string | null;
+          source_type?: string | null;
           status?: string;
           storage_path?: string | null;
           title?: string;
           transcript?: string | null;
           updated_at?: string;
+          version?: number;
         };
         Relationships: [
+          {
+            foreignKeyName: "lesson_resources_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: false;
+            referencedRelation: "sessions";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "lesson_resources_lesson_id_fkey";
             columns: ["lesson_id"];
@@ -3358,6 +3533,7 @@ export type Database = {
       };
       quizzes: {
         Row: {
+          activity_id: string;
           created_at: string;
           created_by: string | null;
           description: string | null;
@@ -3371,6 +3547,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          activity_id?: string;
           created_at?: string;
           created_by?: string | null;
           description?: string | null;
@@ -3384,6 +3561,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          activity_id?: string;
           created_at?: string;
           created_by?: string | null;
           description?: string | null;
@@ -3397,6 +3575,13 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "quizzes_activity_id_fkey";
+            columns: ["activity_id"];
+            isOneToOne: true;
+            referencedRelation: "activities";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "quizzes_lesson_id_fkey";
             columns: ["lesson_id"];

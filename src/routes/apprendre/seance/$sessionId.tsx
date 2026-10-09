@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { FileText, Headphones, PlayCircle, Sparkles } from "lucide-react";
 
 import {
   AccessBadge,
@@ -9,6 +8,7 @@ import {
   LearningShell,
 } from "@/features/learning/LearningUi";
 import { findLearningTrail, useLearningCatalog } from "@/features/learning/learning-hooks";
+import { SessionExperience } from "@/features/learning/SessionExperience";
 
 export const Route = createFileRoute("/apprendre/seance/$sessionId")({
   ssr: false,
@@ -72,39 +72,7 @@ function SessionPage() {
                   <AccessBadge tier={session.access_tier} />
                 </div>
               </div>
-              <section className="mt-8" aria-labelledby="resources-title">
-                <h2
-                  id="resources-title"
-                  className="font-serif text-3xl font-semibold text-[#173F2B]"
-                >
-                  Contenu de la séance
-                </h2>
-                <p className="mt-2 text-sm leading-6 text-[#686D65]">
-                  Les ressources seront rattachées aux séances lors de la prochaine étape
-                  éditoriale.
-                </p>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  {[
-                    { icon: PlayCircle, label: "Vidéo ou audio" },
-                    { icon: FileText, label: "Documents" },
-                    { icon: Sparkles, label: "Exercice" },
-                    { icon: Headphones, label: "Correction" },
-                  ].map(({ icon: Icon, label }) => (
-                    <div
-                      key={label}
-                      className="flex min-h-24 items-center gap-4 rounded-2xl border border-dashed border-[#CFC3AD] bg-[#FFFDF7] p-5 text-[#777A73]"
-                    >
-                      <Icon className="size-6 text-[#B69A67]" aria-hidden="true" />
-                      <span className="font-semibold">
-                        {label}
-                        <span className="mt-1 block text-xs font-normal">
-                          Aucun contenu disponible
-                        </span>
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </section>
+              <SessionExperience sessionId={session.id} lessonId={lesson.id} />
             </section>
           </LearningShell>
         );
