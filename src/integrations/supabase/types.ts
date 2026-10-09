@@ -676,6 +676,7 @@ export type Database = {
           description: string | null;
           id: string;
           level: string | null;
+          legacy_course_id: string | null;
           metadata: Json;
           organization_id: string;
           source_language: string;
@@ -683,6 +684,7 @@ export type Database = {
           subject_id: string | null;
           subtitle: string | null;
           title: string;
+          published_at: string | null;
           updated_at: string;
         };
         Insert: {
@@ -693,6 +695,7 @@ export type Database = {
           description?: string | null;
           id?: string;
           level?: string | null;
+          legacy_course_id?: string | null;
           metadata?: Json;
           organization_id: string;
           source_language?: string;
@@ -700,6 +703,7 @@ export type Database = {
           subject_id?: string | null;
           subtitle?: string | null;
           title: string;
+          published_at?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -710,6 +714,7 @@ export type Database = {
           description?: string | null;
           id?: string;
           level?: string | null;
+          legacy_course_id?: string | null;
           metadata?: Json;
           organization_id?: string;
           source_language?: string;
@@ -717,9 +722,17 @@ export type Database = {
           subject_id?: string | null;
           subtitle?: string | null;
           title?: string;
+          published_at?: string | null;
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "books_legacy_course_id_fkey";
+            columns: ["legacy_course_id"];
+            isOneToOne: true;
+            referencedRelation: "courses";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "books_organization_id_fkey";
             columns: ["organization_id"];
@@ -740,6 +753,73 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "subjects";
             referencedColumns: ["id", "organization_id"];
+          },
+        ];
+      };
+      chapters: {
+        Row: {
+          book_id: string;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          id: string;
+          legacy_course_module_id: string | null;
+          order_index: number;
+          organization_id: string;
+          published_at: string | null;
+          status: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          book_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          id?: string;
+          legacy_course_module_id?: string | null;
+          order_index?: number;
+          organization_id: string;
+          published_at?: string | null;
+          status?: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          book_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          id?: string;
+          legacy_course_module_id?: string | null;
+          order_index?: number;
+          organization_id?: string;
+          published_at?: string | null;
+          status?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "chapters_book_id_fkey";
+            columns: ["book_id"];
+            isOneToOne: false;
+            referencedRelation: "books";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "chapters_legacy_course_module_id_fkey";
+            columns: ["legacy_course_module_id"];
+            isOneToOne: true;
+            referencedRelation: "course_modules";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "chapters_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
           },
         ];
       };
@@ -2031,6 +2111,7 @@ export type Database = {
       };
       lessons: {
         Row: {
+          chapter_id: string | null;
           content: Json;
           course_id: string | null;
           created_at: string;
@@ -2049,6 +2130,7 @@ export type Database = {
           video_url: string | null;
         };
         Insert: {
+          chapter_id?: string | null;
           content?: Json;
           course_id?: string | null;
           created_at?: string;
@@ -2067,6 +2149,7 @@ export type Database = {
           video_url?: string | null;
         };
         Update: {
+          chapter_id?: string | null;
           content?: Json;
           course_id?: string | null;
           created_at?: string;
@@ -2085,6 +2168,20 @@ export type Database = {
           video_url?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "lessons_chapter_id_fkey";
+            columns: ["chapter_id"];
+            isOneToOne: false;
+            referencedRelation: "chapters";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lessons_chapter_same_organization";
+            columns: ["chapter_id", "organization_id"];
+            isOneToOne: false;
+            referencedRelation: "chapters";
+            referencedColumns: ["id", "organization_id"];
+          },
           {
             foreignKeyName: "lessons_course_id_fkey";
             columns: ["course_id"];
@@ -2736,49 +2833,74 @@ export type Database = {
         Row: {
           auth_user_id: string | null;
           avatar_url: string | null;
+          birth_date: string | null;
           cohort_name: string | null;
           created_at: string;
+          created_by: string | null;
           email: string | null;
           full_name: string | null;
+          gender: string | null;
           id: string;
           locale: string;
+          organization_id: string | null;
           parent_id: string | null;
           phone: string | null;
           preferred_name: string | null;
+          profile_type: string | null;
           role: string;
+          status: string;
           updated_at: string;
         };
         Insert: {
           auth_user_id?: string | null;
           avatar_url?: string | null;
+          birth_date?: string | null;
           cohort_name?: string | null;
           created_at?: string;
+          created_by?: string | null;
           email?: string | null;
           full_name?: string | null;
+          gender?: string | null;
           id: string;
           locale?: string;
+          organization_id?: string | null;
           parent_id?: string | null;
           phone?: string | null;
           preferred_name?: string | null;
+          profile_type?: string | null;
           role?: string;
+          status?: string;
           updated_at?: string;
         };
         Update: {
           auth_user_id?: string | null;
           avatar_url?: string | null;
+          birth_date?: string | null;
           cohort_name?: string | null;
           created_at?: string;
+          created_by?: string | null;
           email?: string | null;
           full_name?: string | null;
+          gender?: string | null;
           id?: string;
           locale?: string;
+          organization_id?: string | null;
           parent_id?: string | null;
           phone?: string | null;
           preferred_name?: string | null;
+          profile_type?: string | null;
           role?: string;
+          status?: string;
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "profiles_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "profiles_parent_id_fkey";
             columns: ["parent_id"];
@@ -3475,6 +3597,85 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "assessment_periods";
             referencedColumns: ["id", "organization_id"];
+          },
+        ];
+      };
+      sessions: {
+        Row: {
+          access_tier: string | null;
+          created_at: string;
+          created_by: string | null;
+          duration_minutes: number | null;
+          id: string;
+          legacy_lesson_id: string | null;
+          lesson_id: string;
+          order_index: number;
+          organization_id: string;
+          published_at: string | null;
+          requires_validation: boolean;
+          status: string;
+          summary: string | null;
+          title: string;
+          updated_at: string;
+          version: number;
+        };
+        Insert: {
+          access_tier?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          duration_minutes?: number | null;
+          id?: string;
+          legacy_lesson_id?: string | null;
+          lesson_id: string;
+          order_index?: number;
+          organization_id: string;
+          published_at?: string | null;
+          requires_validation?: boolean;
+          status?: string;
+          summary?: string | null;
+          title: string;
+          updated_at?: string;
+          version?: number;
+        };
+        Update: {
+          access_tier?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          duration_minutes?: number | null;
+          id?: string;
+          legacy_lesson_id?: string | null;
+          lesson_id?: string;
+          order_index?: number;
+          organization_id?: string;
+          published_at?: string | null;
+          requires_validation?: boolean;
+          status?: string;
+          summary?: string | null;
+          title?: string;
+          updated_at?: string;
+          version?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sessions_legacy_lesson_id_fkey";
+            columns: ["legacy_lesson_id"];
+            isOneToOne: true;
+            referencedRelation: "lessons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sessions_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sessions_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
           },
         ];
       };

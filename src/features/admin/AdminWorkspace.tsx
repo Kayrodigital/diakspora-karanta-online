@@ -1347,8 +1347,9 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
                   id="assign-teacher"
                   name="teacherId"
                   defaultValue={
-                    data.members.find((member) => member.profile?.id === selectedCohort?.teacher_id)
-                      ?.user_id ?? ""
+                    data?.members.find(
+                      (member) => member.profile?.id === selectedCohort?.teacher_id,
+                    )?.user_id ?? ""
                   }
                 >
                   <option value="">Aucun professeur</option>

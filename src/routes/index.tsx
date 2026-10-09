@@ -514,18 +514,25 @@ function PublicHeader() {
           className="hidden items-center gap-7 text-sm font-semibold text-[#4F554E] lg:flex"
           aria-label="Navigation principale"
         >
-          <a href="#methode" className="transition hover:text-[#B56E26]">
-            La vision
+          <Link to="/" className="transition hover:text-[#B56E26]">
+            Accueil
+          </Link>
+          <Link to="/apprendre" className="transition hover:text-[#B56E26]">
+            Apprendre
+          </Link>
+          <a href="#majliss" className="transition hover:text-[#B56E26]">
+            Majliss
           </a>
-          <a href="#parcours" className="transition hover:text-[#B56E26]">
-            Les parcours
-          </a>
-          <a href="#fonctionnalites" className="transition hover:text-[#B56E26]">
-            La méthode
-          </a>
-          <a href="#librairie" className="transition hover:text-[#B56E26]">
-            La librairie
-          </a>
+          <Link to="/boutique" className="transition hover:text-[#B56E26]">
+            Boutique
+          </Link>
+          <Link
+            to="/auth"
+            search={{ portal: "family" }}
+            className="transition hover:text-[#B56E26]"
+          >
+            Mon espace
+          </Link>
         </nav>
         <div className="hidden items-center gap-3 sm:flex">
           <Link
@@ -548,24 +555,24 @@ function PublicHeader() {
             <span className="sr-only">Ouvrir le menu</span>
           </summary>
           <nav className="absolute right-0 top-14 grid w-64 gap-1 rounded-2xl border border-[#D8C8A8] bg-[#FFFDF7] p-3 text-sm font-semibold shadow-2xl">
-            <a href="#methode" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
-              La vision
-            </a>
-            <Link to="/parcours" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
-              Trouver mon cours
+            <Link to="/" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
+              Accueil
             </Link>
-            <a href="#fonctionnalites" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
-              La méthode
+            <Link to="/apprendre" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
+              Apprendre
+            </Link>
+            <a href="#majliss" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
+              Majliss
             </a>
-            <a href="#librairie" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
-              La librairie
-            </a>
+            <Link to="/boutique" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
+              Boutique
+            </Link>
             <Link
               to="/auth"
               search={{ portal: "family" }}
               className="mt-1 rounded-xl bg-[#173F2B] px-4 py-3 text-center text-white"
             >
-              Se connecter
+              Mon espace
             </Link>
           </nav>
         </details>

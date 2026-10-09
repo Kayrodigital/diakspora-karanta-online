@@ -33,9 +33,7 @@ function CourseEditorPage() {
         organization={organization}
         userId={user.id}
         backTo={teacherRoles.includes(membership.role) ? "/professeur" : "/admin"}
-        canPublish={["owner", "admin", "technician", "pedagogical_manager"].includes(
-          membership.role,
-        )}
+        canPublish={["owner", "admin", "pedagogical_manager"].includes(membership.role)}
       />
     </div>
   );

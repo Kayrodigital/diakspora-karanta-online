@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ApprendreRouteImport } from './routes/apprendre'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AvanceRouteImport } from './routes/avance'
 import { Route as BoutiqueRouteImport } from './routes/boutique'
@@ -31,8 +32,13 @@ import { Route as AuthenticatedEleveRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedLeconRouteImport } from './routes/_authenticated/lecon'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedProgressionRouteImport } from './routes/_authenticated/progression'
+import { Route as ApprendreSubjectSlugRouteImport } from './routes/apprendre/$subjectSlug'
 import { Route as CoursCourseIdRouteImport } from './routes/cours/$courseId'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as ApprendreChapitreChapterIdRouteImport } from './routes/apprendre/chapitre/$chapterId'
+import { Route as ApprendreLeconLessonIdRouteImport } from './routes/apprendre/lecon/$lessonId'
+import { Route as ApprendreLivreBookIdRouteImport } from './routes/apprendre/livre/$bookId'
+import { Route as ApprendreSeanceSessionIdRouteImport } from './routes/apprendre/seance/$sessionId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +52,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApprendreRoute = ApprendreRouteImport.update({
+  id: '/apprendre',
+  path: '/apprendre',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -146,6 +157,11 @@ const AuthenticatedProgressionRoute =
     path: '/progression',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApprendreSubjectSlugRoute = ApprendreSubjectSlugRouteImport.update({
+  id: '/$subjectSlug',
+  path: '/$subjectSlug',
+  getParentRoute: () => ApprendreRoute,
+} as any)
 const CoursCourseIdRoute = CoursCourseIdRouteImport.update({
   id: '/cours/$courseId',
   path: '/cours/$courseId',
@@ -157,10 +173,33 @@ const Char91DotmcpChar93InvokeToolToolRoute =
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApprendreChapitreChapterIdRoute =
+  ApprendreChapitreChapterIdRouteImport.update({
+    id: '/chapitre/$chapterId',
+    path: '/chapitre/$chapterId',
+    getParentRoute: () => ApprendreRoute,
+  } as any)
+const ApprendreLeconLessonIdRoute = ApprendreLeconLessonIdRouteImport.update({
+  id: '/lecon/$lessonId',
+  path: '/lecon/$lessonId',
+  getParentRoute: () => ApprendreRoute,
+} as any)
+const ApprendreLivreBookIdRoute = ApprendreLivreBookIdRouteImport.update({
+  id: '/livre/$bookId',
+  path: '/livre/$bookId',
+  getParentRoute: () => ApprendreRoute,
+} as any)
+const ApprendreSeanceSessionIdRoute =
+  ApprendreSeanceSessionIdRouteImport.update({
+    id: '/seance/$sessionId',
+    path: '/seance/$sessionId',
+    getParentRoute: () => ApprendreRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/apprendre': typeof ApprendreRouteWithChildren
   '/auth': typeof AuthRoute
   '/avance': typeof AvanceRoute
   '/boutique': typeof BoutiqueRoute
@@ -180,12 +219,18 @@ export interface FileRoutesByFullPath {
   '/lecon': typeof AuthenticatedLeconRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/progression': typeof AuthenticatedProgressionRoute
+  '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/apprendre/chapitre/$chapterId': typeof ApprendreChapitreChapterIdRoute
+  '/apprendre/lecon/$lessonId': typeof ApprendreLeconLessonIdRoute
+  '/apprendre/livre/$bookId': typeof ApprendreLivreBookIdRoute
+  '/apprendre/seance/$sessionId': typeof ApprendreSeanceSessionIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/apprendre': typeof ApprendreRouteWithChildren
   '/auth': typeof AuthRoute
   '/avance': typeof AvanceRoute
   '/boutique': typeof BoutiqueRoute
@@ -205,14 +250,20 @@ export interface FileRoutesByTo {
   '/lecon': typeof AuthenticatedLeconRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/progression': typeof AuthenticatedProgressionRoute
+  '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/apprendre/chapitre/$chapterId': typeof ApprendreChapitreChapterIdRoute
+  '/apprendre/lecon/$lessonId': typeof ApprendreLeconLessonIdRoute
+  '/apprendre/livre/$bookId': typeof ApprendreLivreBookIdRoute
+  '/apprendre/seance/$sessionId': typeof ApprendreSeanceSessionIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/admin': typeof AdminRoute
+  '/apprendre': typeof ApprendreRouteWithChildren
   '/auth': typeof AuthRoute
   '/avance': typeof AvanceRoute
   '/boutique': typeof BoutiqueRoute
@@ -232,14 +283,20 @@ export interface FileRoutesById {
   '/_authenticated/lecon': typeof AuthenticatedLeconRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/progression': typeof AuthenticatedProgressionRoute
+  '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/apprendre/chapitre/$chapterId': typeof ApprendreChapitreChapterIdRoute
+  '/apprendre/lecon/$lessonId': typeof ApprendreLeconLessonIdRoute
+  '/apprendre/livre/$bookId': typeof ApprendreLivreBookIdRoute
+  '/apprendre/seance/$sessionId': typeof ApprendreSeanceSessionIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
+    | '/apprendre'
     | '/auth'
     | '/avance'
     | '/boutique'
@@ -259,12 +316,18 @@ export interface FileRouteTypes {
     | '/lecon'
     | '/messages'
     | '/progression'
+    | '/apprendre/$subjectSlug'
     | '/cours/$courseId'
     | '/.mcp/invoke-tool/$tool'
+    | '/apprendre/chapitre/$chapterId'
+    | '/apprendre/lecon/$lessonId'
+    | '/apprendre/livre/$bookId'
+    | '/apprendre/seance/$sessionId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
+    | '/apprendre'
     | '/auth'
     | '/avance'
     | '/boutique'
@@ -284,13 +347,19 @@ export interface FileRouteTypes {
     | '/lecon'
     | '/messages'
     | '/progression'
+    | '/apprendre/$subjectSlug'
     | '/cours/$courseId'
     | '/.mcp/invoke-tool/$tool'
+    | '/apprendre/chapitre/$chapterId'
+    | '/apprendre/lecon/$lessonId'
+    | '/apprendre/livre/$bookId'
+    | '/apprendre/seance/$sessionId'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/admin'
+    | '/apprendre'
     | '/auth'
     | '/avance'
     | '/boutique'
@@ -310,14 +379,20 @@ export interface FileRouteTypes {
     | '/_authenticated/lecon'
     | '/_authenticated/messages'
     | '/_authenticated/progression'
+    | '/apprendre/$subjectSlug'
     | '/cours/$courseId'
     | '/.mcp/invoke-tool/$tool'
+    | '/apprendre/chapitre/$chapterId'
+    | '/apprendre/lecon/$lessonId'
+    | '/apprendre/livre/$bookId'
+    | '/apprendre/seance/$sessionId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AdminRoute: typeof AdminRoute
+  ApprendreRoute: typeof ApprendreRouteWithChildren
   AuthRoute: typeof AuthRoute
   AvanceRoute: typeof AvanceRoute
   BoutiqueRoute: typeof BoutiqueRoute
@@ -356,6 +431,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apprendre': {
+      id: '/apprendre'
+      path: '/apprendre'
+      fullPath: '/apprendre'
+      preLoaderRoute: typeof ApprendreRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -491,6 +573,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProgressionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/apprendre/$subjectSlug': {
+      id: '/apprendre/$subjectSlug'
+      path: '/$subjectSlug'
+      fullPath: '/apprendre/$subjectSlug'
+      preLoaderRoute: typeof ApprendreSubjectSlugRouteImport
+      parentRoute: typeof ApprendreRoute
+    }
     '/cours/$courseId': {
       id: '/cours/$courseId'
       path: '/cours/$courseId'
@@ -504,6 +593,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/.mcp/invoke-tool/$tool'
       preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/apprendre/chapitre/$chapterId': {
+      id: '/apprendre/chapitre/$chapterId'
+      path: '/chapitre/$chapterId'
+      fullPath: '/apprendre/chapitre/$chapterId'
+      preLoaderRoute: typeof ApprendreChapitreChapterIdRouteImport
+      parentRoute: typeof ApprendreRoute
+    }
+    '/apprendre/lecon/$lessonId': {
+      id: '/apprendre/lecon/$lessonId'
+      path: '/lecon/$lessonId'
+      fullPath: '/apprendre/lecon/$lessonId'
+      preLoaderRoute: typeof ApprendreLeconLessonIdRouteImport
+      parentRoute: typeof ApprendreRoute
+    }
+    '/apprendre/livre/$bookId': {
+      id: '/apprendre/livre/$bookId'
+      path: '/livre/$bookId'
+      fullPath: '/apprendre/livre/$bookId'
+      preLoaderRoute: typeof ApprendreLivreBookIdRouteImport
+      parentRoute: typeof ApprendreRoute
+    }
+    '/apprendre/seance/$sessionId': {
+      id: '/apprendre/seance/$sessionId'
+      path: '/seance/$sessionId'
+      fullPath: '/apprendre/seance/$sessionId'
+      preLoaderRoute: typeof ApprendreSeanceSessionIdRouteImport
+      parentRoute: typeof ApprendreRoute
     }
   }
 }
@@ -529,10 +646,31 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface ApprendreRouteChildren {
+  ApprendreSubjectSlugRoute: typeof ApprendreSubjectSlugRoute
+  ApprendreChapitreChapterIdRoute: typeof ApprendreChapitreChapterIdRoute
+  ApprendreLeconLessonIdRoute: typeof ApprendreLeconLessonIdRoute
+  ApprendreLivreBookIdRoute: typeof ApprendreLivreBookIdRoute
+  ApprendreSeanceSessionIdRoute: typeof ApprendreSeanceSessionIdRoute
+}
+
+const ApprendreRouteChildren: ApprendreRouteChildren = {
+  ApprendreSubjectSlugRoute: ApprendreSubjectSlugRoute,
+  ApprendreChapitreChapterIdRoute: ApprendreChapitreChapterIdRoute,
+  ApprendreLeconLessonIdRoute: ApprendreLeconLessonIdRoute,
+  ApprendreLivreBookIdRoute: ApprendreLivreBookIdRoute,
+  ApprendreSeanceSessionIdRoute: ApprendreSeanceSessionIdRoute,
+}
+
+const ApprendreRouteWithChildren = ApprendreRoute._addFileChildren(
+  ApprendreRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AdminRoute: AdminRoute,
+  ApprendreRoute: ApprendreRouteWithChildren,
   AuthRoute: AuthRoute,
   AvanceRoute: AvanceRoute,
   BoutiqueRoute: BoutiqueRoute,
