@@ -57,6 +57,30 @@ export type MajlissRecording = {
   source_key: string | null;
   source_metadata: Record<string, unknown>;
   published_at: string | null;
+  storage_bucket: string | null;
+  storage_path: string | null;
+  original_file_name: string | null;
+  mime_type: string | null;
+  file_size_bytes: number | null;
+  received_at: string | null;
+  review_status: "pending" | "approved" | "rejected";
+  upload_source: "admin" | "assistant_upload" | "whatsapp_import";
+  uploaded_by: string | null;
+  content_fingerprint: string | null;
+  duplicate_of: string | null;
+  processing_status: "uploaded" | "needs_normalization" | "ready" | "failed";
+};
+
+export type MajlissTeacherAssignment = {
+  id: string;
+  organization_id: string;
+  user_id: string;
+  teacher_id: string;
+  village_id: string;
+  status: "active" | "suspended";
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export type MediaProgress = {
@@ -85,12 +109,14 @@ type MajlissDatabase = Omit<Database, "public"> & {
       majliss_teachers: Table<MajlissTeacher>;
       majliss_teacher_villages: Table<MajlissTeacherVillage>;
       majliss_recordings: Table<MajlissRecording>;
+      majliss_teacher_assignments: Table<MajlissTeacherAssignment>;
       profile_media_progress: Table<MediaProgress>;
     };
   };
 };
 
-const db = supabase as unknown as SupabaseClient<MajlissDatabase>;
+export const majlissDb = supabase as unknown as SupabaseClient<MajlissDatabase>;
+const db = majlissDb;
 
 export type MajlissCatalog = {
   enabled: boolean;
@@ -174,6 +200,16 @@ export async function loadMajlissCatalog(): Promise<MajlissCatalog> {
     progress = progressResult.data ?? [];
   }
 
+  const recordings = await Promise.all(
+    (recordingsResult.data ?? []).map(async (recording) => {
+      if (!recording.storage_bucket || !recording.storage_path) return recording;
+      const { data } = await supabase.storage
+        .from(recording.storage_bucket)
+        .createSignedUrl(recording.storage_path, 3600);
+      return data?.signedUrl ? { ...recording, media_url: data.signedUrl } : recording;
+    }),
+  );
+
   return {
     enabled: featureFlags.majliss_v1 === true,
     organizationId: organization.id,
@@ -182,7 +218,7 @@ export async function loadMajlissCatalog(): Promise<MajlissCatalog> {
     villages: villagesResult.data ?? [],
     teachers: teachersResult.data ?? [],
     teacherVillages: linksResult.data ?? [],
-    recordings: recordingsResult.data ?? [],
+    recordings,
     progress,
   };
 }
@@ -297,16 +333,27 @@ export async function setMajlissItemStatus(
   id: string,
   status: "draft" | "published" | "archived",
 ) {
-  const table =
+  const publishedAt = status === "published" ? new Date().toISOString() : null;
+  if (kind === "recording") {
+    const { error } = await db
+      .from("majliss_recordings")
+      .update({
+        status,
+        published_at: publishedAt,
+        review_status:
+          status === "published" ? "approved" : status === "archived" ? "rejected" : "pending",
+      })
+      .eq("id", id);
+    fail(error);
+    return;
+  }
+  const { error } =
     kind === "village"
-      ? "majliss_villages"
-      : kind === "teacher"
-        ? "majliss_teachers"
-        : "majliss_recordings";
-  const { error } = await db
-    .from(table)
-    .update({ status, published_at: status === "published" ? new Date().toISOString() : null })
-    .eq("id", id);
+      ? await db.from("majliss_villages").update({ status, published_at: publishedAt }).eq("id", id)
+      : await db
+          .from("majliss_teachers")
+          .update({ status, published_at: publishedAt })
+          .eq("id", id);
   fail(error);
 }
 
@@ -331,6 +378,31 @@ export async function setMajlissItemOrder(kind: MajlissAdminKind, id: string, or
   const { error } = await db
     .from(table)
     .update({ order_index: Math.max(0, Math.floor(orderIndex)) })
+    .eq("id", id);
+  fail(error);
+}
+
+export async function updateMajlissRecordingReview(
+  id: string,
+  input: {
+    title: string;
+    description?: string;
+    recordedOn?: string;
+    villageId: string;
+    teacherId: string;
+    orderIndex: number;
+  },
+) {
+  const { error } = await db
+    .from("majliss_recordings")
+    .update({
+      title: input.title.trim(),
+      description: input.description?.trim() || null,
+      recorded_on: input.recordedOn || null,
+      village_id: input.villageId,
+      teacher_id: input.teacherId,
+      order_index: Math.max(0, Math.floor(input.orderIndex)),
+    })
     .eq("id", id);
   fail(error);
 }

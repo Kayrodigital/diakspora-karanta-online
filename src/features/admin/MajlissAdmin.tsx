@@ -1,5 +1,16 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Archive, MapPin, Mic2, Plus, Radio, Trash2 } from "lucide-react";
+import {
+  Archive,
+  Check,
+  GripVertical,
+  MapPin,
+  Mic2,
+  Plus,
+  Radio,
+  Save,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
@@ -15,6 +26,7 @@ import {
   deleteMajlissDraft,
   setMajlissItemOrder,
   setMajlissItemStatus,
+  updateMajlissRecordingReview,
   type MajlissAdminKind,
 } from "@/features/majliss/majliss-data";
 
@@ -34,6 +46,7 @@ export function MajlissAdmin({ organizationId, userId }: Props) {
   const query = useMajlissCatalog();
   const queryClient = useQueryClient();
   const [formKind, setFormKind] = useState<MajlissAdminKind>("village");
+  const [draggingId, setDraggingId] = useState<string | null>(null);
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: majlissQueryKey });
   const mutation = useMutation({
@@ -112,6 +125,7 @@ export function MajlissAdmin({ organizationId, userId }: Props) {
       title: `${item.name}, ${item.country}`,
       status: item.status,
       order: item.order_index,
+      deletable: true,
     })),
     ...catalog.teachers.map((item) => ({
       kind: "teacher" as const,
@@ -119,6 +133,7 @@ export function MajlissAdmin({ organizationId, userId }: Props) {
       title: item.display_name,
       status: item.status,
       order: item.order_index,
+      deletable: true,
     })),
     ...catalog.recordings.map((item) => ({
       kind: "recording" as const,
@@ -126,8 +141,15 @@ export function MajlissAdmin({ organizationId, userId }: Props) {
       title: item.title,
       status: item.status,
       order: item.order_index,
+      deletable: item.upload_source !== "assistant_upload",
     })),
   ];
+  const reviewQueue = catalog.recordings
+    .filter((item) => item.upload_source === "assistant_upload" && item.review_status === "pending")
+    .sort(
+      (a, b) =>
+        a.order_index - b.order_index || (a.received_at ?? "").localeCompare(b.received_at ?? ""),
+    );
 
   return (
     <div className="space-y-6">
@@ -268,6 +290,164 @@ export function MajlissAdmin({ organizationId, userId }: Props) {
 
       <Card>
         <CardHeader>
+          <CardTitle className="text-lg">À vérifier ({reviewQueue.length})</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {reviewQueue.map((recording) => (
+            <form
+              key={recording.id}
+              draggable
+              onDragStart={() => setDraggingId(recording.id)}
+              onDragEnd={() => setDraggingId(null)}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                event.preventDefault();
+                const source = reviewQueue.find((item) => item.id === draggingId);
+                if (!source || source.id === recording.id) return;
+                mutation.mutate(() =>
+                  Promise.all([
+                    setMajlissItemOrder("recording", source.id, recording.order_index),
+                    setMajlissItemOrder("recording", recording.id, source.order_index),
+                  ]).then(() => undefined),
+                );
+              }}
+              onSubmit={(event) => {
+                event.preventDefault();
+                const data = new FormData(event.currentTarget);
+                mutation.mutate(() =>
+                  updateMajlissRecordingReview(recording.id, {
+                    title: String(data.get("title") ?? ""),
+                    description: String(data.get("description") ?? ""),
+                    recordedOn: String(data.get("recordedOn") ?? ""),
+                    villageId: String(data.get("villageId") ?? ""),
+                    teacherId: String(data.get("teacherId") ?? ""),
+                    orderIndex: Number(data.get("orderIndex") ?? 0),
+                  }),
+                );
+              }}
+              className="space-y-4 rounded-xl border p-4"
+            >
+              <div className="flex items-start gap-3">
+                <GripVertical
+                  className="mt-1 size-5 cursor-grab text-muted-foreground"
+                  aria-label="Déplacer"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{recording.original_file_name}</p>
+                  <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <span>Assistant : {recording.uploaded_by}</span>
+                    <span>·</span>
+                    <span>
+                      Reçu{" "}
+                      {recording.received_at
+                        ? new Date(recording.received_at).toLocaleString("fr-FR")
+                        : "—"}
+                    </span>
+                    <span>·</span>
+                    <span>{recording.mime_type}</span>
+                    <span>·</span>
+                    <span>
+                      {recording.file_size_bytes
+                        ? `${(recording.file_size_bytes / 1024 / 1024).toFixed(1)} Mo`
+                        : "Taille inconnue"}
+                    </span>
+                    {recording.duration_seconds ? (
+                      <span>· {recording.duration_seconds} s</span>
+                    ) : null}
+                    {recording.duplicate_of ? (
+                      <Badge variant="destructive">Doublon possible</Badge>
+                    ) : null}
+                    {recording.processing_status === "needs_normalization" ? (
+                      <Badge variant="outline">Normalisation recommandée</Badge>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+              <audio className="w-full" controls preload="metadata" src={recording.media_url}>
+                Votre navigateur ne peut pas lire cet audio.
+              </audio>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label="Titre" name="title" required defaultValue={recording.title} />
+                <Field
+                  label="Date"
+                  name="recordedOn"
+                  type="date"
+                  defaultValue={recording.recorded_on ?? ""}
+                />
+                <SelectField
+                  label="Village"
+                  name="villageId"
+                  defaultValue={recording.village_id}
+                  options={catalog.villages.map((item) => ({
+                    value: item.id,
+                    label: `${item.name}, ${item.country}`,
+                  }))}
+                />
+                <SelectField
+                  label="Professeur"
+                  name="teacherId"
+                  defaultValue={recording.teacher_id}
+                  options={catalog.teachers.map((item) => ({
+                    value: item.id,
+                    label: item.display_name,
+                  }))}
+                />
+                <Field
+                  label="Ordre"
+                  name="orderIndex"
+                  type="number"
+                  defaultValue={String(recording.order_index)}
+                />
+                <Field
+                  label="Description"
+                  name="description"
+                  textarea
+                  defaultValue={recording.description ?? ""}
+                />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button type="submit" size="sm" variant="outline">
+                  <Save className="size-4" />
+                  Enregistrer
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() =>
+                    mutation.mutate(() =>
+                      setMajlissItemStatus("recording", recording.id, "published"),
+                    )
+                  }
+                >
+                  <Check className="size-4" />
+                  Publier
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="destructive"
+                  onClick={() =>
+                    mutation.mutate(() =>
+                      setMajlissItemStatus("recording", recording.id, "archived"),
+                    )
+                  }
+                >
+                  <X className="size-4" />
+                  Rejeter / archiver
+                </Button>
+              </div>
+            </form>
+          ))}
+          {!reviewQueue.length ? (
+            <p className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+              Aucun enregistrement en attente.
+            </p>
+          ) : null}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle className="text-lg">Contenus</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -321,7 +501,7 @@ export function MajlissAdmin({ organizationId, userId }: Props) {
                     Archiver
                   </Button>
                 )}
-                {row.status === "draft" ? (
+                {row.status === "draft" && row.deletable ? (
                   <Button
                     size="sm"
                     variant="destructive"
@@ -351,20 +531,33 @@ function Field({
   type = "text",
   required,
   textarea,
+  defaultValue,
 }: {
   label: string;
   name: string;
   type?: string;
   required?: boolean;
   textarea?: boolean;
+  defaultValue?: string;
 }) {
   return (
     <div className="grid gap-2">
       <Label htmlFor={`majliss-${name}`}>{label}</Label>
       {textarea ? (
-        <Textarea id={`majliss-${name}`} name={name} required={required} />
+        <Textarea
+          id={`majliss-${name}`}
+          name={name}
+          required={required}
+          defaultValue={defaultValue}
+        />
       ) : (
-        <Input id={`majliss-${name}`} name={name} type={type} required={required} />
+        <Input
+          id={`majliss-${name}`}
+          name={name}
+          type={type}
+          required={required}
+          defaultValue={defaultValue}
+        />
       )}
     </div>
   );
@@ -374,10 +567,12 @@ function SelectField({
   label,
   name,
   options,
+  defaultValue,
 }: {
   label: string;
   name: string;
   options: Array<{ value: string; label: string }>;
+  defaultValue?: string;
 }) {
   return (
     <div className="grid gap-2">
@@ -386,6 +581,7 @@ function SelectField({
         id={`majliss-${name}`}
         name={name}
         required
+        defaultValue={defaultValue ?? ""}
         className="min-h-10 rounded-md border bg-background px-3 text-sm"
       >
         <option value="">Sélectionner</option>

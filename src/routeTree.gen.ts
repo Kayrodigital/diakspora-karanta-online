@@ -38,6 +38,7 @@ import { Route as ApprendreSubjectSlugRouteImport } from './routes/apprendre/$su
 import { Route as CoursCourseIdRouteImport } from './routes/cours/$courseId'
 import { Route as MajlissIndexRouteImport } from './routes/majliss/index'
 import { Route as MajlissVillageSlugRouteImport } from './routes/majliss/$villageSlug'
+import { Route as StaffDepotRouteImport } from './routes/staff/depot'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as ApprendreChapitreChapterIdRouteImport } from './routes/apprendre/chapitre/$chapterId'
 import { Route as ApprendreLeconLessonIdRouteImport } from './routes/apprendre/lecon/$lessonId'
@@ -193,6 +194,11 @@ const MajlissVillageSlugRoute = MajlissVillageSlugRouteImport.update({
   path: '/$villageSlug',
   getParentRoute: () => MajlissRoute,
 } as any)
+const StaffDepotRoute = StaffDepotRouteImport.update({
+  id: '/staff/depot',
+  path: '/staff/depot',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -261,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
   '/majliss/$villageSlug': typeof MajlissVillageSlugRoute
+  '/staff/depot': typeof StaffDepotRoute
   '/apprendre/': typeof ApprendreIndexRoute
   '/majliss/': typeof MajlissIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -296,6 +303,7 @@ export interface FileRoutesByTo {
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
   '/majliss/$villageSlug': typeof MajlissVillageSlugRoute
+  '/staff/depot': typeof StaffDepotRoute
   '/apprendre': typeof ApprendreIndexRoute
   '/majliss': typeof MajlissIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -335,6 +343,7 @@ export interface FileRoutesById {
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
   '/majliss/$villageSlug': typeof MajlissVillageSlugRoute
+  '/staff/depot': typeof StaffDepotRoute
   '/apprendre/': typeof ApprendreIndexRoute
   '/majliss/': typeof MajlissIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -374,6 +383,7 @@ export interface FileRouteTypes {
     | '/apprendre/$subjectSlug'
     | '/cours/$courseId'
     | '/majliss/$villageSlug'
+    | '/staff/depot'
     | '/apprendre/'
     | '/majliss/'
     | '/.mcp/invoke-tool/$tool'
@@ -409,6 +419,7 @@ export interface FileRouteTypes {
     | '/apprendre/$subjectSlug'
     | '/cours/$courseId'
     | '/majliss/$villageSlug'
+    | '/staff/depot'
     | '/apprendre'
     | '/majliss'
     | '/.mcp/invoke-tool/$tool'
@@ -447,6 +458,7 @@ export interface FileRouteTypes {
     | '/apprendre/$subjectSlug'
     | '/cours/$courseId'
     | '/majliss/$villageSlug'
+    | '/staff/depot'
     | '/apprendre/'
     | '/majliss/'
     | '/.mcp/invoke-tool/$tool'
@@ -478,6 +490,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   CoursCourseIdRoute: typeof CoursCourseIdRoute
+  StaffDepotRoute: typeof StaffDepotRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 
@@ -686,6 +699,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MajlissVillageSlugRouteImport
       parentRoute: typeof MajlissRoute
     }
+    '/staff/depot': {
+      id: '/staff/depot'
+      path: '/staff/depot'
+      fullPath: '/staff/depot'
+      preLoaderRoute: typeof StaffDepotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -819,6 +839,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   CoursCourseIdRoute: CoursCourseIdRoute,
+  StaffDepotRoute: StaffDepotRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
 }
 export const routeTree = rootRouteImport
