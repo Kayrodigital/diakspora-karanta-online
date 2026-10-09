@@ -43,7 +43,7 @@ import { Route as ApprendreChapitreChapterIdRouteImport } from './routes/apprend
 import { Route as ApprendreLeconLessonIdRouteImport } from './routes/apprendre/lecon/$lessonId'
 import { Route as ApprendreLivreBookIdRouteImport } from './routes/apprendre/livre/$bookId'
 import { Route as ApprendreSeanceSessionIdRouteImport } from './routes/apprendre/seance/$sessionId'
-import { Route as MajlissVillageSlugTeacherSlugRouteImport } from './routes/majliss/$villageSlug/$teacherSlug'
+import { Route as MajlissVillageSlugTeacherSlugRouteImport } from './routes/majliss/$villageSlug.$teacherSlug'
 import { Route as MajlissEcouterRecordingIdRouteImport } from './routes/majliss/ecouter/$recordingId'
 
 const IndexRoute = IndexRouteImport.update({
