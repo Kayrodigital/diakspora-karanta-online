@@ -36,7 +36,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { AssessmentAdmin } from "@/features/assessment/AssessmentAdmin";
-import type { OrganizationBrand } from "@/lib/auth/portal-access";
+import type { OrganizationBrand, OrganizationRole } from "@/lib/auth/portal-access";
 import {
   liveDurationMinutes,
   localDateTimeValue,
@@ -51,12 +51,14 @@ import {
   type LiveSession,
   type PedagogicalDashboard,
 } from "./pedagogical-data";
+import { EditorialBookEditor } from "./EditorialBookEditor";
 
 type CreationKind = LearningItemInput["kind"];
 
 type Props = {
   organization: OrganizationBrand;
   userId: string;
+  role?: OrganizationRole;
   embedded?: boolean;
 };
 
@@ -687,6 +689,7 @@ function DashboardContent({
   onCreate,
   onEditLive,
   onUpdateLive,
+  canEditCatalog,
 }: {
   data: PedagogicalDashboard;
   organizationId: string;
@@ -694,6 +697,7 @@ function DashboardContent({
   onCreate: (kind: CreationKind) => void;
   onEditLive: (session: LiveSession) => void;
   onUpdateLive: (session: LiveSession, input: LiveSessionUpdate) => void;
+  canEditCatalog: boolean;
 }) {
   const upcomingLives = useMemo(
     () =>
@@ -754,8 +758,15 @@ function DashboardContent({
         </div>
       </section>
 
-      <Tabs defaultValue="courses" className="mt-6">
-        <TabsList className="grid h-auto w-full grid-cols-5 rounded-xl p-1">
+      <Tabs defaultValue={canEditCatalog ? "editorial" : "courses"} className="mt-6">
+        <TabsList
+          className={`grid h-auto w-full ${canEditCatalog ? "grid-cols-3 sm:grid-cols-6" : "grid-cols-5"} rounded-xl p-1`}
+        >
+          {canEditCatalog ? (
+            <TabsTrigger value="editorial" className="min-h-10 px-2">
+              Édition
+            </TabsTrigger>
+          ) : null}
           <TabsTrigger value="courses" className="min-h-10 px-2">
             Cours
           </TabsTrigger>
@@ -772,6 +783,12 @@ function DashboardContent({
             Évaluation
           </TabsTrigger>
         </TabsList>
+
+        {canEditCatalog ? (
+          <TabsContent value="editorial" className="mt-4">
+            <EditorialBookEditor organizationId={organizationId} />
+          </TabsContent>
+        ) : null}
 
         <TabsContent value="courses" className="mt-4">
           {data.courses.length === 0 ? (
@@ -1003,7 +1020,7 @@ function DashboardLoading() {
   );
 }
 
-export function PedagogicalAdmin({ organization, userId, embedded = false }: Props) {
+export function PedagogicalAdmin({ organization, userId, role, embedded = false }: Props) {
   const queryClient = useQueryClient();
   const [creationKind, setCreationKind] = useState<CreationKind | null>(null);
   const [managedLive, setManagedLive] = useState<LiveSession | null>(null);
@@ -1095,6 +1112,9 @@ export function PedagogicalAdmin({ organization, userId, embedded = false }: Pro
               onCreate={setCreationKind}
               onEditLive={setManagedLive}
               onUpdateLive={(session, input) => updateLive.mutate({ session, input })}
+              canEditCatalog={
+                role === "owner" || role === "admin" || role === "pedagogical_manager"
+              }
             />
           )}
         </div>

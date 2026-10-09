@@ -241,11 +241,15 @@ export function SessionExperience({
   lessonId,
   organizationId,
   requiresValidation,
+  learningPoints,
+  reflectionQuestions,
 }: {
   sessionId: string;
   lessonId: string;
   organizationId: string;
   requiresValidation: boolean;
+  learningPoints: string[];
+  reflectionQuestions: string[];
 }) {
   const queryClient = useQueryClient();
   const queryKey = ["session-experience", sessionId] as const;
@@ -313,8 +317,24 @@ export function SessionExperience({
     );
 
   const progressStatus: SessionProgressStatus = query.data.progress?.status ?? "not_started";
+  const featuredResource = query.data.resources.find((resource) =>
+    ["youtube", "video", "audio"].includes(resource.resource_type),
+  );
+  const supportingResources = query.data.resources.filter(
+    (resource) => resource.id !== featuredResource?.id,
+  );
   return (
     <div className="mt-8 space-y-9">
+      {featuredResource ? (
+        <section aria-label="Cours principal">
+          <ResourceCard resource={featuredResource} />
+        </section>
+      ) : (
+        <EmptyState
+          title="Média en préparation"
+          description="Le cours principal sera affiché ici dès sa publication."
+        />
+      )}
       {query.data.progressEnabled ? (
         <section
           className="rounded-3xl border border-[#D7E2D9] bg-[#F8FBF8] p-5 sm:p-6"
@@ -369,35 +389,67 @@ export function SessionExperience({
           </div>
         </section>
       ) : null}
-      <section aria-labelledby="resources-title">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9B742E]">Étudier</p>
-            <h2
-              id="resources-title"
-              className="mt-1 font-serif text-3xl font-semibold text-[#173F2B]"
-            >
-              Ressources
-            </h2>
+      {supportingResources.length ? (
+        <section aria-labelledby="resources-title">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9B742E]">
+                Étudier
+              </p>
+              <h2
+                id="resources-title"
+                className="mt-1 font-serif text-3xl font-semibold text-[#173F2B]"
+              >
+                Documents du cours
+              </h2>
+            </div>
+            <span className="text-sm text-[#686D65]">
+              {supportingResources.length} disponible{supportingResources.length > 1 ? "s" : ""}
+            </span>
           </div>
-          <span className="text-sm text-[#686D65]">
-            {query.data.resources.length} disponible{query.data.resources.length > 1 ? "s" : ""}
-          </span>
-        </div>
-        {query.data.resources.length ? (
-          <div className="mt-5 grid gap-4 lg:grid-cols-2">
-            {query.data.resources.map((resource) => (
-              <ResourceCard key={resource.id} resource={resource} />
-            ))}
-          </div>
-        ) : (
-          <div className="mt-5">
-            <EmptyState
-              title="Aucune ressource accessible"
-              description="Les contenus seront affichés ici dès leur publication et selon vos droits."
-            />
-          </div>
-        )}
+          {supportingResources.length ? (
+            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              {supportingResources.map((resource) => (
+                <ResourceCard key={resource.id} resource={resource} />
+              ))}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+      <section className="grid gap-4 md:grid-cols-2" aria-label="Repères pédagogiques">
+        <article className="rounded-3xl border border-[#D7E2D9] bg-[#F8FBF8] p-5 sm:p-6">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#6B815F]">À retenir</p>
+          {learningPoints.length ? (
+            <ul className="mt-4 space-y-3 text-sm leading-6 text-[#30342F]">
+              {learningPoints.map((point, index) => (
+                <li key={`${index}-${point}`} className="flex gap-3">
+                  <span aria-hidden>•</span>
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm text-[#686D65]">
+              Les points clés seront ajoutés par l’équipe pédagogique.
+            </p>
+          )}
+        </article>
+        <article className="rounded-3xl border border-[#E4D8C3] bg-[#FAF7EF] p-5 sm:p-6">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9B742E]">
+            Questions à se poser
+          </p>
+          {reflectionQuestions.length ? (
+            <ol className="mt-4 list-decimal space-y-3 pl-5 text-sm leading-6 text-[#30342F]">
+              {reflectionQuestions.map((question, index) => (
+                <li key={`${index}-${question}`}>{question}</li>
+              ))}
+            </ol>
+          ) : (
+            <p className="mt-3 text-sm text-[#686D65]">
+              Les questions de réflexion seront ajoutées après validation éditoriale.
+            </p>
+          )}
+        </article>
       </section>
       <section aria-labelledby="activities-title">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9B742E]">S’entraîner</p>

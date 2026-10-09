@@ -34,3 +34,17 @@ export function findLearningTrail(
     : catalog.subjects.find((item) => item.id === book?.subject_id);
   return { subject, book, chapter, lesson, session };
 }
+
+export function sessionsForBook(catalog: LearningCatalog, bookId: string) {
+  const chapterIds = new Set(
+    catalog.chapters.filter((chapter) => chapter.book_id === bookId).map((chapter) => chapter.id),
+  );
+  const lessonIds = new Set(
+    catalog.lessons
+      .filter((lesson) => Boolean(lesson.chapter_id && chapterIds.has(lesson.chapter_id)))
+      .map((lesson) => lesson.id),
+  );
+  return catalog.sessions
+    .filter((session) => lessonIds.has(session.lesson_id))
+    .sort((left, right) => left.order_index - right.order_index || left.id.localeCompare(right.id));
+}

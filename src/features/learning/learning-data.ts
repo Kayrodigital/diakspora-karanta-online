@@ -46,7 +46,10 @@ export type LearningSession = {
   organization_id: string;
   lesson_id: string;
   title: string;
+  source_title: string | null;
   summary: string | null;
+  learning_points: string[];
+  reflection_questions: string[];
   duration_minutes: number | null;
   order_index: number;
   access_tier: "free" | "premium" | null;
@@ -127,7 +130,7 @@ export async function loadLearningCatalog(profileId?: string): Promise<LearningC
       supabase
         .from("sessions")
         .select(
-          "id, organization_id, lesson_id, title, summary, duration_minutes, order_index, access_tier, requires_validation",
+          "id, organization_id, lesson_id, title, source_title, summary, learning_points, reflection_questions, duration_minutes, order_index, access_tier, requires_validation",
         )
         .eq("status", "published")
         .order("order_index"),
@@ -162,7 +165,15 @@ export async function loadLearningCatalog(profileId?: string): Promise<LearningC
     books: (booksResult.data ?? []) as LearningBook[],
     chapters: (chaptersResult.data ?? []) as LearningChapter[],
     lessons: (lessonsResult.data ?? []) as LearningLesson[],
-    sessions: (sessionsResult.data ?? []) as LearningSession[],
+    sessions: (sessionsResult.data ?? []).map((session) => ({
+      ...session,
+      learning_points: Array.isArray(session.learning_points)
+        ? session.learning_points.filter((item): item is string => typeof item === "string")
+        : [],
+      reflection_questions: Array.isArray(session.reflection_questions)
+        ? session.reflection_questions.filter((item): item is string => typeof item === "string")
+        : [],
+    })) as LearningSession[],
     progress: (progressResult.data ?? []) as SessionProgress[],
   };
 }

@@ -909,7 +909,12 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
               </TabsContent>
 
               <TabsContent value="learning" className="mt-0">
-                <PedagogicalAdmin organization={organization} userId={userId} embedded />
+                <PedagogicalAdmin
+                  organization={organization}
+                  role={role}
+                  userId={userId}
+                  embedded
+                />
               </TabsContent>
 
               <TabsContent value="majliss" className="mt-0">
