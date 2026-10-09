@@ -71,14 +71,10 @@ export async function loadSessionExperience(sessionId: string): Promise<SessionE
 
   const accessPromise = userResult.data.user ? loadPortalAccess("family") : Promise.resolve(null);
   const activityIds = (activitiesResult.data ?? []).map((activity) => activity.id);
-  const [access, quizzesResult, resources] = await Promise.all([
+  const [access, resources] = await Promise.all([
     accessPromise,
-    activityIds.length
-      ? supabase.from("quizzes").select("id, activity_id").in("activity_id", activityIds)
-      : Promise.resolve({ data: [], error: null }),
     Promise.all((resourcesResult.data ?? []).map(playbackUrl)),
   ]);
-  if (quizzesResult.error) throw quizzesResult.error;
 
   const attemptsResult =
     access && activityIds.length
@@ -90,9 +86,6 @@ export async function loadSessionExperience(sessionId: string): Promise<SessionE
       : { data: [], error: null };
   if (attemptsResult.error) throw attemptsResult.error;
 
-  const quizzes = new Map(
-    (quizzesResult.data ?? []).map((quiz) => [quiz.activity_id, quiz.id] as const),
-  );
   const attempts = new Map(
     (attemptsResult.data ?? []).map((attempt) => [attempt.activity_id, attempt] as const),
   );
@@ -105,7 +98,7 @@ export async function loadSessionExperience(sessionId: string): Promise<SessionE
     resources,
     activities: (activitiesResult.data ?? []).map((activity) => ({
       ...activity,
-      quizId: quizzes.get(activity.id) ?? null,
+      quizId: activity.legacy_quiz_id,
       attempt: attempts.get(activity.id) ?? null,
     })),
   };
