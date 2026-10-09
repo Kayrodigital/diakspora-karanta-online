@@ -38,12 +38,18 @@ function sessionStatus(progress: SessionProgress[], sessionId: string): SessionP
 const navigation = [
   { label: "Accueil", href: "/", icon: Home },
   { label: "Apprendre", href: "/apprendre", icon: GraduationCap },
-  { label: "Majliss", href: "/#majliss", icon: MessageCircleMore },
+  { label: "Majliss", href: "/majliss", icon: MessageCircleMore },
   { label: "Boutique", href: "/boutique", icon: ShoppingBag },
   { label: "Mon espace", href: "/auth?portal=family", icon: UserRound },
 ];
 
-export function LearningShell({ children }: { children: ReactNode }) {
+export function LearningShell({
+  children,
+  active = "Apprendre",
+}: {
+  children: ReactNode;
+  active?: "Apprendre" | "Majliss";
+}) {
   return (
     <div className="min-h-screen bg-[color:var(--cream)] pb-20 text-foreground md:pb-0">
       <header className="sticky top-0 z-40 border-b border-[#D8C8A8]/70 bg-[#FFFDF7]/95 backdrop-blur-xl">
@@ -68,7 +74,7 @@ export function LearningShell({ children }: { children: ReactNode }) {
               <a
                 key={item.label}
                 href={item.href}
-                className={`rounded-full px-4 py-3 text-sm font-semibold transition hover:bg-[#F2E8D5] hover:text-[#173F2B] ${item.label === "Apprendre" ? "bg-[#E6F0E8] text-[#173F2B]" : "text-[#565C55]"}`}
+                className={`rounded-full px-4 py-3 text-sm font-semibold transition hover:bg-[#F2E8D5] hover:text-[#173F2B] ${item.label === active ? "bg-[#E6F0E8] text-[#173F2B]" : "text-[#565C55]"}`}
               >
                 {item.label}
               </a>
@@ -108,7 +114,7 @@ export function LearningShell({ children }: { children: ReactNode }) {
           <a
             key={label}
             href={href}
-            className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-semibold ${label === "Apprendre" ? "text-[#173F2B]" : "text-[#72766F]"}`}
+            className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-semibold ${label === active ? "text-[#173F2B]" : "text-[#72766F]"}`}
           >
             <Icon className="size-5" aria-hidden="true" />
             <span className="truncate">{label}</span>

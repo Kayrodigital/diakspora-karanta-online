@@ -18,6 +18,7 @@ import { Route as AvanceRouteImport } from './routes/avance'
 import { Route as BoutiqueRouteImport } from './routes/boutique'
 import { Route as InscriptionsRouteImport } from './routes/inscriptions'
 import { Route as IntermediaireRouteImport } from './routes/intermediaire'
+import { Route as MajlissRouteImport } from './routes/majliss'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ParcoursRouteImport } from './routes/parcours'
 import { Route as ParentRouteImport } from './routes/parent'
@@ -35,11 +36,15 @@ import { Route as AuthenticatedProgressionRouteImport } from './routes/_authenti
 import { Route as ApprendreIndexRouteImport } from './routes/apprendre/index'
 import { Route as ApprendreSubjectSlugRouteImport } from './routes/apprendre/$subjectSlug'
 import { Route as CoursCourseIdRouteImport } from './routes/cours/$courseId'
+import { Route as MajlissIndexRouteImport } from './routes/majliss/index'
+import { Route as MajlissVillageSlugRouteImport } from './routes/majliss/$villageSlug'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as ApprendreChapitreChapterIdRouteImport } from './routes/apprendre/chapitre/$chapterId'
 import { Route as ApprendreLeconLessonIdRouteImport } from './routes/apprendre/lecon/$lessonId'
 import { Route as ApprendreLivreBookIdRouteImport } from './routes/apprendre/livre/$bookId'
 import { Route as ApprendreSeanceSessionIdRouteImport } from './routes/apprendre/seance/$sessionId'
+import { Route as MajlissVillageSlugTeacherSlugRouteImport } from './routes/majliss/$villageSlug/$teacherSlug'
+import { Route as MajlissEcouterRecordingIdRouteImport } from './routes/majliss/ecouter/$recordingId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -83,6 +88,11 @@ const InscriptionsRoute = InscriptionsRouteImport.update({
 const IntermediaireRoute = IntermediaireRouteImport.update({
   id: '/intermediaire',
   path: '/intermediaire',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MajlissRoute = MajlissRouteImport.update({
+  id: '/majliss',
+  path: '/majliss',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -173,6 +183,16 @@ const CoursCourseIdRoute = CoursCourseIdRouteImport.update({
   path: '/cours/$courseId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MajlissIndexRoute = MajlissIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MajlissRoute,
+} as any)
+const MajlissVillageSlugRoute = MajlissVillageSlugRouteImport.update({
+  id: '/$villageSlug',
+  path: '/$villageSlug',
+  getParentRoute: () => MajlissRoute,
+} as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -201,6 +221,18 @@ const ApprendreSeanceSessionIdRoute =
     path: '/seance/$sessionId',
     getParentRoute: () => ApprendreRoute,
   } as any)
+const MajlissVillageSlugTeacherSlugRoute =
+  MajlissVillageSlugTeacherSlugRouteImport.update({
+    id: '/$teacherSlug',
+    path: '/$teacherSlug',
+    getParentRoute: () => MajlissVillageSlugRoute,
+  } as any)
+const MajlissEcouterRecordingIdRoute =
+  MajlissEcouterRecordingIdRouteImport.update({
+    id: '/ecouter/$recordingId',
+    path: '/ecouter/$recordingId',
+    getParentRoute: () => MajlissRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -211,6 +243,7 @@ export interface FileRoutesByFullPath {
   '/boutique': typeof BoutiqueRoute
   '/inscriptions': typeof InscriptionsRoute
   '/intermediaire': typeof IntermediaireRoute
+  '/majliss': typeof MajlissRouteWithChildren
   '/mcp': typeof McpRoute
   '/parcours': typeof ParcoursRoute
   '/parent': typeof ParentRoute
@@ -227,12 +260,16 @@ export interface FileRoutesByFullPath {
   '/progression': typeof AuthenticatedProgressionRoute
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
+  '/majliss/$villageSlug': typeof MajlissVillageSlugRouteWithChildren
   '/apprendre/': typeof ApprendreIndexRoute
+  '/majliss/': typeof MajlissIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/apprendre/chapitre/$chapterId': typeof ApprendreChapitreChapterIdRoute
   '/apprendre/lecon/$lessonId': typeof ApprendreLeconLessonIdRoute
   '/apprendre/livre/$bookId': typeof ApprendreLivreBookIdRoute
   '/apprendre/seance/$sessionId': typeof ApprendreSeanceSessionIdRoute
+  '/majliss/$villageSlug/$teacherSlug': typeof MajlissVillageSlugTeacherSlugRoute
+  '/majliss/ecouter/$recordingId': typeof MajlissEcouterRecordingIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -258,12 +295,16 @@ export interface FileRoutesByTo {
   '/progression': typeof AuthenticatedProgressionRoute
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
+  '/majliss/$villageSlug': typeof MajlissVillageSlugRouteWithChildren
   '/apprendre': typeof ApprendreIndexRoute
+  '/majliss': typeof MajlissIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/apprendre/chapitre/$chapterId': typeof ApprendreChapitreChapterIdRoute
   '/apprendre/lecon/$lessonId': typeof ApprendreLeconLessonIdRoute
   '/apprendre/livre/$bookId': typeof ApprendreLivreBookIdRoute
   '/apprendre/seance/$sessionId': typeof ApprendreSeanceSessionIdRoute
+  '/majliss/$villageSlug/$teacherSlug': typeof MajlissVillageSlugTeacherSlugRoute
+  '/majliss/ecouter/$recordingId': typeof MajlissEcouterRecordingIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -276,6 +317,7 @@ export interface FileRoutesById {
   '/boutique': typeof BoutiqueRoute
   '/inscriptions': typeof InscriptionsRoute
   '/intermediaire': typeof IntermediaireRoute
+  '/majliss': typeof MajlissRouteWithChildren
   '/mcp': typeof McpRoute
   '/parcours': typeof ParcoursRoute
   '/parent': typeof ParentRoute
@@ -292,12 +334,16 @@ export interface FileRoutesById {
   '/_authenticated/progression': typeof AuthenticatedProgressionRoute
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
+  '/majliss/$villageSlug': typeof MajlissVillageSlugRouteWithChildren
   '/apprendre/': typeof ApprendreIndexRoute
+  '/majliss/': typeof MajlissIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/apprendre/chapitre/$chapterId': typeof ApprendreChapitreChapterIdRoute
   '/apprendre/lecon/$lessonId': typeof ApprendreLeconLessonIdRoute
   '/apprendre/livre/$bookId': typeof ApprendreLivreBookIdRoute
   '/apprendre/seance/$sessionId': typeof ApprendreSeanceSessionIdRoute
+  '/majliss/$villageSlug/$teacherSlug': typeof MajlissVillageSlugTeacherSlugRoute
+  '/majliss/ecouter/$recordingId': typeof MajlissEcouterRecordingIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -310,6 +356,7 @@ export interface FileRouteTypes {
     | '/boutique'
     | '/inscriptions'
     | '/intermediaire'
+    | '/majliss'
     | '/mcp'
     | '/parcours'
     | '/parent'
@@ -326,12 +373,16 @@ export interface FileRouteTypes {
     | '/progression'
     | '/apprendre/$subjectSlug'
     | '/cours/$courseId'
+    | '/majliss/$villageSlug'
     | '/apprendre/'
+    | '/majliss/'
     | '/.mcp/invoke-tool/$tool'
     | '/apprendre/chapitre/$chapterId'
     | '/apprendre/lecon/$lessonId'
     | '/apprendre/livre/$bookId'
     | '/apprendre/seance/$sessionId'
+    | '/majliss/$villageSlug/$teacherSlug'
+    | '/majliss/ecouter/$recordingId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -357,12 +408,16 @@ export interface FileRouteTypes {
     | '/progression'
     | '/apprendre/$subjectSlug'
     | '/cours/$courseId'
+    | '/majliss/$villageSlug'
     | '/apprendre'
+    | '/majliss'
     | '/.mcp/invoke-tool/$tool'
     | '/apprendre/chapitre/$chapterId'
     | '/apprendre/lecon/$lessonId'
     | '/apprendre/livre/$bookId'
     | '/apprendre/seance/$sessionId'
+    | '/majliss/$villageSlug/$teacherSlug'
+    | '/majliss/ecouter/$recordingId'
   id:
     | '__root__'
     | '/'
@@ -374,6 +429,7 @@ export interface FileRouteTypes {
     | '/boutique'
     | '/inscriptions'
     | '/intermediaire'
+    | '/majliss'
     | '/mcp'
     | '/parcours'
     | '/parent'
@@ -390,12 +446,16 @@ export interface FileRouteTypes {
     | '/_authenticated/progression'
     | '/apprendre/$subjectSlug'
     | '/cours/$courseId'
+    | '/majliss/$villageSlug'
     | '/apprendre/'
+    | '/majliss/'
     | '/.mcp/invoke-tool/$tool'
     | '/apprendre/chapitre/$chapterId'
     | '/apprendre/lecon/$lessonId'
     | '/apprendre/livre/$bookId'
     | '/apprendre/seance/$sessionId'
+    | '/majliss/$villageSlug/$teacherSlug'
+    | '/majliss/ecouter/$recordingId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -408,6 +468,7 @@ export interface RootRouteChildren {
   BoutiqueRoute: typeof BoutiqueRoute
   InscriptionsRoute: typeof InscriptionsRoute
   IntermediaireRoute: typeof IntermediaireRoute
+  MajlissRoute: typeof MajlissRouteWithChildren
   McpRoute: typeof McpRoute
   ParcoursRoute: typeof ParcoursRoute
   ParentRoute: typeof ParentRoute
@@ -483,6 +544,13 @@ declare module '@tanstack/react-router' {
       path: '/intermediaire'
       fullPath: '/intermediaire'
       preLoaderRoute: typeof IntermediaireRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/majliss': {
+      id: '/majliss'
+      path: '/majliss'
+      fullPath: '/majliss'
+      preLoaderRoute: typeof MajlissRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -604,6 +672,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoursCourseIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/majliss/': {
+      id: '/majliss/'
+      path: '/'
+      fullPath: '/majliss/'
+      preLoaderRoute: typeof MajlissIndexRouteImport
+      parentRoute: typeof MajlissRoute
+    }
+    '/majliss/$villageSlug': {
+      id: '/majliss/$villageSlug'
+      path: '/$villageSlug'
+      fullPath: '/majliss/$villageSlug'
+      preLoaderRoute: typeof MajlissVillageSlugRouteImport
+      parentRoute: typeof MajlissRoute
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -638,6 +720,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/apprendre/seance/$sessionId'
       preLoaderRoute: typeof ApprendreSeanceSessionIdRouteImport
       parentRoute: typeof ApprendreRoute
+    }
+    '/majliss/$villageSlug/$teacherSlug': {
+      id: '/majliss/$villageSlug/$teacherSlug'
+      path: '/$teacherSlug'
+      fullPath: '/majliss/$villageSlug/$teacherSlug'
+      preLoaderRoute: typeof MajlissVillageSlugTeacherSlugRouteImport
+      parentRoute: typeof MajlissVillageSlugRoute
+    }
+    '/majliss/ecouter/$recordingId': {
+      id: '/majliss/ecouter/$recordingId'
+      path: '/ecouter/$recordingId'
+      fullPath: '/majliss/ecouter/$recordingId'
+      preLoaderRoute: typeof MajlissEcouterRecordingIdRouteImport
+      parentRoute: typeof MajlissRoute
     }
   }
 }
@@ -685,6 +781,32 @@ const ApprendreRouteWithChildren = ApprendreRoute._addFileChildren(
   ApprendreRouteChildren,
 )
 
+interface MajlissVillageSlugRouteChildren {
+  MajlissVillageSlugTeacherSlugRoute: typeof MajlissVillageSlugTeacherSlugRoute
+}
+
+const MajlissVillageSlugRouteChildren: MajlissVillageSlugRouteChildren = {
+  MajlissVillageSlugTeacherSlugRoute: MajlissVillageSlugTeacherSlugRoute,
+}
+
+const MajlissVillageSlugRouteWithChildren =
+  MajlissVillageSlugRoute._addFileChildren(MajlissVillageSlugRouteChildren)
+
+interface MajlissRouteChildren {
+  MajlissVillageSlugRoute: typeof MajlissVillageSlugRouteWithChildren
+  MajlissIndexRoute: typeof MajlissIndexRoute
+  MajlissEcouterRecordingIdRoute: typeof MajlissEcouterRecordingIdRoute
+}
+
+const MajlissRouteChildren: MajlissRouteChildren = {
+  MajlissVillageSlugRoute: MajlissVillageSlugRouteWithChildren,
+  MajlissIndexRoute: MajlissIndexRoute,
+  MajlissEcouterRecordingIdRoute: MajlissEcouterRecordingIdRoute,
+}
+
+const MajlissRouteWithChildren =
+  MajlissRoute._addFileChildren(MajlissRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -695,6 +817,7 @@ const rootRouteChildren: RootRouteChildren = {
   BoutiqueRoute: BoutiqueRoute,
   InscriptionsRoute: InscriptionsRoute,
   IntermediaireRoute: IntermediaireRoute,
+  MajlissRoute: MajlissRouteWithChildren,
   McpRoute: McpRoute,
   ParcoursRoute: ParcoursRoute,
   ParentRoute: ParentRoute,

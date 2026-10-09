@@ -520,9 +520,9 @@ function PublicHeader() {
           <Link to="/apprendre" className="transition hover:text-[#B56E26]">
             Apprendre
           </Link>
-          <a href="#majliss" className="transition hover:text-[#B56E26]">
+          <Link to="/majliss" className="transition hover:text-[#B56E26]">
             Majliss
-          </a>
+          </Link>
           <Link to="/boutique" className="transition hover:text-[#B56E26]">
             Boutique
           </Link>
@@ -561,9 +561,9 @@ function PublicHeader() {
             <Link to="/apprendre" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
               Apprendre
             </Link>
-            <a href="#majliss" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
+            <Link to="/majliss" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
               Majliss
-            </a>
+            </Link>
             <Link to="/boutique" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
               Boutique
             </Link>

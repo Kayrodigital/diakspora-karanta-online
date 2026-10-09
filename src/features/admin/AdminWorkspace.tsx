@@ -16,6 +16,7 @@ import {
   LoaderCircle,
   LogOut,
   Plus,
+  Radio,
   School,
   Search,
   ShoppingBag,
@@ -55,6 +56,7 @@ import {
   type AdminRole,
 } from "./admin-data";
 import { PedagogicalAdmin } from "./PedagogicalAdmin";
+import { MajlissAdmin } from "./MajlissAdmin";
 import { createLearningItem } from "./pedagogical-data";
 import { ShopAdmin } from "./ShopAdmin";
 
@@ -415,7 +417,7 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6 grid h-auto w-full grid-cols-4 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[940px] sm:grid-cols-7">
+          <TabsList className="mb-6 grid h-auto w-full grid-cols-4 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[1060px] sm:grid-cols-8">
             <TabsTrigger value="overview" className="min-h-11 rounded-xl px-2">
               <LayoutDashboard className="size-4 sm:mr-2" />
               <span className="hidden sm:inline">Vue d’ensemble</span>
@@ -434,6 +436,10 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
               <BookOpen className="size-4 sm:mr-2" />
               <span className="hidden sm:inline">Pédagogie</span>
               <span className="sm:hidden">Cours</span>
+            </TabsTrigger>
+            <TabsTrigger value="majliss" className="min-h-11 rounded-xl px-2">
+              <Radio className="size-4 sm:mr-2" />
+              <span>Majliss</span>
             </TabsTrigger>
             <TabsTrigger value="notifications" className="min-h-11 rounded-xl px-2">
               <Bell className="size-4 sm:mr-2" />
@@ -904,6 +910,10 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
 
               <TabsContent value="learning" className="mt-0">
                 <PedagogicalAdmin organization={organization} userId={userId} embedded />
+              </TabsContent>
+
+              <TabsContent value="majliss" className="mt-0">
+                <MajlissAdmin organizationId={organization.id} userId={userId} />
               </TabsContent>
 
               <TabsContent value="notifications" className="mt-0">
