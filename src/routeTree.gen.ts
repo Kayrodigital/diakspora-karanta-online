@@ -32,6 +32,7 @@ import { Route as AuthenticatedEleveRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedLeconRouteImport } from './routes/_authenticated/lecon'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedProgressionRouteImport } from './routes/_authenticated/progression'
+import { Route as ApprendreIndexRouteImport } from './routes/apprendre/index'
 import { Route as ApprendreSubjectSlugRouteImport } from './routes/apprendre/$subjectSlug'
 import { Route as CoursCourseIdRouteImport } from './routes/cours/$courseId'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
@@ -157,6 +158,11 @@ const AuthenticatedProgressionRoute =
     path: '/progression',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApprendreIndexRoute = ApprendreIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ApprendreRoute,
+} as any)
 const ApprendreSubjectSlugRoute = ApprendreSubjectSlugRouteImport.update({
   id: '/$subjectSlug',
   path: '/$subjectSlug',
@@ -221,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/progression': typeof AuthenticatedProgressionRoute
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
+  '/apprendre/': typeof ApprendreIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/apprendre/chapitre/$chapterId': typeof ApprendreChapitreChapterIdRoute
   '/apprendre/lecon/$lessonId': typeof ApprendreLeconLessonIdRoute
@@ -230,7 +237,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/apprendre': typeof ApprendreRouteWithChildren
   '/auth': typeof AuthRoute
   '/avance': typeof AvanceRoute
   '/boutique': typeof BoutiqueRoute
@@ -252,6 +258,7 @@ export interface FileRoutesByTo {
   '/progression': typeof AuthenticatedProgressionRoute
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
+  '/apprendre': typeof ApprendreIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/apprendre/chapitre/$chapterId': typeof ApprendreChapitreChapterIdRoute
   '/apprendre/lecon/$lessonId': typeof ApprendreLeconLessonIdRoute
@@ -285,6 +292,7 @@ export interface FileRoutesById {
   '/_authenticated/progression': typeof AuthenticatedProgressionRoute
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
+  '/apprendre/': typeof ApprendreIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/apprendre/chapitre/$chapterId': typeof ApprendreChapitreChapterIdRoute
   '/apprendre/lecon/$lessonId': typeof ApprendreLeconLessonIdRoute
@@ -318,6 +326,7 @@ export interface FileRouteTypes {
     | '/progression'
     | '/apprendre/$subjectSlug'
     | '/cours/$courseId'
+    | '/apprendre/'
     | '/.mcp/invoke-tool/$tool'
     | '/apprendre/chapitre/$chapterId'
     | '/apprendre/lecon/$lessonId'
@@ -327,7 +336,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
-    | '/apprendre'
     | '/auth'
     | '/avance'
     | '/boutique'
@@ -349,6 +357,7 @@ export interface FileRouteTypes {
     | '/progression'
     | '/apprendre/$subjectSlug'
     | '/cours/$courseId'
+    | '/apprendre'
     | '/.mcp/invoke-tool/$tool'
     | '/apprendre/chapitre/$chapterId'
     | '/apprendre/lecon/$lessonId'
@@ -381,6 +390,7 @@ export interface FileRouteTypes {
     | '/_authenticated/progression'
     | '/apprendre/$subjectSlug'
     | '/cours/$courseId'
+    | '/apprendre/'
     | '/.mcp/invoke-tool/$tool'
     | '/apprendre/chapitre/$chapterId'
     | '/apprendre/lecon/$lessonId'
@@ -573,6 +583,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProgressionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/apprendre/': {
+      id: '/apprendre/'
+      path: '/'
+      fullPath: '/apprendre/'
+      preLoaderRoute: typeof ApprendreIndexRouteImport
+      parentRoute: typeof ApprendreRoute
+    }
     '/apprendre/$subjectSlug': {
       id: '/apprendre/$subjectSlug'
       path: '/$subjectSlug'
@@ -648,6 +665,7 @@ const AuthenticatedRouteRouteWithChildren =
 
 interface ApprendreRouteChildren {
   ApprendreSubjectSlugRoute: typeof ApprendreSubjectSlugRoute
+  ApprendreIndexRoute: typeof ApprendreIndexRoute
   ApprendreChapitreChapterIdRoute: typeof ApprendreChapitreChapterIdRoute
   ApprendreLeconLessonIdRoute: typeof ApprendreLeconLessonIdRoute
   ApprendreLivreBookIdRoute: typeof ApprendreLivreBookIdRoute
@@ -656,6 +674,7 @@ interface ApprendreRouteChildren {
 
 const ApprendreRouteChildren: ApprendreRouteChildren = {
   ApprendreSubjectSlugRoute: ApprendreSubjectSlugRoute,
+  ApprendreIndexRoute: ApprendreIndexRoute,
   ApprendreChapitreChapterIdRoute: ApprendreChapitreChapterIdRoute,
   ApprendreLeconLessonIdRoute: ApprendreLeconLessonIdRoute,
   ApprendreLivreBookIdRoute: ApprendreLivreBookIdRoute,
