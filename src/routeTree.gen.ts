@@ -43,7 +43,7 @@ import { Route as ApprendreChapitreChapterIdRouteImport } from './routes/apprend
 import { Route as ApprendreLeconLessonIdRouteImport } from './routes/apprendre/lecon/$lessonId'
 import { Route as ApprendreLivreBookIdRouteImport } from './routes/apprendre/livre/$bookId'
 import { Route as ApprendreSeanceSessionIdRouteImport } from './routes/apprendre/seance/$sessionId'
-import { Route as MajlissVillageSlugTeacherSlugRouteImport } from './routes/majliss/$villageSlug.$teacherSlug'
+import { Route as MajlissVillageSlugTeacherSlugRouteImport } from './routes/majliss/$villageSlug_.$teacherSlug'
 import { Route as MajlissEcouterRecordingIdRouteImport } from './routes/majliss/ecouter/$recordingId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -223,9 +223,9 @@ const ApprendreSeanceSessionIdRoute =
   } as any)
 const MajlissVillageSlugTeacherSlugRoute =
   MajlissVillageSlugTeacherSlugRouteImport.update({
-    id: '/$teacherSlug',
-    path: '/$teacherSlug',
-    getParentRoute: () => MajlissVillageSlugRoute,
+    id: '/$villageSlug_/$teacherSlug',
+    path: '/$villageSlug/$teacherSlug',
+    getParentRoute: () => MajlissRoute,
   } as any)
 const MajlissEcouterRecordingIdRoute =
   MajlissEcouterRecordingIdRouteImport.update({
@@ -260,7 +260,7 @@ export interface FileRoutesByFullPath {
   '/progression': typeof AuthenticatedProgressionRoute
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
-  '/majliss/$villageSlug': typeof MajlissVillageSlugRouteWithChildren
+  '/majliss/$villageSlug': typeof MajlissVillageSlugRoute
   '/apprendre/': typeof ApprendreIndexRoute
   '/majliss/': typeof MajlissIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -295,7 +295,7 @@ export interface FileRoutesByTo {
   '/progression': typeof AuthenticatedProgressionRoute
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
-  '/majliss/$villageSlug': typeof MajlissVillageSlugRouteWithChildren
+  '/majliss/$villageSlug': typeof MajlissVillageSlugRoute
   '/apprendre': typeof ApprendreIndexRoute
   '/majliss': typeof MajlissIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -334,7 +334,7 @@ export interface FileRoutesById {
   '/_authenticated/progression': typeof AuthenticatedProgressionRoute
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
-  '/majliss/$villageSlug': typeof MajlissVillageSlugRouteWithChildren
+  '/majliss/$villageSlug': typeof MajlissVillageSlugRoute
   '/apprendre/': typeof ApprendreIndexRoute
   '/majliss/': typeof MajlissIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -342,7 +342,7 @@ export interface FileRoutesById {
   '/apprendre/lecon/$lessonId': typeof ApprendreLeconLessonIdRoute
   '/apprendre/livre/$bookId': typeof ApprendreLivreBookIdRoute
   '/apprendre/seance/$sessionId': typeof ApprendreSeanceSessionIdRoute
-  '/majliss/$villageSlug/$teacherSlug': typeof MajlissVillageSlugTeacherSlugRoute
+  '/majliss/$villageSlug_/$teacherSlug': typeof MajlissVillageSlugTeacherSlugRoute
   '/majliss/ecouter/$recordingId': typeof MajlissEcouterRecordingIdRoute
 }
 export interface FileRouteTypes {
@@ -454,7 +454,7 @@ export interface FileRouteTypes {
     | '/apprendre/lecon/$lessonId'
     | '/apprendre/livre/$bookId'
     | '/apprendre/seance/$sessionId'
-    | '/majliss/$villageSlug/$teacherSlug'
+    | '/majliss/$villageSlug_/$teacherSlug'
     | '/majliss/ecouter/$recordingId'
   fileRoutesById: FileRoutesById
 }
@@ -721,12 +721,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApprendreSeanceSessionIdRouteImport
       parentRoute: typeof ApprendreRoute
     }
-    '/majliss/$villageSlug/$teacherSlug': {
-      id: '/majliss/$villageSlug/$teacherSlug'
-      path: '/$teacherSlug'
+    '/majliss/$villageSlug_/$teacherSlug': {
+      id: '/majliss/$villageSlug_/$teacherSlug'
+      path: '/$villageSlug/$teacherSlug'
       fullPath: '/majliss/$villageSlug/$teacherSlug'
       preLoaderRoute: typeof MajlissVillageSlugTeacherSlugRouteImport
-      parentRoute: typeof MajlissVillageSlugRoute
+      parentRoute: typeof MajlissRoute
     }
     '/majliss/ecouter/$recordingId': {
       id: '/majliss/ecouter/$recordingId'
@@ -781,26 +781,17 @@ const ApprendreRouteWithChildren = ApprendreRoute._addFileChildren(
   ApprendreRouteChildren,
 )
 
-interface MajlissVillageSlugRouteChildren {
-  MajlissVillageSlugTeacherSlugRoute: typeof MajlissVillageSlugTeacherSlugRoute
-}
-
-const MajlissVillageSlugRouteChildren: MajlissVillageSlugRouteChildren = {
-  MajlissVillageSlugTeacherSlugRoute: MajlissVillageSlugTeacherSlugRoute,
-}
-
-const MajlissVillageSlugRouteWithChildren =
-  MajlissVillageSlugRoute._addFileChildren(MajlissVillageSlugRouteChildren)
-
 interface MajlissRouteChildren {
-  MajlissVillageSlugRoute: typeof MajlissVillageSlugRouteWithChildren
+  MajlissVillageSlugRoute: typeof MajlissVillageSlugRoute
   MajlissIndexRoute: typeof MajlissIndexRoute
+  MajlissVillageSlugTeacherSlugRoute: typeof MajlissVillageSlugTeacherSlugRoute
   MajlissEcouterRecordingIdRoute: typeof MajlissEcouterRecordingIdRoute
 }
 
 const MajlissRouteChildren: MajlissRouteChildren = {
-  MajlissVillageSlugRoute: MajlissVillageSlugRouteWithChildren,
+  MajlissVillageSlugRoute: MajlissVillageSlugRoute,
   MajlissIndexRoute: MajlissIndexRoute,
+  MajlissVillageSlugTeacherSlugRoute: MajlissVillageSlugTeacherSlugRoute,
   MajlissEcouterRecordingIdRoute: MajlissEcouterRecordingIdRoute,
 }
 

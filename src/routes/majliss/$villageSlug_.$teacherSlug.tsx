@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { TeacherPage } from "@/features/majliss/MajlissUi";
 
-export const Route = createFileRoute("/majliss/$villageSlug/$teacherSlug")({
+export const Route = createFileRoute("/majliss/$villageSlug_/$teacherSlug")({
   component: TeacherRoute,
 });
 
