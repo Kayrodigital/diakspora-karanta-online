@@ -104,7 +104,7 @@ async function fingerprint(file: File) {
   const windowSize = 64 * 1024;
   const head = await file.slice(0, windowSize).arrayBuffer();
   const tail = await file.slice(Math.max(0, file.size - windowSize)).arrayBuffer();
-  const identity = new TextEncoder().encode(`${file.size}:${file.lastModified}:`);
+  const identity = new TextEncoder().encode(`${file.size}:`);
   const joined = new Uint8Array(identity.length + head.byteLength + tail.byteLength);
   joined.set(identity);
   joined.set(new Uint8Array(head), identity.length);
@@ -134,7 +134,11 @@ function uploadOriginal(
   return new Promise<void>((resolve, reject) => {
     const upload = new Upload(file, {
       endpoint: `https://${projectRef}.storage.supabase.co/storage/v1/upload/resumable`,
-      headers: { Authorization: `Bearer ${token}`, apikey: publishableKey },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        apikey: publishableKey,
+        "x-upsert": "true",
+      },
       metadata: {
         bucketName: BUCKET,
         objectName,
@@ -169,9 +173,9 @@ export async function uploadAssistantRecording(input: {
   const session = sessionData.session;
   if (!session) throw new Error("Session expirée. Reconnectez-vous.");
 
-  const fileId = crypto.randomUUID();
-  const objectName = `${input.assignment.organization_id}/${input.assignment.id}/${session.user.id}/${fileId}-${safeFileName(input.file.name)}`;
   const contentFingerprint = await fingerprint(input.file);
+  const fileId = crypto.randomUUID();
+  const objectName = `${input.assignment.organization_id}/${input.assignment.id}/${session.user.id}/${contentFingerprint}-${safeFileName(input.file.name)}`;
   await uploadOriginal(input.file, objectName, session.access_token, input.onProgress);
 
   const fallbackTitle = input.file.name
