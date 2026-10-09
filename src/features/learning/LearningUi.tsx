@@ -24,6 +24,16 @@ import {
   type LearningSubject,
 } from "./learning-data";
 import { useLearningCatalog } from "./learning-hooks";
+import { ProgressBadge, ProgressBar } from "./ProgressUi";
+import {
+  summarizeProgress,
+  type SessionProgress,
+  type SessionProgressStatus,
+} from "./progress-data";
+
+function sessionStatus(progress: SessionProgress[], sessionId: string): SessionProgressStatus {
+  return progress.find((item) => item.session_id === sessionId)?.status ?? "not_started";
+}
 
 const navigation = [
   { label: "Accueil", href: "/", icon: Home },
@@ -343,9 +353,11 @@ export function BookCard({ book }: { book: LearningBook }) {
 export function LessonCard({
   lesson,
   sessionCount,
+  completedCount = 0,
 }: {
   lesson: LearningLesson;
   sessionCount: number;
+  completedCount?: number;
 }) {
   return (
     <a
@@ -362,6 +374,11 @@ export function LessonCard({
             {sessionCount} {sessionCount > 1 ? "séances" : "séance"}
           </span>
           {lesson.duration_minutes ? <span>{lesson.duration_minutes} min</span> : null}
+          {sessionCount ? (
+            <span>
+              {completedCount}/{sessionCount} terminé
+            </span>
+          ) : null}
         </span>
       </span>
       <ChevronRight
@@ -376,10 +393,12 @@ export function ChapterList({
   chapters,
   lessons,
   sessions,
+  progress = [],
 }: {
   chapters: LearningChapter[];
   lessons: LearningLesson[];
   sessions: LearningSession[];
+  progress?: SessionProgress[];
 }) {
   if (chapters.length === 0)
     return (
@@ -394,6 +413,10 @@ export function ChapterList({
         const chapterLessons = lessons
           .filter((lesson) => lesson.chapter_id === chapter.id)
           .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
+        const chapterSessionIds = sessions
+          .filter((session) => chapterLessons.some((lesson) => lesson.id === session.lesson_id))
+          .map((session) => session.id);
+        const chapterProgress = summarizeProgress(progress, chapterSessionIds);
         return (
           <details
             key={chapter.id}
@@ -416,6 +439,14 @@ export function ChapterList({
                     {chapter.description}
                   </span>
                 ) : null}
+                {chapterProgress.total ? (
+                  <div className="mt-3 max-w-xs">
+                    <ProgressBar
+                      value={chapterProgress.percent}
+                      label={`${chapterProgress.completed}/${chapterProgress.total} séances`}
+                    />
+                  </div>
+                ) : null}
               </span>
               <ChevronRight
                 className="size-5 shrink-0 text-[#9C8967] transition group-open:rotate-90"
@@ -430,6 +461,14 @@ export function ChapterList({
                     lesson={lesson}
                     sessionCount={
                       sessions.filter((session) => session.lesson_id === lesson.id).length
+                    }
+                    completedCount={
+                      summarizeProgress(
+                        progress,
+                        sessions
+                          .filter((session) => session.lesson_id === lesson.id)
+                          .map((session) => session.id),
+                      ).completed
                     }
                   />
                 ))
@@ -446,7 +485,14 @@ export function ChapterList({
   );
 }
 
-export function SessionCard({ session }: { session: LearningSession }) {
+export function SessionCard({
+  session,
+  progress = [],
+}: {
+  session: LearningSession;
+  progress?: SessionProgress[];
+}) {
+  const status = sessionStatus(progress, session.id);
   return (
     <a
       href={`/apprendre/seance/${session.id}`}
@@ -464,6 +510,7 @@ export function SessionCard({ session }: { session: LearningSession }) {
             </span>
           ) : null}
           <AccessBadge tier={session.access_tier} />
+          <ProgressBadge status={status} />
         </span>
       </span>
       <ChevronRight

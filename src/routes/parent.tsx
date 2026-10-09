@@ -6,6 +6,7 @@ import { loadPortalAccess } from "@/lib/auth/portal-access";
 import { organizationTheme } from "@/lib/organization-theme";
 import { FamilySchedule } from "@/features/planning/FamilySchedule";
 import { ActiveProfileSwitcher } from "@/components/ActiveProfileSwitcher";
+import { LearningProgressOverview } from "@/features/learning/LearningProgressOverview";
 
 export const Route = createFileRoute("/parent")({
   ssr: false,
@@ -119,6 +120,12 @@ function ParentPage() {
             activeProfileId={activeProfileId}
           />
         </section>
+        <div className="mt-8">
+          <LearningProgressOverview
+            profileId={activeProfileId}
+            title="Parcours d’apprentissage de l’enfant"
+          />
+        </div>
         <FamilySchedule organizationId={organization.id} userId={user.id} />
       </main>
     </div>

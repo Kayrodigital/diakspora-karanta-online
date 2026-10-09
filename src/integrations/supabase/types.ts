@@ -3785,6 +3785,66 @@ export type Database = {
           },
         ];
       };
+      profile_session_progress: {
+        Row: {
+          completed_at: string | null;
+          completed_version: number | null;
+          created_at: string;
+          id: string;
+          organization_id: string;
+          profile_id: string;
+          session_id: string;
+          started_at: string | null;
+          status: string;
+          updated_at: string;
+          validated_at: string | null;
+          validated_by: string | null;
+        };
+        Insert: {
+          completed_at?: string | null;
+          completed_version?: number | null;
+          created_at?: string;
+          id?: string;
+          organization_id: string;
+          profile_id: string;
+          session_id: string;
+          started_at?: string | null;
+          status?: string;
+          updated_at?: string;
+          validated_at?: string | null;
+          validated_by?: string | null;
+        };
+        Update: {
+          completed_at?: string | null;
+          completed_version?: number | null;
+          created_at?: string;
+          id?: string;
+          organization_id?: string;
+          profile_id?: string;
+          session_id?: string;
+          started_at?: string | null;
+          status?: string;
+          updated_at?: string;
+          validated_at?: string | null;
+          validated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "profile_session_progress_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "profile_session_progress_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: false;
+            referencedRelation: "sessions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       sessions: {
         Row: {
           access_tier: string | null;

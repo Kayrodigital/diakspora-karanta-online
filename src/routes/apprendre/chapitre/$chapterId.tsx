@@ -8,6 +8,8 @@ import {
   LessonCard,
   PageHeader,
 } from "@/features/learning/LearningUi";
+import { ProgressBar } from "@/features/learning/ProgressUi";
+import { summarizeProgress } from "@/features/learning/progress-data";
 import { findLearningTrail, useLearningCatalog } from "@/features/learning/learning-hooks";
 
 export const Route = createFileRoute("/apprendre/chapitre/$chapterId")({
@@ -44,6 +46,14 @@ function ChapterPage() {
         const lessons = catalog.lessons
           .filter((lesson) => lesson.chapter_id === chapter.id)
           .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
+        const lessonIds = new Set(lessons.map((lesson) => lesson.id));
+        const chapterSessions = catalog.sessions.filter((session) =>
+          lessonIds.has(session.lesson_id),
+        );
+        const chapterProgress = summarizeProgress(
+          catalog.progress,
+          chapterSessions.map((session) => session.id),
+        );
         return (
           <LearningShell>
             <LearningBreadcrumb
@@ -59,6 +69,14 @@ function ChapterPage() {
               description={chapter.description}
             />
             <section className="mx-auto max-w-4xl space-y-3 px-4 py-10 sm:px-8 sm:py-14">
+              {catalog.progressEnabled && chapterProgress.total ? (
+                <div className="mb-6 rounded-2xl border border-[#DED3BF] bg-white p-4">
+                  <ProgressBar
+                    value={chapterProgress.percent}
+                    label={`${chapterProgress.completed}/${chapterProgress.total} séances terminées`}
+                  />
+                </div>
+              ) : null}
               {lessons.length ? (
                 lessons.map((lesson) => (
                   <LessonCard
@@ -66,6 +84,14 @@ function ChapterPage() {
                     lesson={lesson}
                     sessionCount={
                       catalog.sessions.filter((session) => session.lesson_id === lesson.id).length
+                    }
+                    completedCount={
+                      summarizeProgress(
+                        catalog.progress,
+                        catalog.sessions
+                          .filter((session) => session.lesson_id === lesson.id)
+                          .map((session) => session.id),
+                      ).completed
                     }
                   />
                 ))

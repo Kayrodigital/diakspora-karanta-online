@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { organizationTheme } from "@/lib/organization-theme";
 import { reportAbsence, requirementLabels } from "@/features/planning/planning-data";
 import { toast } from "sonner";
+import { LearningProgressOverview } from "@/features/learning/LearningProgressOverview";
 
 export const Route = createFileRoute("/_authenticated/eleve")({
   head: () => ({
@@ -105,6 +106,10 @@ function ElevePage() {
         </header>
         <div className="px-5 pt-3 md:px-8">
           <PortalSwitcher current="learner" role={membership.role} />
+        </div>
+
+        <div className="px-5 pt-5 md:px-8">
+          <LearningProgressOverview profileId={activeProfileId} />
         </div>
 
         <section className="mt-5 px-5 md:px-8">

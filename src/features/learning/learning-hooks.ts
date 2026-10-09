@@ -5,7 +5,7 @@ import { loadLearningCatalog, type LearningCatalog } from "./learning-data";
 export function useLearningCatalog() {
   return useQuery({
     queryKey: ["public-learning-catalog", "diakspora"],
-    queryFn: loadLearningCatalog,
+    queryFn: () => loadLearningCatalog(),
     staleTime: 60_000,
   });
 }

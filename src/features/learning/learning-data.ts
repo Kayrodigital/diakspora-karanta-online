@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
+import { loadPortalAccess } from "@/lib/auth/portal-access";
+import type { SessionProgress } from "./progress-data";
 
 export type LearningSubject = {
   id: string;
@@ -41,6 +43,7 @@ export type LearningLesson = {
 
 export type LearningSession = {
   id: string;
+  organization_id: string;
   lesson_id: string;
   title: string;
   summary: string | null;
@@ -52,11 +55,14 @@ export type LearningSession = {
 
 export type LearningCatalog = {
   enabled: boolean;
+  progressEnabled: boolean;
+  activeProfileId: string | null;
   subjects: LearningSubject[];
   books: LearningBook[];
   chapters: LearningChapter[];
   lessons: LearningLesson[];
   sessions: LearningSession[];
+  progress: SessionProgress[];
 };
 
 function flagIsEnabled(flags: Json): boolean {
@@ -65,7 +71,13 @@ function flagIsEnabled(flags: Json): boolean {
   );
 }
 
-export async function loadLearningCatalog(): Promise<LearningCatalog> {
+function progressFlagIsEnabled(flags: Json): boolean {
+  return Boolean(
+    flags && typeof flags === "object" && !Array.isArray(flags) && flags.progress_v1 === true,
+  );
+}
+
+export async function loadLearningCatalog(profileId?: string): Promise<LearningCatalog> {
   const { data: organization, error: organizationError } = await supabase
     .from("organizations")
     .select("feature_flags")
@@ -75,11 +87,22 @@ export async function loadLearningCatalog(): Promise<LearningCatalog> {
   if (organizationError) throw organizationError;
 
   const enabled = flagIsEnabled(organization?.feature_flags ?? null);
+  const progressEnabled = progressFlagIsEnabled(organization?.feature_flags ?? null);
   if (!enabled) {
-    return { enabled, subjects: [], books: [], chapters: [], lessons: [], sessions: [] };
+    return {
+      enabled,
+      progressEnabled,
+      activeProfileId: null,
+      subjects: [],
+      books: [],
+      chapters: [],
+      lessons: [],
+      sessions: [],
+      progress: [],
+    };
   }
 
-  const [subjectsResult, booksResult, chaptersResult, lessonsResult, sessionsResult] =
+  const [subjectsResult, booksResult, chaptersResult, lessonsResult, sessionsResult, access] =
     await Promise.all([
       supabase
         .from("subjects")
@@ -104,10 +127,11 @@ export async function loadLearningCatalog(): Promise<LearningCatalog> {
       supabase
         .from("sessions")
         .select(
-          "id, lesson_id, title, summary, duration_minutes, order_index, access_tier, requires_validation",
+          "id, organization_id, lesson_id, title, summary, duration_minutes, order_index, access_tier, requires_validation",
         )
         .eq("status", "published")
         .order("order_index"),
+      profileId ? Promise.resolve(null) : loadPortalAccess("family"),
     ]);
 
   const firstError = [
@@ -119,12 +143,26 @@ export async function loadLearningCatalog(): Promise<LearningCatalog> {
   ].find(Boolean);
   if (firstError) throw firstError;
 
+  const activeProfileId = profileId ?? access?.activeProfileId ?? null;
+  const progressResult =
+    progressEnabled && activeProfileId
+      ? await supabase
+          .from("profile_session_progress")
+          .select("*")
+          .eq("profile_id", activeProfileId)
+          .order("updated_at", { ascending: false })
+      : { data: [], error: null };
+  if (progressResult.error) throw progressResult.error;
+
   return {
     enabled,
+    progressEnabled,
+    activeProfileId,
     subjects: (subjectsResult.data ?? []) as LearningSubject[],
     books: (booksResult.data ?? []) as LearningBook[],
     chapters: (chaptersResult.data ?? []) as LearningChapter[],
     lessons: (lessonsResult.data ?? []) as LearningLesson[],
     sessions: (sessionsResult.data ?? []) as LearningSession[],
+    progress: (progressResult.data ?? []) as SessionProgress[],
   };
 }

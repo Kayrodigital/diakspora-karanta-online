@@ -8,6 +8,8 @@ import {
   PageHeader,
   SessionCard,
 } from "@/features/learning/LearningUi";
+import { ProgressBar } from "@/features/learning/ProgressUi";
+import { summarizeProgress } from "@/features/learning/progress-data";
 import { findLearningTrail, useLearningCatalog } from "@/features/learning/learning-hooks";
 
 export const Route = createFileRoute("/apprendre/lecon/$lessonId")({
@@ -44,6 +46,10 @@ function LessonPage() {
         const sessions = catalog.sessions
           .filter((session) => session.lesson_id === lesson.id)
           .sort((a, b) => a.order_index - b.order_index);
+        const lessonProgress = summarizeProgress(
+          catalog.progress,
+          sessions.map((session) => session.id),
+        );
         return (
           <LearningShell>
             <LearningBreadcrumb
@@ -65,10 +71,18 @@ function LessonPage() {
               >
                 Séances
               </h2>
+              {catalog.progressEnabled && lessonProgress.total ? (
+                <div className="mb-5 rounded-2xl border border-[#DED3BF] bg-white p-4">
+                  <ProgressBar
+                    value={lessonProgress.percent}
+                    label={`${lessonProgress.completed}/${lessonProgress.total} séances terminées`}
+                  />
+                </div>
+              ) : null}
               {sessions.length ? (
                 <div className="space-y-3">
                   {sessions.map((session) => (
-                    <SessionCard key={session.id} session={session} />
+                    <SessionCard key={session.id} session={session} progress={catalog.progress} />
                   ))}
                 </div>
               ) : (

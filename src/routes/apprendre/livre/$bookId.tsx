@@ -8,6 +8,8 @@ import {
   LearningBreadcrumb,
   LearningShell,
 } from "@/features/learning/LearningUi";
+import { ProgressBar } from "@/features/learning/ProgressUi";
+import { summarizeProgress } from "@/features/learning/progress-data";
 import { findLearningTrail, useLearningCatalog } from "@/features/learning/learning-hooks";
 
 export const Route = createFileRoute("/apprendre/livre/$bookId")({
@@ -44,6 +46,18 @@ function BookPage() {
         const chapters = catalog.chapters
           .filter((chapter) => chapter.book_id === book.id)
           .sort((a, b) => a.order_index - b.order_index);
+        const chapterIds = new Set(chapters.map((chapter) => chapter.id));
+        const lessonIds = new Set(
+          catalog.lessons
+            .filter((lesson) => lesson.chapter_id && chapterIds.has(lesson.chapter_id))
+            .map((lesson) => lesson.id),
+        );
+        const bookProgress = summarizeProgress(
+          catalog.progress,
+          catalog.sessions
+            .filter((session) => lessonIds.has(session.lesson_id))
+            .map((session) => session.id),
+        );
         return (
           <LearningShell>
             <LearningBreadcrumb
@@ -84,6 +98,14 @@ function BookPage() {
                     {book.description}
                   </p>
                 ) : null}
+                {catalog.progressEnabled && bookProgress.total ? (
+                  <div className="mt-6 max-w-md">
+                    <ProgressBar
+                      value={bookProgress.percent}
+                      label={`${bookProgress.completed}/${bookProgress.total} séances terminées`}
+                    />
+                  </div>
+                ) : null}
               </div>
             </section>
             <section
@@ -110,6 +132,7 @@ function BookPage() {
                 chapters={chapters}
                 lessons={catalog.lessons}
                 sessions={catalog.sessions}
+                progress={catalog.progress}
               />
             </section>
           </LearningShell>

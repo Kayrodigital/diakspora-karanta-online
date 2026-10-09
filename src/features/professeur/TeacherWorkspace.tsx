@@ -35,6 +35,7 @@ import { loadTeacherDashboard, type TeacherCohort, type TeacherLearner } from ".
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { makeT, type Lang } from "./i18n";
 import { TeacherCourseAssistant } from "./TeacherCourseAssistant";
+import { TeacherSessionValidation } from "./TeacherSessionValidation";
 
 type Props = {
   organization: OrganizationBrand;
@@ -357,6 +358,7 @@ export function TeacherWorkspace({ organization, role, userId }: Props) {
             </TabsList>
 
             <TabsContent value="overview" className="mt-0 space-y-6">
+              <TeacherSessionValidation organizationId={organization.id} />
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 <Stat
                   icon={<School className="size-5" />}

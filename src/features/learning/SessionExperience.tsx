@@ -18,12 +18,18 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/features/learning/LearningUi";
+import { ProgressBadge } from "@/features/learning/ProgressUi";
 import {
   loadSessionExperience,
   saveSelfCorrection,
   type SessionActivity,
   type SessionResource,
 } from "@/features/learning/session-experience";
+import {
+  completeSessionProgress,
+  startSessionProgress,
+  type SessionProgressStatus,
+} from "@/features/learning/progress-data";
 
 function youtubeEmbedUrl(url: string | null): string | null {
   if (!url) return null;
@@ -233,9 +239,13 @@ function ActivityCard({
 export function SessionExperience({
   sessionId,
   lessonId,
+  organizationId,
+  requiresValidation,
 }: {
   sessionId: string;
   lessonId: string;
+  organizationId: string;
+  requiresValidation: boolean;
 }) {
   const queryClient = useQueryClient();
   const queryKey = ["session-experience", sessionId] as const;
@@ -263,6 +273,28 @@ export function SessionExperience({
     onError: (error) =>
       toast.error(error instanceof Error ? error.message : "Enregistrement impossible."),
   });
+  const progressMutation = useMutation({
+    mutationFn: async (action: "start" | "complete") => {
+      const data = query.data;
+      if (!data?.activeProfileId)
+        throw new Error("Connectez-vous pour enregistrer votre progression.");
+      if (action === "start") {
+        await startSessionProgress({ organizationId, profileId: data.activeProfileId, sessionId });
+        return;
+      }
+      if (!data.progress) throw new Error("Commencez d’abord cette séance.");
+      await completeSessionProgress(data.progress.id);
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey }),
+        queryClient.invalidateQueries({ queryKey: ["learning-catalog"] }),
+      ]);
+      toast.success("Progression de la séance enregistrée.");
+    },
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Progression impossible."),
+  });
 
   if (query.isPending) return <div className="mt-8 h-40 animate-pulse rounded-3xl bg-[#F3EEE3]" />;
   if (query.isError)
@@ -280,8 +312,63 @@ export function SessionExperience({
       />
     );
 
+  const progressStatus: SessionProgressStatus = query.data.progress?.status ?? "not_started";
   return (
     <div className="mt-8 space-y-9">
+      {query.data.progressEnabled ? (
+        <section
+          className="rounded-3xl border border-[#D7E2D9] bg-[#F8FBF8] p-5 sm:p-6"
+          aria-labelledby="session-progress-title"
+        >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#6B815F]">
+                Ma progression
+              </p>
+              <h2
+                id="session-progress-title"
+                className="mt-1 font-serif text-2xl font-semibold text-[#173F2B]"
+              >
+                Avancement de la séance
+              </h2>
+              <div className="mt-3">
+                <ProgressBadge status={progressStatus} />
+              </div>
+            </div>
+            {!query.data.activeProfileId ? (
+              <Button asChild variant="outline" className="min-h-12 rounded-xl">
+                <Link to="/auth" search={{ portal: "family" }}>
+                  Se connecter
+                </Link>
+              </Button>
+            ) : progressStatus === "not_started" ? (
+              <Button
+                className="min-h-12 rounded-xl"
+                disabled={progressMutation.isPending}
+                onClick={() => progressMutation.mutate("start")}
+              >
+                Commencer
+              </Button>
+            ) : progressStatus === "in_progress" ? (
+              <Button
+                className="min-h-12 rounded-xl"
+                disabled={progressMutation.isPending}
+                onClick={() => progressMutation.mutate("complete")}
+              >
+                Marquer comme terminé
+              </Button>
+            ) : progressStatus === "completed" && requiresValidation ? (
+              <Button className="min-h-12 rounded-xl" variant="outline" disabled>
+                En attente de validation
+              </Button>
+            ) : (
+              <Button className="min-h-12 rounded-xl" variant="outline" disabled>
+                {progressStatus === "validated" ? "Séance validée" : "Séance terminée"}
+              </Button>
+            )}
+          </div>
+        </section>
+      ) : null}
       <section aria-labelledby="resources-title">
         <div className="flex items-end justify-between gap-4">
           <div>

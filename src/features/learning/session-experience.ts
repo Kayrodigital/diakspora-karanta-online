@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { loadPortalAccess } from "@/lib/auth/portal-access";
+import type { SessionProgress } from "./progress-data";
 
 type Tables = Database["public"]["Tables"];
 type ResourceRow = Tables["lesson_resources"]["Row"];
@@ -15,16 +16,24 @@ export type SessionActivity = ActivityRow & {
 
 export type SessionExperience = {
   enabled: boolean;
+  progressEnabled: boolean;
   authenticated: boolean;
   activeProfileId: string | null;
   userId: string | null;
   resources: SessionResource[];
   activities: SessionActivity[];
+  progress: SessionProgress | null;
 };
 
 function activitiesFlag(flags: Json): boolean {
   return Boolean(
     flags && typeof flags === "object" && !Array.isArray(flags) && flags.activities_v1 === true,
+  );
+}
+
+function progressFlag(flags: Json): boolean {
+  return Boolean(
+    flags && typeof flags === "object" && !Array.isArray(flags) && flags.progress_v1 === true,
   );
 }
 
@@ -57,15 +66,19 @@ export async function loadSessionExperience(sessionId: string): Promise<SessionE
   const error = organizationResult.error ?? resourcesResult.error ?? activitiesResult.error;
   if (error) throw error;
 
-  const enabled = activitiesFlag(organizationResult.data?.feature_flags ?? null);
+  const flags = organizationResult.data?.feature_flags ?? null;
+  const enabled = activitiesFlag(flags);
+  const progressEnabled = progressFlag(flags);
   if (!enabled) {
     return {
       enabled,
+      progressEnabled,
       authenticated: Boolean(userResult.data.user),
       activeProfileId: null,
       userId: userResult.data.user?.id ?? null,
       resources: [],
       activities: [],
+      progress: null,
     };
   }
 
@@ -76,15 +89,25 @@ export async function loadSessionExperience(sessionId: string): Promise<SessionE
     Promise.all((resourcesResult.data ?? []).map(playbackUrl)),
   ]);
 
-  const attemptsResult =
+  const [attemptsResult, progressResult] = await Promise.all([
     access && activityIds.length
-      ? await supabase
+      ? supabase
           .from("activity_attempts")
           .select("*")
           .eq("profile_id", access.activeProfileId)
           .in("activity_id", activityIds)
-      : { data: [], error: null };
+      : Promise.resolve({ data: [], error: null }),
+    access && progressEnabled
+      ? supabase
+          .from("profile_session_progress")
+          .select("*")
+          .eq("profile_id", access.activeProfileId)
+          .eq("session_id", sessionId)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
   if (attemptsResult.error) throw attemptsResult.error;
+  if (progressResult.error) throw progressResult.error;
 
   const attempts = new Map(
     (attemptsResult.data ?? []).map((attempt) => [attempt.activity_id, attempt] as const),
@@ -92,6 +115,7 @@ export async function loadSessionExperience(sessionId: string): Promise<SessionE
 
   return {
     enabled,
+    progressEnabled,
     authenticated: Boolean(userResult.data.user),
     activeProfileId: access?.activeProfileId ?? null,
     userId: userResult.data.user?.id ?? null,
@@ -101,6 +125,7 @@ export async function loadSessionExperience(sessionId: string): Promise<SessionE
       quizId: activity.legacy_quiz_id,
       attempt: attempts.get(activity.id) ?? null,
     })),
+    progress: (progressResult.data as SessionProgress | null) ?? null,
   };
 }
 

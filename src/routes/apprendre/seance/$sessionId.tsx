@@ -72,7 +72,12 @@ function SessionPage() {
                   <AccessBadge tier={session.access_tier} />
                 </div>
               </div>
-              <SessionExperience sessionId={session.id} lessonId={lesson.id} />
+              <SessionExperience
+                sessionId={session.id}
+                lessonId={lesson.id}
+                organizationId={session.organization_id}
+                requiresValidation={session.requires_validation}
+              />
             </section>
           </LearningShell>
         );
