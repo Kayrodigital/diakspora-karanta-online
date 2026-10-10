@@ -56,6 +56,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
   const [resending, setResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -80,9 +81,14 @@ function AuthPage() {
         return;
       }
       const { data } = await supabase.auth.getSession();
-      if (!data.session || !active) return;
+      if (!active) return;
+      setAuthenticated(Boolean(data.session));
+      if (!data.session) return;
       const destination = await resolvePostAuthDestination(portal);
       if (destination && active) await navigate({ to: destination, replace: true });
+      else if (active && portal !== "family") {
+        setError("Ce compte ne dispose pas de l’accès à cet espace. Vérifiez le rôle attribué par votre administrateur ou changez de compte.");
+      }
     }
 
     void redirectAuthenticatedUser();
@@ -130,11 +136,14 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        setAuthenticated(true);
         const destination = await resolvePostAuthDestination(portal);
         if (destination) await navigate({ to: destination, replace: true });
         else {
-          setNotice(
-            "Connexion réussie. Ton inscription n'est pas encore rattachée à une organisation active.",
+          setError(
+            portal === "family"
+              ? "Connexion réussie, mais votre compte ne dispose pas encore d’un accès famille ou élève actif."
+              : "Connexion réussie, mais ce compte n’est pas autorisé à accéder à ce portail. Contactez votre administrateur.",
           );
         }
       }
@@ -324,6 +333,21 @@ function AuthPage() {
               className="text-center text-sm font-semibold text-[color:var(--deep-green)] underline underline-offset-4"
             >
               Retour à la connexion
+            </button>
+          ) : null}
+
+          {authenticated && mode === "signin" ? (
+            <button
+              type="button"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                setAuthenticated(false);
+                setError(null);
+                setNotice("Vous pouvez maintenant vous connecter avec un autre compte.");
+              }}
+              className="min-h-11 text-center text-sm font-semibold text-[color:var(--deep-green)] underline underline-offset-4"
+            >
+              Se déconnecter et changer de compte
             </button>
           ) : null}
 
