@@ -23,6 +23,8 @@ dist-ssr
 .wrangler/
 .dev.vars
 supabase/.temp/
+playwright-report/
+test-results/
 
 # Editor directories and files
 .vscode/*

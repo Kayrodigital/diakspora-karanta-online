@@ -10,6 +10,12 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "test:m9": "node --experimental-strip-types --test src/lib/auth/portal-role-policy.test.mjs supabase/functions/admin-members/invitation-policy.test.mjs",
+    "test:unit": "node --experimental-strip-types --test src/lib/auth/portal-role-policy.test.mjs supabase/functions/admin-members/invitation-policy.test.mjs tests/unit/*.test.mjs",
+    "test:integration": "node scripts/qa/preflight.mjs integration && node --experimental-strip-types --test tests/integration/*.test.mjs",
+    "test:e2e:smoke": "playwright test tests/e2e/auth-ui.smoke.spec.ts",
+    "test:e2e:auth": "node scripts/qa/preflight.mjs auth && playwright test tests/e2e/auth-real.auth.spec.ts --project=desktop-chromium",
+    "test:e2e:full": "node scripts/qa/preflight.mjs full && npm run test:integration && playwright test tests/e2e --project=desktop-chromium",
+    "test:types": "tsc --noEmit",
     "format": "prettier --write ."
   },
   "dependencies": {
@@ -72,6 +78,7 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@lovable.dev/vite-tanstack-config": "2.7.6",
+    "@playwright/test": "1.64.0",
     "@types/node": "^22.16.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",

@@ -5,7 +5,7 @@ import { isPortal, resolvePostAuthDestination, type Portal } from "@/lib/auth/po
 
 type Flow = "invite" | "recovery";
 
-export const Route = createFileRoute("/auth/complete")({
+export const Route = createFileRoute("/auth_/complete")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>) => ({
     flow: search.flow === "invite" ? ("invite" as Flow) : ("recovery" as Flow),

@@ -52,6 +52,7 @@ function AuthPage() {
   const { portal } = Route.useSearch();
   const content = portalContent[portal];
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
+  const [hydrated, setHydrated] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -61,6 +62,8 @@ function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [pendingConfirmationEmail, setPendingConfirmationEmail] = useState<string | null>(null);
+
+  useEffect(() => setHydrated(true), []);
 
   useEffect(() => {
     if (portal !== "family" && mode === "signup") setMode("signin");
@@ -192,7 +195,10 @@ function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[color:var(--cream)] px-5 py-10 text-foreground">
+    <div
+      data-qa-ready={hydrated ? "true" : "false"}
+      className="min-h-screen bg-[color:var(--cream)] px-5 py-10 text-foreground"
+    >
       <div className="mx-auto w-full max-w-md md:max-w-2xl">
         <Link to="/" className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           ← Diakspora Karanta

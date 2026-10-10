@@ -35,7 +35,7 @@ import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedProgressionRouteImport } from './routes/_authenticated/progression'
 import { Route as ApprendreIndexRouteImport } from './routes/apprendre/index'
 import { Route as ApprendreSubjectSlugRouteImport } from './routes/apprendre/$subjectSlug'
-import { Route as AuthCompleteRouteImport } from './routes/auth/complete'
+import { Route as AuthCompleteRouteImport } from './routes/auth_.complete'
 import { Route as CoursCourseIdRouteImport } from './routes/cours/$courseId'
 import { Route as MajlissIndexRouteImport } from './routes/majliss/index'
 import { Route as MajlissVillageSlugRouteImport } from './routes/majliss/$villageSlug'
@@ -181,9 +181,9 @@ const ApprendreSubjectSlugRoute = ApprendreSubjectSlugRouteImport.update({
   getParentRoute: () => ApprendreRoute,
 } as any)
 const AuthCompleteRoute = AuthCompleteRouteImport.update({
-  id: '/complete',
-  path: '/complete',
-  getParentRoute: () => AuthRoute,
+  id: '/auth_/complete',
+  path: '/auth/complete',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CoursCourseIdRoute = CoursCourseIdRouteImport.update({
   id: '/cours/$courseId',
@@ -250,7 +250,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/apprendre': typeof ApprendreRouteWithChildren
-  '/auth': typeof AuthRouteWithChildren
+  '/auth': typeof AuthRoute
   '/avance': typeof AvanceRoute
   '/boutique': typeof BoutiqueRoute
   '/inscriptions': typeof InscriptionsRoute
@@ -288,7 +288,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/auth': typeof AuthRouteWithChildren
+  '/auth': typeof AuthRoute
   '/avance': typeof AvanceRoute
   '/boutique': typeof BoutiqueRoute
   '/inscriptions': typeof InscriptionsRoute
@@ -328,7 +328,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/admin': typeof AdminRoute
   '/apprendre': typeof ApprendreRouteWithChildren
-  '/auth': typeof AuthRouteWithChildren
+  '/auth': typeof AuthRoute
   '/avance': typeof AvanceRoute
   '/boutique': typeof BoutiqueRoute
   '/inscriptions': typeof InscriptionsRoute
@@ -349,7 +349,7 @@ export interface FileRoutesById {
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/progression': typeof AuthenticatedProgressionRoute
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
-  '/auth/complete': typeof AuthCompleteRoute
+  '/auth_/complete': typeof AuthCompleteRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
   '/majliss/$villageSlug': typeof MajlissVillageSlugRoute
   '/staff/depot': typeof StaffDepotRoute
@@ -467,7 +467,7 @@ export interface FileRouteTypes {
     | '/_authenticated/messages'
     | '/_authenticated/progression'
     | '/apprendre/$subjectSlug'
-    | '/auth/complete'
+    | '/auth_/complete'
     | '/cours/$courseId'
     | '/majliss/$villageSlug'
     | '/staff/depot'
@@ -487,7 +487,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AdminRoute: typeof AdminRoute
   ApprendreRoute: typeof ApprendreRouteWithChildren
-  AuthRoute: typeof AuthRouteWithChildren
+  AuthRoute: typeof AuthRoute
   AvanceRoute: typeof AvanceRoute
   BoutiqueRoute: typeof BoutiqueRoute
   InscriptionsRoute: typeof InscriptionsRoute
@@ -501,6 +501,7 @@ export interface RootRouteChildren {
   RattrapageRoute: typeof RattrapageRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  AuthCompleteRoute: typeof AuthCompleteRoute
   CoursCourseIdRoute: typeof CoursCourseIdRoute
   StaffDepotRoute: typeof StaffDepotRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -690,12 +691,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApprendreSubjectSlugRouteImport
       parentRoute: typeof ApprendreRoute
     }
-    '/auth/complete': {
-      id: '/auth/complete'
-      path: '/complete'
+    '/auth_/complete': {
+      id: '/auth_/complete'
+      path: '/auth/complete'
       fullPath: '/auth/complete'
       preLoaderRoute: typeof AuthCompleteRouteImport
-      parentRoute: typeof AuthRoute
+      parentRoute: typeof rootRouteImport
     }
     '/cours/$courseId': {
       id: '/cours/$courseId'
@@ -820,16 +821,6 @@ const ApprendreRouteWithChildren = ApprendreRoute._addFileChildren(
   ApprendreRouteChildren,
 )
 
-interface AuthRouteChildren {
-  AuthCompleteRoute: typeof AuthCompleteRoute
-}
-
-const AuthRouteChildren: AuthRouteChildren = {
-  AuthCompleteRoute: AuthCompleteRoute,
-}
-
-const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
-
 interface MajlissRouteChildren {
   MajlissVillageSlugRoute: typeof MajlissVillageSlugRoute
   MajlissIndexRoute: typeof MajlissIndexRoute
@@ -852,7 +843,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AdminRoute: AdminRoute,
   ApprendreRoute: ApprendreRouteWithChildren,
-  AuthRoute: AuthRouteWithChildren,
+  AuthRoute: AuthRoute,
   AvanceRoute: AvanceRoute,
   BoutiqueRoute: BoutiqueRoute,
   InscriptionsRoute: InscriptionsRoute,
@@ -867,6 +858,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  AuthCompleteRoute: AuthCompleteRoute,
   CoursCourseIdRoute: CoursCourseIdRoute,
   StaffDepotRoute: StaffDepotRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
