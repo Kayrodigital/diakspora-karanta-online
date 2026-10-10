@@ -142,7 +142,7 @@ function Home() {
 
       <main>
         <section className="bg-[#103F30] text-white" aria-labelledby="karanta-hero-title">
-          <div className="mx-auto grid max-w-[1440px] lg:min-h-[535px] lg:grid-cols-[52%_48%]">
+          <div className="mx-auto grid max-w-[1440px] lg:h-[535px] lg:grid-cols-[52%_48%]">
             <div className="relative isolate px-[22px] pb-7 pt-9 sm:px-10 lg:px-[60px] lg:py-11">
               <div
                 aria-hidden
@@ -190,11 +190,11 @@ function Home() {
                 </Link>
               </div>
             </div>
-            <div className="px-[22px] pb-6 sm:px-10 lg:p-0">
+            <div className="px-[22px] pb-6 sm:px-10 lg:relative lg:min-h-0 lg:p-0">
               <img
                 src="/brands/diakspora/landing/karanta-hero.webp"
                 alt="Un enseignant dans un cercle d’apprentissage avec des enfants"
-                className="aspect-[346/175] w-full object-cover object-center lg:aspect-auto lg:h-full"
+                className="aspect-[346/175] w-full object-cover object-center lg:absolute lg:inset-0 lg:aspect-auto lg:h-full lg:object-top"
                 fetchPriority="high"
               />
             </div>
