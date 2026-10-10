@@ -42,6 +42,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { PortalSwitcher } from "@/components/PortalSwitcher";
+import "./admin-workspace.css";
 import { supabase } from "@/integrations/supabase/client";
 import type { OrganizationBrand, OrganizationRole } from "@/lib/auth/portal-access";
 import { AdminSupport } from "./AdminSupport";
@@ -189,7 +190,7 @@ function StatCard({
   detail: string;
 }) {
   return (
-    <Card className="overflow-hidden border-border/70 shadow-sm">
+    <Card className="karanta-admin-stat overflow-hidden border-border/70 shadow-sm">
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -352,7 +353,7 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.08),transparent_28rem)] bg-background">
+    <div className="karanta-admin-shell min-h-screen bg-background">
       <header className="sticky top-0 z-30 border-b border-border/70 bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
@@ -385,13 +386,13 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
+      <main className="karanta-admin-main mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
         <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <Badge variant="secondary" className="mb-3 rounded-full">
               Administration
             </Badge>
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h1 className="karanta-admin-title text-2xl font-semibold tracking-tight sm:text-3xl">
               Pilotez votre école
             </h1>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground sm:text-base">
@@ -416,8 +417,8 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6 grid h-auto w-full grid-cols-4 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[1060px] sm:grid-cols-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="karanta-admin-tabs">
+          <TabsList aria-label="Navigation administration" className="karanta-admin-nav mb-6 grid h-auto w-full grid-cols-4 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[1060px] sm:grid-cols-8">
             <TabsTrigger value="overview" className="min-h-11 rounded-xl px-2">
               <LayoutDashboard className="size-4 sm:mr-2" />
               <span className="hidden sm:inline">Vue d’ensemble</span>
@@ -474,6 +475,32 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
           {data && (
             <>
               <TabsContent value="overview" className="mt-0 space-y-6">
+                <section className="karanta-admin-priorities rounded-xl px-5 py-4" aria-label="Priorités du jour">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                        Tableau de pilotage
+                      </p>
+                      <h2 className="mt-1 font-semibold text-[color:#103F30]">
+                        À traiter aujourd'hui
+                      </h2>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {data.invitations.filter((item) => item.status === "invited").length} invitation(s) en attente
+                        {" · "}
+                        {data.cohorts.filter((item) => item.status === "active" && !item.teacher_id).length} classe(s) sans professeur
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button size="sm" variant="outline" onClick={() => setActiveTab("people")}>
+                        <Users className="size-4" /> Gérer les accès
+                      </Button>
+                      <Button size="sm" onClick={() => setActiveTab("classes")}>
+                        <School className="size-4" /> Voir les classes
+                      </Button>
+                    </div>
+                  </div>
+                </section>
+
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <StatCard
                     icon={<GraduationCap className="size-5" />}
@@ -554,7 +581,7 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
                     </CardContent>
                   </Card>
 
-                  <Card className="border-border/70 bg-primary text-primary-foreground shadow-sm">
+                  <Card className="karanta-admin-quick border-border/70 bg-primary text-primary-foreground shadow-sm">
                     <CardContent className="p-5 sm:p-6">
                       <p className="text-sm text-primary-foreground/75">Actions rapides</p>
                       <h2 className="mt-2 text-xl font-semibold">Que souhaitez-vous faire ?</h2>
