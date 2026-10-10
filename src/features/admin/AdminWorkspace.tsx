@@ -87,9 +87,6 @@ const inviteRoles: Array<{ value: AdminRole; label: string }> = [
   { value: "class_manager", label: "Responsable de classe" },
   { value: "pedagogical_manager", label: "Responsable pédagogique" },
   { value: "technician", label: "Technicien" },
-  { value: "commercial", label: "Équipe inscriptions" },
-  { value: "accounting", label: "Comptabilité" },
-  { value: "support", label: "Support" },
   { value: "admin", label: "Administrateur" },
 ];
 
@@ -207,6 +204,7 @@ function StatCard({
 }
 
 export function AdminWorkspace({ organization, role, userId }: Props) {
+  const canInvite = role === "owner" || role === "admin";
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -228,12 +226,20 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
   const refresh = () => queryClient.invalidateQueries({ queryKey });
   const actionMutation = useMutation({
     mutationFn: runAdminMemberAction,
-    onSuccess: (_, variables) => {
+    onSuccess: (result, variables) => {
       refresh();
       setInviteOpen(false);
       setManagedLearnerOpen(false);
       setAssignOpen(false);
-      if (variables.action === "invite") toast.success("Invitation et accès enregistrés.");
+      if (variables.action === "invite") {
+        toast.success(
+          result.emailSent
+            ? "Invitation envoyée et accès enregistré."
+            : "Accès ajouté au compte existant ; aucun nouvel email envoyé.",
+        );
+      }
+      if (variables.action === "resend_invite")
+        toast.success("Un nouveau lien d’invitation a été envoyé.");
       if (variables.action === "create_managed_learner")
         toast.success("Élève ajouté au compte du parent.");
       if (variables.action === "assign_learner") toast.success("Élève inscrit dans la classe.");
@@ -559,13 +565,15 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
                       <p className="text-sm text-primary-foreground/75">Actions rapides</p>
                       <h2 className="mt-2 text-xl font-semibold">Que souhaitez-vous faire ?</h2>
                       <div className="mt-6 grid gap-2">
-                        <Button
-                          variant="secondary"
-                          className="h-12 justify-start rounded-xl"
-                          onClick={() => setInviteOpen(true)}
-                        >
-                          <UserPlus className="size-4" /> Inviter un élève ou un membre
-                        </Button>
+                        {canInvite && (
+                          <Button
+                            variant="secondary"
+                            className="h-12 justify-start rounded-xl"
+                            onClick={() => setInviteOpen(true)}
+                          >
+                            <UserPlus className="size-4" /> Inviter un élève ou un membre
+                          </Button>
+                        )}
                         <Button
                           variant="secondary"
                           className="h-12 justify-start rounded-xl"
@@ -598,9 +606,11 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
                     <Button variant="outline" onClick={() => setManagedLearnerOpen(true)}>
                       <CircleUserRound className="size-4" /> Ajouter un enfant
                     </Button>
-                    <Button onClick={() => setInviteOpen(true)}>
-                      <UserPlus className="size-4" /> Inviter
-                    </Button>
+                    {canInvite && (
+                      <Button onClick={() => setInviteOpen(true)}>
+                        <UserPlus className="size-4" /> Inviter
+                      </Button>
+                    )}
                   </div>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-[1fr_220px]">
@@ -703,15 +713,41 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
                                 {invitation.email} · {roleLabels[invitation.role]}
                               </p>
                             </div>
-                            <Badge
-                              variant={invitation.status === "accepted" ? "secondary" : "outline"}
-                              className="w-fit"
-                            >
-                              {invitation.status === "accepted" ? (
-                                <CheckCircle2 className="mr-1 size-3" />
-                              ) : null}
-                              {invitation.status === "accepted" ? "Acceptée" : "En attente"}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant={invitation.status === "accepted" ? "secondary" : "outline"}
+                                className="w-fit"
+                              >
+                                {invitation.status === "accepted" ? (
+                                  <CheckCircle2 className="mr-1 size-3" />
+                                ) : null}
+                                {invitation.status === "accepted"
+                                  ? "Acceptée"
+                                  : invitation.status === "expired" ||
+                                      new Date(invitation.expires_at) < new Date()
+                                    ? "Expirée"
+                                    : "En attente"}
+                              </Badge>
+                              {canInvite &&
+                                (invitation.status === "invited" ||
+                                  invitation.status === "expired") && (
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={actionMutation.isPending}
+                                    onClick={() =>
+                                      actionMutation.mutate({
+                                        action: "resend_invite",
+                                        organizationId: organization.id,
+                                        invitationId: invitation.id,
+                                      })
+                                    }
+                                  >
+                                    Renvoyer
+                                  </Button>
+                                )}
+                            </div>
                           </div>
                         ))}
                       </div>

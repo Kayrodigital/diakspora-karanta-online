@@ -1,5 +1,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import {
+  canManageInvitations,
+  isInvitableRole,
+  pendingInvitationConflicts,
+} from "./invitation-policy.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,21 +22,48 @@ const managerRoles = [
   "support",
 ];
 const legacyManagerRoles = ["owner", "admin", "technician", "pedagogical_manager"];
-const invitibleRoles = [
-  "admin",
-  "technician",
-  "commercial",
-  "accounting",
-  "support",
-  "pedagogical_manager",
-  "teacher",
-  "class_manager",
-  "parent",
-  "learner",
-];
+function invitationPortal(role: string) {
+  if (role === "parent" || role === "learner") return "family";
+  if (role === "teacher" || role === "class_manager" || role === "pedagogical_manager")
+    return "teacher";
+  return "admin";
+}
+
+function inviteRedirect(role: string) {
+  const appUrl =
+    Deno.env.get("APP_URL")?.replace(/\/$/, "") || "https://diakspora-karanta-online.vercel.app";
+  return `${appUrl}/auth/complete?flow=invite&portal=${invitationPortal(role)}`;
+}
+
+async function sendInvitationViaBrevo(email: string, fullName: string, actionLink: string) {
+  const apiKey = required(Deno.env.get("BREVO_API_KEY"), "BREVO_API_KEY");
+  const sender = required(Deno.env.get("BREVO_SENDER_EMAIL"), "BREVO_SENDER_EMAIL");
+  if (sender.toLowerCase() !== "karanta@diakspora.com") {
+    throw new Error("L'expéditeur Brevo doit être karanta@diakspora.com.");
+  }
+  const escapedName = fullName
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+  const escapedLink = actionLink.replaceAll("&", "&amp;").replaceAll('"', "&quot;");
+  const sent = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: { accept: "application/json", "api-key": apiKey, "content-type": "application/json" },
+    body: JSON.stringify({
+      sender: { email: sender, name: "Diakspora Karanta" },
+      to: [{ email, name: fullName }],
+      subject: "Votre invitation à Diakspora Karanta",
+      htmlContent: `<p>Bonjour ${escapedName},</p><p>Votre équipe vous invite à rejoindre Diakspora Karanta.</p><p><a href="${escapedLink}">Activer mon accès</a></p><p>Si vous n'attendiez pas cette invitation, ignorez ce message.</p>`,
+      textContent: `Bonjour ${fullName},\n\nActivez votre accès Karanta : ${actionLink}\n\nSi vous n'attendiez pas cette invitation, ignorez ce message.`,
+      tags: ["karanta-auth", "invitation"],
+    }),
+  });
+  if (!sent.ok) throw new Error(`Envoi Brevo impossible (HTTP ${sent.status}).`);
+}
 
 type Payload = {
   action?: string;
+  invitationId?: string;
   organizationId?: string;
   email?: string;
   fullName?: string;
@@ -90,16 +122,18 @@ Deno.serve(async (request) => {
 
     const payload = (await request.json()) as Payload;
     const organizationId = required(payload.organizationId, "L'organisation");
-    const { data: manager, error: managerError } = await serviceClient
+    const { data: managerRows, error: managerError } = await serviceClient
       .from("organization_memberships")
       .select("role")
       .eq("organization_id", organizationId)
       .eq("user_id", authData.user.id)
       .eq("status", "active")
-      .in("role", managerRoles)
-      .maybeSingle();
+      .in("role", managerRoles);
 
     if (managerError) throw managerError;
+    const manager = managerRows?.sort(
+      (left, right) => managerRoles.indexOf(left.role) - managerRoles.indexOf(right.role),
+    )[0];
     if (!manager) return response({ error: "Droits administrateur insuffisants." }, 403);
     const requireRole = (roles: string[]) => {
       if (!roles.includes(manager.role)) throw new Error("Votre rôle ne permet pas cette action.");
@@ -201,26 +235,48 @@ Deno.serve(async (request) => {
     };
 
     if (payload.action === "invite") {
-      requireRole(legacyManagerRoles);
+      if (!canManageInvitations(manager.role))
+        throw new Error("Votre rôle ne permet pas cette action.");
       const email = required(payload.email, "L'adresse e-mail").toLowerCase();
       const fullName = required(payload.fullName, "Le nom");
       const role = required(payload.role, "Le rôle");
-      if (!invitibleRoles.includes(role)) throw new Error("Rôle non autorisé.");
+      if (!isInvitableRole(role)) throw new Error("Rôle non autorisé.");
       await ensureCohort(payload.cohortId);
 
-      const { data: usersPage, error: usersError } = await serviceClient.auth.admin.listUsers({
-        page: 1,
-        perPage: 1000,
-      });
-      if (usersError) throw usersError;
-      let invitedUser = usersPage.users.find((user) => user.email?.toLowerCase() === email);
+      // The database permits one pending invite per organization and email.
+      // Never replace its role silently: that could leave two active memberships.
+      const { data: pendingInvite, error: pendingError } = await serviceClient
+        .from("organization_invitations")
+        .select("id, role")
+        .eq("organization_id", organizationId)
+        .ilike("email", email)
+        .eq("status", "invited")
+        .maybeSingle();
+      if (pendingError) throw pendingError;
+      if (pendingInvitationConflicts(pendingInvite?.role ?? null, role)) {
+        throw new Error(
+          "Une invitation existe déjà pour un autre rôle. Traitez-la avant de changer le rôle.",
+        );
+      }
+
+      let invitedUser:
+        | Awaited<ReturnType<typeof serviceClient.auth.admin.listUsers>>["data"]["users"][number]
+        | undefined;
+      for (let page = 1; ; page++) {
+        const { data: usersPage, error: usersError } = await serviceClient.auth.admin.listUsers({
+          page,
+          perPage: 1000,
+        });
+        if (usersError) throw usersError;
+        invitedUser = usersPage.users.find((user) => user.email?.toLowerCase() === email);
+        if (invitedUser || usersPage.users.length < 1000) break;
+      }
       let emailSent = false;
 
       if (!invitedUser) {
-        const appUrl = Deno.env.get("APP_URL") ?? "https://diakspora-karanta-online.vercel.app";
         const { data, error } = await serviceClient.auth.admin.inviteUserByEmail(email, {
           data: { full_name: fullName },
-          redirectTo: `${appUrl}/auth?portal=${role === "learner" || role === "parent" ? "family" : "teacher"}`,
+          redirectTo: inviteRedirect(role),
         });
         if (error) throw error;
         invitedUser = data.user;
@@ -293,13 +349,10 @@ Deno.serve(async (request) => {
         if (payload.cohortId) await assignLearner(learnerId, payload.cohortId);
       }
 
-      const { data: pendingInvite } = await serviceClient
-        .from("organization_invitations")
-        .select("id")
-        .eq("organization_id", organizationId)
-        .ilike("email", email)
-        .eq("status", "invited")
-        .maybeSingle();
+      // An existing unconfirmed account needs a fresh invite link. Supabase's
+      // inviteUserByEmail is not reliable for re-inviting an existing user, so
+      // generate a single-use Auth link and send it through the existing Brevo
+      // transactional channel after all database writes have succeeded.
       const invitation = {
         organization_id: organizationId,
         user_id: invitedUser.id,
@@ -308,8 +361,9 @@ Deno.serve(async (request) => {
         role,
         cohort_id: payload.cohortId || null,
         invited_by: authData.user.id,
-        status: emailSent ? "invited" : "accepted",
-        accepted_at: emailSent ? null : new Date().toISOString(),
+        status: invitedUser.email_confirmed_at ? "accepted" : "invited",
+        accepted_at: invitedUser.email_confirmed_at ? new Date().toISOString() : null,
+        expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
         updated_at: new Date().toISOString(),
       };
       const { error: invitationError } = pendingInvite
@@ -320,6 +374,19 @@ Deno.serve(async (request) => {
         : await serviceClient.from("organization_invitations").insert(invitation);
       if (invitationError) throw invitationError;
 
+      if (!emailSent && !invitedUser.email_confirmed_at) {
+        const { data: link, error: linkError } = await serviceClient.auth.admin.generateLink({
+          type: "invite",
+          email,
+          options: { redirectTo: inviteRedirect(role) },
+        });
+        if (linkError || !link?.properties?.action_link) {
+          throw linkError || new Error("Impossible de régénérer le lien d'invitation.");
+        }
+        await sendInvitationViaBrevo(email, fullName, link.properties.action_link);
+        emailSent = true;
+      }
+
       await serviceClient.from("audit_logs").insert({
         organization_id: organizationId,
         actor_user_id: authData.user.id,
@@ -329,6 +396,71 @@ Deno.serve(async (request) => {
         metadata: { email, role, cohort_id: payload.cohortId ?? null, email_sent: emailSent },
       });
       return response({ ok: true, userId: invitedUser.id, profileId, learnerId, emailSent });
+    }
+
+    if (payload.action === "resend_invite") {
+      if (!canManageInvitations(manager.role))
+        throw new Error("Votre rôle ne permet pas cette action.");
+      const invitationId = required(payload.invitationId, "L'invitation");
+      const { data: invitation, error: invitationError } = await serviceClient
+        .from("organization_invitations")
+        .select("id, email, full_name, role, status, user_id")
+        .eq("id", invitationId)
+        .eq("organization_id", organizationId)
+        .in("status", ["invited", "expired"])
+        .maybeSingle();
+      if (invitationError) throw invitationError;
+      if (!invitation || !invitation.user_id) {
+        throw new Error("Cette invitation n'est plus en attente ou n'est pas liée à un compte.");
+      }
+      const { data: membership, error: membershipError } = await serviceClient
+        .from("organization_memberships")
+        .select("id")
+        .eq("organization_id", organizationId)
+        .eq("user_id", invitation.user_id)
+        .eq("role", invitation.role)
+        .eq("status", "active")
+        .maybeSingle();
+      if (membershipError) throw membershipError;
+      if (!membership) throw new Error("Le membership correspondant n'est plus actif.");
+      const { data: account, error: accountError } = await serviceClient.auth.admin.getUserById(
+        invitation.user_id,
+      );
+      if (
+        accountError ||
+        !account.user ||
+        account.user.email?.toLowerCase() !== invitation.email.toLowerCase()
+      ) {
+        throw new Error("Le compte Auth associé à cette invitation est absent ou incohérent.");
+      }
+      if (account.user.email_confirmed_at) {
+        throw new Error(
+          "Ce compte est déjà activé. Utilisez la connexion ou la récupération de mot de passe.",
+        );
+      }
+      const { data: link, error: linkError } = await serviceClient.auth.admin.generateLink({
+        type: "invite",
+        email: invitation.email,
+        options: { redirectTo: inviteRedirect(invitation.role) },
+      });
+      if (linkError || !link?.properties?.action_link) {
+        throw linkError || new Error("Impossible de régénérer le lien d'invitation.");
+      }
+      await sendInvitationViaBrevo(
+        invitation.email,
+        invitation.full_name,
+        link.properties.action_link,
+      );
+      const { error: updateError } = await serviceClient
+        .from("organization_invitations")
+        .update({
+          status: "invited",
+          expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", invitation.id);
+      if (updateError) throw updateError;
+      return response({ ok: true, emailSent: true });
     }
 
     if (payload.action === "create_managed_learner") {
