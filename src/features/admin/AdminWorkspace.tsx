@@ -417,14 +417,19 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
                 <CalendarClock className="size-4" /> Classes et planning
               </Link>
             </Button>
-            <Button onClick={() => setInviteOpen(true)} className="h-11 rounded-xl sm:w-auto">
-              <UserPlus className="size-4" /> Inviter une personne
-            </Button>
+            {canInvite && (
+              <Button onClick={() => setInviteOpen(true)} className="h-11 rounded-xl sm:w-auto">
+                <UserPlus className="size-4" /> Inviter une personne
+              </Button>
+            )}
           </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="karanta-admin-tabs">
-          <TabsList aria-label="Navigation administration" className="karanta-admin-nav mb-6 grid h-auto w-full grid-cols-4 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[1060px] sm:grid-cols-8">
+          <TabsList
+            aria-label="Navigation administration"
+            className="karanta-admin-nav mb-6 grid h-auto w-full grid-cols-4 gap-1 rounded-2xl bg-muted/70 p-1 sm:w-fit sm:min-w-[1060px] sm:grid-cols-8"
+          >
             <TabsTrigger value="overview" className="min-h-11 rounded-xl px-2">
               <LayoutDashboard className="size-4 sm:mr-2" />
               <span className="hidden sm:inline">Vue d’ensemble</span>
@@ -481,7 +486,10 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
           {data && (
             <>
               <TabsContent value="overview" className="mt-0 space-y-6">
-                <section className="karanta-admin-priorities rounded-xl px-5 py-4" aria-label="Priorités du jour">
+                <section
+                  className="karanta-admin-priorities rounded-xl px-5 py-4"
+                  aria-label="Priorités du jour"
+                >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
@@ -491,9 +499,15 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
                         À traiter aujourd'hui
                       </h2>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        {data.invitations.filter((item) => item.status === "invited").length} invitation(s) en attente
+                        {data.invitations.filter((item) => item.status === "invited").length}{" "}
+                        invitation(s) en attente
                         {" · "}
-                        {data.cohorts.filter((item) => item.status === "active" && !item.teacher_id).length} classe(s) sans professeur
+                        {
+                          data.cohorts.filter(
+                            (item) => item.status === "active" && !item.teacher_id,
+                          ).length
+                        }{" "}
+                        classe(s) sans professeur
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -1007,7 +1021,7 @@ export function AdminWorkspace({ organization, role, userId }: Props) {
         </Tabs>
       </main>
 
-      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+      <Dialog open={canInvite && inviteOpen} onOpenChange={setInviteOpen}>
         <DialogContent className="max-h-[92vh] overflow-y-auto rounded-2xl sm:max-w-lg">
           <form onSubmit={(event) => submitAction(event, "invite")}>
             <DialogHeader>

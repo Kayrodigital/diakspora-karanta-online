@@ -93,15 +93,22 @@ async function loadActiveMemberships(): Promise<{
   return { user, memberships };
 }
 
-export async function loadPortalAccess(portal: Portal): Promise<PortalAccess | null> {
+export async function loadPortalAccess(
+  portal: Portal,
+  familyRole?: "parent" | "learner",
+): Promise<PortalAccess | null> {
   const access = await loadActiveMemberships();
   if (!access) return null;
 
-  let membership = access.memberships.find((item) => canAccessPortalRole(portal, item.role));
+  let membership = access.memberships.find(
+    (item) =>
+      canAccessPortalRole(portal, item.role) &&
+      (portal !== "family" || !familyRole || item.role === familyRole),
+  );
 
   // M5 family compatibility: canonical family links can open the family portal even when
   // an old parent/learner membership role is absent. Staff portals remain membership-only.
-  if (!membership && portal === "family") {
+  if (!membership && portal === "family" && familyRole !== "learner") {
     const own = await getOwnProfile(access.user.id);
     if (own?.organization_id) {
       const profiles = await getAccessibleProfiles(own.organization_id);
@@ -156,6 +163,7 @@ export async function loadPortalAccess(portal: Portal): Promise<PortalAccess | n
 
 export async function resolvePostAuthDestination(
   requestedPortal?: Portal,
+  familyRole?: "parent" | "learner",
 ): Promise<PortalDestination | null> {
   const access = await loadActiveMemberships();
   if (!access) return null;
@@ -165,6 +173,10 @@ export async function resolvePostAuthDestination(
   // A requested portal is an explicit destination, not a preference.
   // In particular, never send an Admin or Professor login to /eleve.
   if (requestedPortal) {
+    if (requestedPortal === "family" && familyRole) {
+      const family = await loadPortalAccess("family", familyRole);
+      return family ? (familyRole === "parent" ? "/parent" : "/eleve") : null;
+    }
     const destination = requestedPortalDestination(requestedPortal, roles);
     if (destination) return destination;
 

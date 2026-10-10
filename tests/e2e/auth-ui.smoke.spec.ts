@@ -45,3 +45,44 @@ test("AUTH-UI-05 @smoke : l'écran Auth reste lisible sans défilement horizonta
   }));
   expect(widths.document).toBeLessThanOrEqual(widths.viewport + 1);
 });
+
+test("AUTH-UI-06 @smoke : les accès directs préservent le portail demandé", async ({ page }) => {
+  for (const [path, portal] of [
+    ["/admin", "admin"],
+    ["/professeur", "teacher"],
+    ["/eleve", "family"],
+  ] as const) {
+    await page.goto(path);
+    await expect(page).toHaveURL(new RegExp(`/auth\\?[^#]*portal=${portal}`));
+    await expect(page).not.toHaveURL(/\/eleve$/);
+  }
+});
+
+test("AUTH-UI-07 @smoke : un ancien lien de récupération sur / rejoint le formulaire et nettoie le fragment d'erreur", async ({
+  page,
+}) => {
+  await page.goto("/#error_code=otp_expired&type=recovery");
+  await expect(page).toHaveURL(/\/auth\/complete\?flow=recovery$/);
+  await expect(page.getByRole("alert")).toContainText("expiré ou invalide");
+  expect(new URL(page.url()).hash).toBe("");
+});
+
+test("LANDING-UI-01 @smoke : la direction éditoriale reste lisible et navigable", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: /Le savoir se reçoit/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Découvrir les cours/i })).toHaveAttribute(
+    "href",
+    "/apprendre",
+  );
+  await expect(page.getByRole("heading", { name: "Nos disciplines" })).toBeVisible();
+  await expect(
+    page.locator('img[src="/brands/diakspora/landing/karanta-hero.webp"]'),
+  ).toBeVisible();
+  const widths = await page.evaluate(() => ({
+    document: document.documentElement.scrollWidth,
+    viewport: window.innerWidth,
+  }));
+  expect(widths.document).toBeLessThanOrEqual(widths.viewport + 1);
+});

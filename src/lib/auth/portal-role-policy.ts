@@ -21,7 +21,6 @@ export function canAccessPortalRole(portal: PortalName, role: string): boolean {
   return PORTAL_ROLES[portal].has(role);
 }
 
-
 /**
  * Explicit portal navigation must NEVER fall back to another user's portal.
  * Keep the route guard as the final authority; this helper only chooses a path.
@@ -47,12 +46,8 @@ export function requestedPortalDestination(
       return null;
     case "planning":
       if (hasAdmin) return "/admin";
-      return roles.some((role) => canAccessPortalRole("planning", role))
-        ? "/professeur"
-        : null;
+      return roles.some((role) => canAccessPortalRole("planning", role)) ? "/professeur" : null;
     case "admissions":
-      return roles.some((role) => canAccessPortalRole("admissions", role))
-        ? "/inscriptions"
-        : null;
+      return roles.some((role) => canAccessPortalRole("admissions", role)) ? "/inscriptions" : null;
   }
 }

@@ -34,9 +34,17 @@ const portalContent: Record<Portal, { eyebrow: string; title: string; descriptio
 
 const googleOAuthEnabled = import.meta.env.VITE_GOOGLE_OAUTH_ENABLED === "true";
 
+type AuthSearch = {
+  portal: Portal;
+  target?: "parent" | "learner";
+  denied?: boolean;
+};
+
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): AuthSearch => ({
     portal: isPortal(search.portal) ? search.portal : ("family" as Portal),
+    target: search.target === "parent" || search.target === "learner" ? search.target : undefined,
+    denied: search.denied === true || search.denied === "true" || undefined,
   }),
   head: () => ({
     meta: [
@@ -49,7 +57,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { portal } = Route.useSearch();
+  const { portal, target, denied } = Route.useSearch();
   const content = portalContent[portal];
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [hydrated, setHydrated] = useState(false);
@@ -77,9 +85,11 @@ function AuthPage() {
       // one-time fragment and complete password setup before entering a portal.
       const hash = new URLSearchParams(window.location.hash.slice(1));
       const flow = hash.get("type");
-      if (flow === "recovery" || flow === "invite") {
+      if (flow === "recovery" || flow === "invite" || hash.has("access_token")) {
+        const callbackFlow = flow === "invite" ? "invite" : "recovery";
+        const targetQuery = target ? `&target=${target}` : "";
         window.location.replace(
-          `/auth/complete?flow=${flow}&portal=${portal}${window.location.hash}`,
+          `/auth/complete?flow=${callbackFlow}&portal=${portal}${targetQuery}${window.location.hash}`,
         );
         return;
       }
@@ -87,10 +97,18 @@ function AuthPage() {
       if (!active) return;
       setAuthenticated(Boolean(data.session));
       if (!data.session) return;
-      const destination = await resolvePostAuthDestination(portal);
+      if (denied) {
+        setError(
+          "Ce compte ne dispose pas de l’accès à cet espace. Changez de compte ou contactez votre administrateur.",
+        );
+        return;
+      }
+      const destination = await resolvePostAuthDestination(portal, target);
       if (destination && active) await navigate({ to: destination, replace: true });
       else if (active && portal !== "family") {
-        setError("Ce compte ne dispose pas de l’accès à cet espace. Vérifiez le rôle attribué par votre administrateur ou changez de compte.");
+        setError(
+          "Ce compte ne dispose pas de l’accès à cet espace. Vérifiez le rôle attribué par votre administrateur ou changez de compte.",
+        );
       }
     }
 
@@ -98,7 +116,7 @@ function AuthPage() {
     return () => {
       active = false;
     };
-  }, [navigate, portal]);
+  }, [navigate, portal, target, denied]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -108,8 +126,9 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "forgot") {
+        const targetQuery = target ? `&target=${target}` : "";
         const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-          redirectTo: `${window.location.origin}/auth/complete?flow=recovery&portal=${portal}`,
+          redirectTo: `${window.location.origin}/auth/complete?flow=recovery&portal=${portal}${targetQuery}`,
         });
         if (error) throw error;
         setNotice(
@@ -140,7 +159,7 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         setAuthenticated(true);
-        const destination = await resolvePostAuthDestination(portal);
+        const destination = await resolvePostAuthDestination(portal, target);
         if (destination) await navigate({ to: destination, replace: true });
         else {
           setError(
@@ -186,7 +205,9 @@ function AuthPage() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth?portal=${portal}` },
+      options: {
+        redirectTo: `${window.location.origin}/auth?portal=${portal}${target ? `&target=${target}` : ""}`,
+      },
     });
     if (error) {
       setError(error.message);

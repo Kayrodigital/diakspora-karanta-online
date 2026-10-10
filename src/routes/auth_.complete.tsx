@@ -1,27 +1,35 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { isPortal, resolvePostAuthDestination, type Portal } from "@/lib/auth/portal-access";
+import { isPortal, resolvePostAuthDestination } from "@/lib/auth/portal-access";
 
 type Flow = "invite" | "recovery";
+type CompleteSearch = {
+  flow: Flow;
+  portal?: "family" | "teacher" | "admin" | "planning" | "admissions";
+  target?: "parent" | "learner";
+};
 
 export const Route = createFileRoute("/auth_/complete")({
   ssr: false,
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): CompleteSearch => ({
     flow: search.flow === "invite" ? ("invite" as Flow) : ("recovery" as Flow),
-    portal: isPortal(search.portal) ? search.portal : ("family" as Portal),
+    portal: isPortal(search.portal) ? search.portal : undefined,
+    target: search.target === "parent" || search.target === "learner" ? search.target : undefined,
   }),
   head: () => ({ meta: [{ title: "Activer mon accès — Diakspora Karanta" }] }),
   component: CompleteAuthPage,
 });
 
 function CompleteAuthPage() {
-  const { flow, portal } = Route.useSearch();
+  const { flow, portal, target } = Route.useSearch();
   const navigate = useNavigate();
   const [linkPresent] = useState(() => {
     const fragment = new URLSearchParams(window.location.hash.slice(1));
     const query = new URLSearchParams(window.location.search);
-    return fragment.get("type") === flow || query.has("code");
+    if (fragment.has("error") || fragment.has("error_code") || query.has("error")) return false;
+    const linkType = fragment.get("type");
+    return linkType === flow || (!linkType && fragment.has("access_token")) || query.has("code");
   });
   const [checking, setChecking] = useState(true);
   const [ready, setReady] = useState(false);
@@ -32,29 +40,52 @@ function CompleteAuthPage() {
 
   useEffect(() => {
     if (!linkPresent) {
+      if (window.location.hash || window.location.search.includes("error")) {
+        const clean = new URL(window.location.href);
+        clean.hash = "";
+        clean.searchParams.delete("error");
+        clean.searchParams.delete("error_code");
+        clean.searchParams.delete("error_description");
+        window.history.replaceState(window.history.state, "", clean.pathname + clean.search);
+      }
       setChecking(false);
       return;
     }
     let active = true;
-    const check = async () => {
-      const { data, error: sessionError } = await supabase.auth.getSession();
-      if (!active) return;
-      setReady(Boolean(data.session) && !sessionError);
-      setChecking(false);
+    const cleanUrl = () => {
+      const clean = new URL(window.location.href);
+      clean.hash = "";
+      clean.searchParams.delete("code");
+      clean.searchParams.delete("error");
+      clean.searchParams.delete("error_code");
+      clean.searchParams.delete("error_description");
+      window.history.replaceState(window.history.state, "", clean.pathname + clean.search);
     };
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       if (!active) return;
-      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
+      if (
+        (flow === "recovery" && event === "PASSWORD_RECOVERY") ||
+        (flow === "invite" && event === "SIGNED_IN")
+      ) {
         setReady(Boolean(session));
         setChecking(false);
+        cleanUrl();
       }
     });
-    void check();
+    // Initialize URL detection only after subscribing. An existing unrelated
+    // session must never make an expired one-time link look valid.
+    void supabase.auth.getSession();
+    const timeout = window.setTimeout(() => {
+      if (!active) return;
+      setChecking(false);
+      cleanUrl();
+    }, 8000);
     return () => {
       active = false;
+      window.clearTimeout(timeout);
       listener.subscription.unsubscribe();
     };
-  }, [linkPresent]);
+  }, [flow, linkPresent]);
 
   async function complete(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -74,7 +105,7 @@ function CompleteAuthPage() {
         throw new Error("Ce lien n’est plus valide. Demandez un nouveau lien.");
       const { error: updateError } = await supabase.auth.updateUser({ password });
       if (updateError) throw updateError;
-      const destination = await resolvePostAuthDestination(portal);
+      const destination = await resolvePostAuthDestination(portal, target);
       if (!destination) {
         throw new Error(
           "Mot de passe enregistré, mais aucun accès actif n’est rattaché à ce compte. Contactez l’administration.",
@@ -116,7 +147,7 @@ function CompleteAuthPage() {
             </p>
             <Link
               to="/auth"
-              search={{ portal }}
+              search={{ portal: portal ?? "family", target }}
               className="mt-4 inline-block font-semibold text-primary underline underline-offset-4"
             >
               Retour à la connexion
