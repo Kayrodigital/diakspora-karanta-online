@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "test:m9": "node --experimental-strip-types --test src/lib/auth/portal-role-policy.test.mjs supabase/functions/admin-members/invitation-policy.test.mjs",
     "format": "prettier --write ."
   },
   "dependencies": {

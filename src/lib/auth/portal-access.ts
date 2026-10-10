@@ -7,6 +7,7 @@ import {
   resolveActiveProfile,
   type AccessibleProfile,
 } from "@/lib/identity/profile-identity";
+import { canAccessPortalRole, requestedPortalDestination } from "./portal-role-policy";
 
 export const ORGANIZATION_ROLES = [
   "owner",
@@ -53,23 +54,6 @@ export type PortalAccess = {
   profileIdentityV2: boolean;
 };
 
-const PORTAL_ROLES: Record<Portal, ReadonlySet<OrganizationRole>> = {
-  family: new Set(["parent", "learner"]),
-  teacher: new Set(["pedagogical_manager", "teacher", "class_manager"]),
-  admin: new Set(["owner", "admin", "technician"]),
-  planning: new Set(["owner", "admin", "pedagogical_manager", "teacher", "class_manager"]),
-  admissions: new Set([
-    "owner",
-    "admin",
-    "commercial",
-    "class_manager",
-    "pedagogical_manager",
-    "accounting",
-    "support",
-    "technician",
-  ]),
-};
-
 function isOrganizationRole(value: string): value is OrganizationRole {
   return (ORGANIZATION_ROLES as readonly string[]).includes(value);
 }
@@ -113,7 +97,7 @@ export async function loadPortalAccess(portal: Portal): Promise<PortalAccess | n
   const access = await loadActiveMemberships();
   if (!access) return null;
 
-  let membership = access.memberships.find((item) => PORTAL_ROLES[portal].has(item.role));
+  let membership = access.memberships.find((item) => canAccessPortalRole(portal, item.role));
 
   // M5 family compatibility: canonical family links can open the family portal even when
   // an old parent/learner membership role is absent. Staff portals remain membership-only.
@@ -176,34 +160,32 @@ export async function resolvePostAuthDestination(
   const access = await loadActiveMemberships();
   if (!access) return null;
 
-  const portalOrder: Portal[] = requestedPortal
-    ? [
-        requestedPortal,
-        ...(["family", "teacher", "admissions", "admin"] as Portal[]).filter(
-          (item) => item !== requestedPortal,
-        ),
-      ]
-    : ["family", "teacher", "admissions", "admin"];
+  const roles = access.memberships.map((membership) => membership.role);
 
-  for (const portal of portalOrder) {
-    const membership = access.memberships.find((item) => PORTAL_ROLES[portal].has(item.role));
-    if (!membership) continue;
+  // A requested portal is an explicit destination, not a preference.
+  // In particular, never send an Admin or Professor login to /eleve.
+  if (requestedPortal) {
+    const destination = requestedPortalDestination(requestedPortal, roles);
+    if (destination) return destination;
 
-    if (portal === "admin") return "/admin";
-    if (portal === "admissions") return "/inscriptions";
-    if (portal === "planning") {
-      return ["owner", "admin"].includes(membership.role) ? "/admin" : "/professeur";
+    // Keep the existing family-link compatibility for parents without
+    // a legacy membership, but do not apply it to staff portals.
+    if (requestedPortal === "family") {
+      const family = await loadPortalAccess("family");
+      return family ? (family.membership.role === "parent" ? "/parent" : "/eleve") : null;
     }
-    if (portal === "teacher") return "/professeur";
-    return membership.role === "parent" ? "/parent" : "/eleve";
+
+    return null;
   }
 
-  const canonicalFamily = await loadPortalAccess("family");
-  if (canonicalFamily) {
-    return canonicalFamily.membership.role === "parent" ? "/parent" : "/eleve";
+  // With no portal requested, choose staff contexts before learner.
+  for (const portal of ["admin", "teacher", "admissions", "family"] as Portal[]) {
+    const destination = requestedPortalDestination(portal, roles);
+    if (destination) return destination;
   }
 
-  return null;
+  const family = await loadPortalAccess("family");
+  return family ? (family.membership.role === "parent" ? "/parent" : "/eleve") : null;
 }
 
 export function isPortal(value: unknown): value is Portal {

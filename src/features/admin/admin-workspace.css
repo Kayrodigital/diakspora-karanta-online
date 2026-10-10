@@ -1,0 +1,87 @@
+/* Karanta Équipe — refonte Administration V1
+   Style local : les portails Élève/Parent/Professeur restent inchangés. */
+.karanta-admin-shell {
+  --admin-green: #103f30;
+  --admin-green-deep: #092f27;
+  --admin-ivory: #f8f5ed;
+  --admin-gold: #c59a54;
+  background: var(--admin-ivory);
+  min-height: 100vh;
+}
+.karanta-admin-shell > header {
+  background: var(--admin-green-deep);
+  color: #fffdf6;
+  border-color: rgb(197 154 84 / .24);
+}
+.karanta-admin-shell > header .text-muted-foreground { color: #d9e3dc; }
+.karanta-admin-shell > header button { color: inherit; }
+.karanta-admin-main { max-width: 1580px; }
+.karanta-admin-title {
+  color: var(--admin-green);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 3vw, 3rem);
+  letter-spacing: -.025em;
+  line-height: 1.14;
+}
+.karanta-admin-tabs { min-width: 0; }
+.karanta-admin-nav { scrollbar-width: thin; }
+.karanta-admin-priorities {
+  border: 1px solid #ded4bc;
+  border-left: 4px solid var(--admin-gold);
+  background: #fffcf6;
+}
+.karanta-admin-stat { border-color: #e0dacb; box-shadow: none; background: #fffcf6; }
+.karanta-admin-quick { background: var(--admin-green); box-shadow: none; }
+.karanta-admin-shell :is(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid var(--admin-gold);
+  outline-offset: 2px;
+}
+@media (min-width: 1024px) {
+  .karanta-admin-tabs {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    align-items: start;
+    column-gap: clamp(20px, 2.5vw, 40px);
+  }
+  .karanta-admin-nav {
+    grid-column: 1;
+    grid-row: 1 / span 15;
+    display: flex !important;
+    flex-direction: column;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    position: sticky;
+    top: 100px;
+    gap: 5px;
+    padding: 18px 10px !important;
+    background: var(--admin-green) !important;
+    border: 1px solid rgb(197 154 84 / .28);
+    border-radius: 14px !important;
+  }
+  .karanta-admin-nav [role="tab"] {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 47px;
+    padding: 0 14px;
+    color: #e6eee7;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .karanta-admin-nav [role="tab"]:hover { background: rgb(255 255 255 / .11); }
+  .karanta-admin-nav [role="tab"][data-state="active"] {
+    background: #f8f5ed;
+    color: var(--admin-green-deep);
+    box-shadow: none;
+  }
+  .karanta-admin-tabs > :not(.karanta-admin-nav) {
+    grid-column: 2;
+    min-width: 0;
+  }
+}
+@media (max-width: 1023px) {
+  .karanta-admin-nav { overflow-x: auto; justify-content: flex-start; }
+  .karanta-admin-nav [role="tab"] { flex-shrink: 0; }
+}
