@@ -35,6 +35,7 @@ import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedProgressionRouteImport } from './routes/_authenticated/progression'
 import { Route as ApprendreIndexRouteImport } from './routes/apprendre/index'
 import { Route as ApprendreSubjectSlugRouteImport } from './routes/apprendre/$subjectSlug'
+import { Route as AuthCompleteRouteImport } from './routes/auth_.complete'
 import { Route as CoursCourseIdRouteImport } from './routes/cours/$courseId'
 import { Route as MajlissIndexRouteImport } from './routes/majliss/index'
 import { Route as MajlissVillageSlugRouteImport } from './routes/majliss/$villageSlug'
@@ -179,6 +180,11 @@ const ApprendreSubjectSlugRoute = ApprendreSubjectSlugRouteImport.update({
   path: '/$subjectSlug',
   getParentRoute: () => ApprendreRoute,
 } as any)
+const AuthCompleteRoute = AuthCompleteRouteImport.update({
+  id: '/auth_/complete',
+  path: '/auth/complete',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CoursCourseIdRoute = CoursCourseIdRouteImport.update({
   id: '/cours/$courseId',
   path: '/cours/$courseId',
@@ -265,6 +271,7 @@ export interface FileRoutesByFullPath {
   '/messages': typeof AuthenticatedMessagesRoute
   '/progression': typeof AuthenticatedProgressionRoute
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
+  '/auth/complete': typeof AuthCompleteRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
   '/majliss/$villageSlug': typeof MajlissVillageSlugRoute
   '/staff/depot': typeof StaffDepotRoute
@@ -301,6 +308,7 @@ export interface FileRoutesByTo {
   '/messages': typeof AuthenticatedMessagesRoute
   '/progression': typeof AuthenticatedProgressionRoute
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
+  '/auth/complete': typeof AuthCompleteRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
   '/majliss/$villageSlug': typeof MajlissVillageSlugRoute
   '/staff/depot': typeof StaffDepotRoute
@@ -341,6 +349,7 @@ export interface FileRoutesById {
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/progression': typeof AuthenticatedProgressionRoute
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
+  '/auth_/complete': typeof AuthCompleteRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
   '/majliss/$villageSlug': typeof MajlissVillageSlugRoute
   '/staff/depot': typeof StaffDepotRoute
@@ -381,6 +390,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/progression'
     | '/apprendre/$subjectSlug'
+    | '/auth/complete'
     | '/cours/$courseId'
     | '/majliss/$villageSlug'
     | '/staff/depot'
@@ -417,6 +427,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/progression'
     | '/apprendre/$subjectSlug'
+    | '/auth/complete'
     | '/cours/$courseId'
     | '/majliss/$villageSlug'
     | '/staff/depot'
@@ -456,6 +467,7 @@ export interface FileRouteTypes {
     | '/_authenticated/messages'
     | '/_authenticated/progression'
     | '/apprendre/$subjectSlug'
+    | '/auth_/complete'
     | '/cours/$courseId'
     | '/majliss/$villageSlug'
     | '/staff/depot'
@@ -489,6 +501,7 @@ export interface RootRouteChildren {
   RattrapageRoute: typeof RattrapageRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  AuthCompleteRoute: typeof AuthCompleteRoute
   CoursCourseIdRoute: typeof CoursCourseIdRoute
   StaffDepotRoute: typeof StaffDepotRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -678,6 +691,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApprendreSubjectSlugRouteImport
       parentRoute: typeof ApprendreRoute
     }
+    '/auth_/complete': {
+      id: '/auth_/complete'
+      path: '/auth/complete'
+      fullPath: '/auth/complete'
+      preLoaderRoute: typeof AuthCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cours/$courseId': {
       id: '/cours/$courseId'
       path: '/cours/$courseId'
@@ -838,6 +858,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  AuthCompleteRoute: AuthCompleteRoute,
   CoursCourseIdRoute: CoursCourseIdRoute,
   StaffDepotRoute: StaffDepotRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,

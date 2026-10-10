@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect } from "react";
 import {
   ArrowRight,
   BookMarked,
@@ -109,71 +110,130 @@ const faqs = [
   },
 ] as const;
 
+const featuredPaths = [
+  { title: "Coran & Tajwid", to: "/apprendre", dark: true },
+  { title: "Jurisprudence", to: "/apprendre", dark: false },
+  { title: "Langue arabe", to: "/apprendre", dark: false },
+  { title: "Croyance & Tawhid", to: "/apprendre", dark: true },
+  { title: "Majliss", to: "/majliss", dark: true },
+] as const;
+
 function Home() {
+  useEffect(() => {
+    const fragment = new URLSearchParams(window.location.hash.slice(1));
+    const query = new URLSearchParams(window.location.search);
+    const callbackType = fragment.get("type");
+    const hasCallback =
+      callbackType === "recovery" ||
+      callbackType === "invite" ||
+      fragment.has("access_token") ||
+      fragment.has("error_code") ||
+      query.has("code");
+    if (!hasCallback) return;
+    const flow = callbackType === "invite" ? "invite" : "recovery";
+    window.location.replace(
+      `/auth/complete?flow=${flow}${query.has("code") ? `&code=${encodeURIComponent(query.get("code") ?? "")}` : ""}${window.location.hash}`,
+    );
+  }, []);
+
   return (
-    <div className="min-h-screen overflow-hidden bg-[#FBF7ED] text-[#242923]">
+    <div className="min-h-screen overflow-hidden bg-[#F8F5ED] text-[#213D34]">
       <PublicHeader />
 
       <main>
-        <section className="relative isolate border-b border-[#D8C8A8]/60 bg-[#173F2B] text-[#FFF9EC]">
-          <div
-            aria-hidden
-            className="absolute inset-0 -z-20 opacity-20"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 15% 20%, #E5B95C 0, transparent 28%), radial-gradient(circle at 80% 80%, #C46A2E 0, transparent 32%)",
-            }}
-          />
-          <div className="mx-auto grid min-h-[720px] max-w-7xl items-center gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[1.04fr_0.96fr] lg:px-12 lg:py-20">
-            <div className="relative z-10 max-w-2xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#E5B95C]/50 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#F4D58D]">
-                <Flame className="size-4" /> Académie en ligne
+        <section className="bg-[#103F30] text-white" aria-labelledby="karanta-hero-title">
+          <div className="mx-auto grid max-w-[1440px] lg:h-[535px] lg:grid-cols-[52%_48%]">
+            <div className="relative isolate px-[22px] pb-7 pt-9 sm:px-10 lg:px-[60px] lg:py-11">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute right-5 top-0 -z-10 flex flex-col gap-1 opacity-35 lg:right-auto lg:left-0 lg:grid lg:grid-cols-2"
+              >
+                {Array.from({ length: 12 }, (_, index) => (
+                  <span key={index} className={index > 3 ? "hidden lg:block" : "block"}>
+                    <img
+                      src="/brands/diakspora/landing/karanta-ornament.svg"
+                      alt=""
+                      width="97"
+                      height="113"
+                      className="origin-top-left scale-[0.6]"
+                    />
+                  </span>
+                ))}
               </div>
-              <h1 className="font-serif text-5xl font-semibold leading-[0.98] tracking-[-0.03em] sm:text-6xl lg:text-7xl">
-                Le savoir se reçoit, se pratique et se transmet.
-              </h1>
-              <p className="mt-7 max-w-xl text-base leading-7 text-[#FFF9EC]/78 sm:text-lg sm:leading-8">
-                Diakspora Karanta réunit cours d’arabe et de sciences islamiques, enseignements en
-                direct, vidéos, exercices et suivi pédagogique dans un espace simple pour toute la
-                famille.
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C59A54]">
+                L’héritage vivant
               </p>
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <h1
+                id="karanta-hero-title"
+                className="mt-8 max-w-[670px] text-[clamp(2rem,4vw,3.15rem)] font-bold leading-[1.14] tracking-tight"
+              >
+                Le savoir se reçoit,
+                <br />
+                se pratique et <span className="text-[#C59A54]">se transmet.</span>
+              </h1>
+              <p className="mt-6 max-w-[35rem] text-sm leading-7 text-white/90 sm:text-base">
+                Une école numérique enracinée dans la tradition, pensée pour les familles
+                d’aujourd’hui.
+              </p>
+              <div className="mt-7 flex flex-wrap items-center gap-5">
                 <Link
-                  to="/parcours"
-                  className="inline-flex min-h-13 items-center justify-center gap-2 rounded-full bg-[#E5B95C] px-7 font-bold text-[#173F2B] shadow-[0_14px_35px_rgba(229,185,92,0.24)] transition hover:-translate-y-0.5 hover:bg-[#F0C86D]"
+                  to="/apprendre"
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[9px] bg-[#C59A54] px-6 text-sm font-bold text-[#0A3026] transition hover:bg-[#E4C17F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:w-auto"
                 >
-                  Trouver mon cours <ArrowRight className="size-4" />
+                  Découvrir les cours <ArrowRight className="size-4" aria-hidden />
                 </Link>
                 <Link
-                  to="/auth"
-                  search={{ portal: "family" }}
-                  className="inline-flex min-h-13 items-center justify-center rounded-full border border-white/35 px-7 font-semibold text-white transition hover:bg-white/10"
+                  to="/majliss"
+                  className="hidden min-h-12 items-center text-sm font-semibold text-white underline-offset-4 hover:underline sm:inline-flex"
                 >
-                  Accéder à mon espace
+                  Écouter Majliss →
                 </Link>
-              </div>
-              <div className="mt-10 grid max-w-xl grid-cols-3 gap-3 border-t border-white/15 pt-6 text-sm text-white/75">
-                <span>Cours structurés</span>
-                <span>Suivi personnalisé</span>
-                <span>Mobile & ordinateur</span>
               </div>
             </div>
+            <div className="px-[22px] pb-6 sm:px-10 lg:relative lg:min-h-0 lg:p-0">
+              <img
+                src="/brands/diakspora/landing/karanta-hero.webp"
+                alt="Un enseignant dans un cercle d’apprentissage avec des enfants"
+                className="aspect-[346/175] w-full object-cover object-center lg:absolute lg:inset-0 lg:aspect-auto lg:h-full lg:object-top"
+                fetchPriority="high"
+              />
+            </div>
+          </div>
+        </section>
 
-            <div className="relative mx-auto w-full max-w-[610px] lg:ml-auto">
-              <div className="absolute -left-6 top-12 hidden h-28 w-28 rounded-full border border-[#E5B95C]/45 lg:block" />
-              <div className="relative aspect-[1/1.04] overflow-hidden rounded-[44%_56%_46%_54%/38%_40%_60%_62%] border border-[#F4D58D]/40 shadow-[0_35px_80px_rgba(7,24,15,0.55)]">
-                <img
-                  src="/brands/diakspora/landing/karanta-hero.webp"
-                  alt="Un enseignant transmettant le savoir au sein d’un cercle d’apprentissage"
-                  className="h-full w-full object-cover"
-                  fetchPriority="high"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#173F2B]/45 via-transparent to-transparent" />
-              </div>
-              <div className="absolute -bottom-5 left-4 max-w-[250px] rounded-2xl border border-white/35 bg-[#FFF9EC]/95 p-4 text-[#242923] shadow-xl backdrop-blur sm:left-8">
-                <p className="font-serif text-lg font-semibold">Karanta</p>
-                <p className="mt-1 text-xs leading-5 text-[#5E625C]">Cercle d’apprentissage.</p>
-              </div>
+        <section
+          className="bg-[#F8F5ED] px-[22px] py-10 sm:px-10 lg:py-16"
+          aria-labelledby="featured-paths-title"
+        >
+          <div className="mx-auto max-w-[1320px]">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#9A7439]">
+              Explorer Karanta
+            </p>
+            <h2
+              id="featured-paths-title"
+              className="mt-2 text-2xl font-bold text-[#103F30] sm:text-4xl"
+            >
+              Nos disciplines
+            </h2>
+            <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-5 lg:gap-5">
+              {featuredPaths.map(({ title, to, dark }) => (
+                <Link
+                  key={title}
+                  to={to}
+                  className={`group flex min-h-32 flex-col justify-between p-4 transition hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#103F30] lg:min-h-56 ${dark ? "bg-[#103F30] text-white" : "bg-[#EDE5D4] text-[#103F30]"}`}
+                >
+                  <span aria-hidden className="text-3xl font-light text-[#C59A54]">
+                    ✧
+                  </span>
+                  <span className="flex items-end justify-between gap-2 text-sm font-bold sm:text-lg">
+                    {title}
+                    <ArrowRight
+                      className="hidden size-4 shrink-0 transition group-hover:translate-x-1 lg:block"
+                      aria-hidden
+                    />
+                  </span>
+                </Link>
+              ))}
             </div>
           </div>
         </section>
@@ -499,78 +559,76 @@ function Home() {
 
 function PublicHeader() {
   return (
-    <header className="relative z-50 border-b border-[#D8C8A8]/70 bg-[#FFFDF7]/95 backdrop-blur">
-      <div className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-5 px-5 sm:px-8 lg:px-12">
+    <header className="relative z-50 border-b border-white/20 bg-[#0A3026] text-white">
+      <div className="mx-auto flex min-h-[64px] max-w-[1440px] items-center justify-between gap-5 px-[22px] sm:px-10 lg:px-[60px]">
         <Link to="/" className="flex items-center gap-3" aria-label="Accueil Diakspora Karanta">
-          <img src="/brands/diakspora/logo.webp" alt="" className="size-11 object-contain" />
-          <span className="leading-none">
-            <span className="block font-serif text-xl font-semibold text-[#173F2B]">Diakspora</span>
-            <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.2em] text-[#B56E26]">
-              Karanta
-            </span>
+          <span
+            aria-hidden
+            className="grid size-9 place-items-center border border-[#C59A54] text-lg text-[#C59A54]"
+          >
+            ✧
+          </span>
+          <span className="font-serif text-lg font-bold tracking-wide text-[#F8F5ED]">
+            DIAKSPORA
           </span>
         </Link>
         <nav
-          className="hidden items-center gap-7 text-sm font-semibold text-[#4F554E] lg:flex"
+          className="hidden items-center gap-7 text-sm font-semibold text-[#F8F5ED]/85 lg:flex"
           aria-label="Navigation principale"
         >
-          <Link to="/" className="transition hover:text-[#B56E26]">
+          <Link to="/" className="transition hover:text-[#C59A54]">
             Accueil
           </Link>
-          <Link to="/apprendre" className="transition hover:text-[#B56E26]">
+          <Link to="/apprendre" className="transition hover:text-[#C59A54]">
             Apprendre
           </Link>
-          <Link to="/majliss" className="transition hover:text-[#B56E26]">
+          <Link to="/majliss" className="transition hover:text-[#C59A54]">
             Majliss
           </Link>
-          <Link to="/boutique" className="transition hover:text-[#B56E26]">
+          <Link to="/boutique" className="transition hover:text-[#C59A54]">
             Boutique
           </Link>
           <Link
             to="/auth"
             search={{ portal: "family" }}
-            className="transition hover:text-[#B56E26]"
+            className="transition hover:text-[#C59A54]"
           >
             Mon espace
           </Link>
         </nav>
         <div className="hidden items-center gap-3 sm:flex">
           <Link
-            to="/auth"
-            search={{ portal: "family" }}
-            className="px-3 py-2 text-sm font-semibold text-[#173F2B]"
-          >
-            Se connecter
-          </Link>
-          <Link
             to="/parcours"
-            className="inline-flex min-h-11 items-center rounded-full bg-[#173F2B] px-5 text-sm font-bold text-white"
+            className="inline-flex min-h-11 items-center rounded-[8px] bg-[#C59A54] px-5 text-sm font-bold text-[#0A3026] transition hover:bg-[#E4C17F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
-            Trouver mon cours
+            Explorer
           </Link>
         </div>
         <details className="group relative sm:hidden">
-          <summary className="grid size-11 cursor-pointer list-none place-items-center rounded-full border border-[#D8C8A8] text-[#173F2B]">
+          <summary className="grid size-11 cursor-pointer list-none place-items-center rounded-[8px] border border-white/40 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
             <Menu className="size-5" />
             <span className="sr-only">Ouvrir le menu</span>
           </summary>
-          <nav className="absolute right-0 top-14 grid w-64 gap-1 rounded-2xl border border-[#D8C8A8] bg-[#FFFDF7] p-3 text-sm font-semibold shadow-2xl">
-            <Link to="/" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
+          <nav
+            aria-label="Navigation mobile"
+            className="absolute right-0 top-14 grid w-64 gap-1 rounded-xl border border-[#D8C8A8] bg-[#FFFCF6] p-3 text-sm font-semibold text-[#103F30] shadow-2xl"
+          >
+            <Link to="/" className="rounded-lg px-4 py-3 hover:bg-[#EFE7D6]">
               Accueil
             </Link>
-            <Link to="/apprendre" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
+            <Link to="/apprendre" className="rounded-lg px-4 py-3 hover:bg-[#EFE7D6]">
               Apprendre
             </Link>
-            <Link to="/majliss" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
+            <Link to="/majliss" className="rounded-lg px-4 py-3 hover:bg-[#EFE7D6]">
               Majliss
             </Link>
-            <Link to="/boutique" className="rounded-xl px-4 py-3 hover:bg-[#F3E8D3]">
+            <Link to="/boutique" className="rounded-lg px-4 py-3 hover:bg-[#EFE7D6]">
               Boutique
             </Link>
             <Link
               to="/auth"
               search={{ portal: "family" }}
-              className="mt-1 rounded-xl bg-[#173F2B] px-4 py-3 text-center text-white"
+              className="mt-1 rounded-lg bg-[#103F30] px-4 py-3 text-center text-white"
             >
               Mon espace
             </Link>

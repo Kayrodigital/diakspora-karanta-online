@@ -11,9 +11,16 @@ import { LearningProgressOverview } from "@/features/learning/LearningProgressOv
 export const Route = createFileRoute("/parent")({
   ssr: false,
   beforeLoad: async () => {
-    const access = await loadPortalAccess("family");
-    if (!access) throw redirect({ to: "/auth", search: { portal: "family" } });
-    if (access.membership.role !== "parent") throw redirect({ to: "/eleve" });
+    const access = await loadPortalAccess("family", "parent");
+    if (!access) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      throw redirect({
+        to: "/auth",
+        search: { portal: "family", target: "parent", denied: Boolean(user) },
+      });
+    }
     return access;
   },
   head: () => ({

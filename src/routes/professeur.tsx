@@ -2,6 +2,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { TeacherWorkspace } from "@/features/professeur/TeacherWorkspace";
 import { loadPortalAccess } from "@/lib/auth/portal-access";
 import { organizationTheme } from "@/lib/organization-theme";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/professeur")({
   ssr: false,
@@ -12,7 +13,10 @@ export const Route = createFileRoute("/professeur")({
     const adminPreview = await loadPortalAccess("admin");
     if (adminPreview) return adminPreview;
 
-    throw redirect({ to: "/auth", search: { portal: "teacher" } });
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    throw redirect({ to: "/auth", search: { portal: "teacher", denied: Boolean(user) } });
   },
   head: () => ({
     meta: [

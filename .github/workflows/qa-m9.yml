@@ -1,0 +1,38 @@
+name: QA M9 non destructive
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qa-m9-pr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run lint
+      - run: npm run test:types
+      - run: npm run test:unit
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e:smoke
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: karanta-m9-qa-public
+          path: |
+            docs/qa/karanta-test-report.md
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
