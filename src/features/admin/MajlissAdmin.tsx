@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { majlissQueryKey, useMajlissCatalog } from "@/features/majliss/MajlissUi";
+import { MajlissAudioUploader } from "@/features/majliss/MajlissAudioUploader";
 import {
   createMajlissItem,
   deleteMajlissDraft,
@@ -47,6 +48,10 @@ export function MajlissAdmin({ organizationId, userId }: Props) {
   const queryClient = useQueryClient();
   const [formKind, setFormKind] = useState<MajlissAdminKind>("village");
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [recordingSearch, setRecordingSearch] = useState("");
+  const [villageFilter, setVillageFilter] = useState("");
+  const [teacherFilter, setTeacherFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: majlissQueryKey });
   const mutation = useMutation({
@@ -68,6 +73,22 @@ export function MajlissAdmin({ organizationId, userId }: Props) {
     );
 
   const catalog = query.data;
+  const uploadOptions = catalog.teacherVillages.flatMap((link) => {
+    const village = catalog.villages.find((item) => item.id === link.village_id);
+    const teacher = catalog.teachers.find((item) => item.id === link.teacher_id);
+    if (!village || !teacher) return [];
+    return [
+      {
+        id: link.id,
+        label: `${village.name}, ${village.country} — ${teacher.display_name}`,
+        destination: {
+          organizationId,
+          villageId: village.id,
+          teacherId: teacher.id,
+        },
+      },
+    ];
+  });
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -141,11 +162,32 @@ export function MajlissAdmin({ organizationId, userId }: Props) {
       title: item.title,
       status: item.status,
       order: item.order_index,
-      deletable: item.upload_source !== "assistant_upload",
+      deletable: item.storage_bucket === null,
     })),
   ];
+  const recordingsById = new Map(catalog.recordings.map((item) => [item.id, item]));
+  const filteredRows = rows.filter((row) => {
+    if (row.kind !== "recording")
+      return !recordingSearch && !villageFilter && !teacherFilter && !dateFilter;
+    const recording = recordingsById.get(row.id);
+    if (!recording) return false;
+    return (
+      recording.title.toLocaleLowerCase("fr").includes(recordingSearch.toLocaleLowerCase("fr")) &&
+      (!villageFilter || recording.village_id === villageFilter) &&
+      (!teacherFilter || recording.teacher_id === teacherFilter) &&
+      (!dateFilter || recording.recorded_on === dateFilter)
+    );
+  });
+  const storageBytes = catalog.recordings.reduce(
+    (total, item) => total + (item.file_size_bytes ?? 0),
+    0,
+  );
   const reviewQueue = catalog.recordings
-    .filter((item) => item.upload_source === "assistant_upload" && item.review_status === "pending")
+    .filter(
+      (item) =>
+        (item.upload_source === "assistant_upload" || item.upload_source === "whatsapp_import") &&
+        item.review_status === "pending",
+    )
     .sort(
       (a, b) =>
         a.order_index - b.order_index || (a.received_at ?? "").localeCompare(b.received_at ?? ""),
@@ -238,52 +280,71 @@ export function MajlissAdmin({ organizationId, userId }: Props) {
             ) : null}
             {formKind === "recording" ? (
               <>
-                <Field label="Titre" name="title" required />
-                <Field label="URL HTTPS réelle" name="mediaUrl" type="url" required />
-                <SelectField
-                  label="Village"
-                  name="villageId"
-                  options={catalog.villages.map((item) => ({
-                    value: item.id,
-                    label: `${item.name}, ${item.country}`,
-                  }))}
-                />
-                <SelectField
-                  label="Professeur"
-                  name="teacherId"
-                  options={catalog.teachers.map((item) => ({
-                    value: item.id,
-                    label: item.display_name,
-                  }))}
-                />
-                <SelectField
-                  label="Type"
-                  name="mediaType"
-                  options={[
-                    { value: "audio", label: "Audio" },
-                    { value: "youtube", label: "YouTube" },
-                    { value: "video", label: "Vidéo" },
-                  ]}
-                />
-                <Field
-                  label="Durée en secondes (facultatif)"
-                  name="durationSeconds"
-                  type="number"
-                />
-                <Field label="Langue (facultatif)" name="language" />
-                <Field label="Slug (facultatif)" name="slug" />
+                <div className="sm:col-span-2">
+                  <h3 className="mb-3 font-medium">Importer des fichiers audio</h3>
+                  <MajlissAudioUploader options={uploadOptions} onComplete={refresh} />
+                </div>
+                <details className="sm:col-span-2 rounded-xl border p-4">
+                  <summary className="cursor-pointer font-medium">
+                    Option avancée : ajouter une URL externe
+                  </summary>
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <Field label="Titre" name="title" required />
+                    <Field label="URL HTTPS réelle" name="mediaUrl" type="url" required />
+                    <SelectField
+                      label="Village"
+                      name="villageId"
+                      options={catalog.villages.map((item) => ({
+                        value: item.id,
+                        label: `${item.name}, ${item.country}`,
+                      }))}
+                    />
+                    <SelectField
+                      label="Professeur"
+                      name="teacherId"
+                      options={catalog.teachers.map((item) => ({
+                        value: item.id,
+                        label: item.display_name,
+                      }))}
+                    />
+                    <SelectField
+                      label="Type"
+                      name="mediaType"
+                      options={[
+                        { value: "audio", label: "Audio" },
+                        { value: "youtube", label: "YouTube" },
+                        { value: "video", label: "Vidéo" },
+                      ]}
+                    />
+                    <Field
+                      label="Durée en secondes (facultatif)"
+                      name="durationSeconds"
+                      type="number"
+                    />
+                    <Field label="Langue (facultatif)" name="language" />
+                    <Field label="Slug (facultatif)" name="slug" />
+                    <div className="sm:col-span-2">
+                      <Button disabled={mutation.isPending}>
+                        <Plus className="size-4" />
+                        Créer en brouillon depuis l’URL
+                      </Button>
+                    </div>
+                  </div>
+                </details>
               </>
             ) : null}
-            <div className="sm:col-span-2">
-              <Button
-                disabled={
-                  mutation.isPending || (formKind !== "village" && !catalog.villages.length)
-                }
-              >
-                <Plus className="size-4" />
-                Créer en brouillon
-              </Button>
-            </div>
+            {formKind !== "recording" ? (
+              <div className="sm:col-span-2">
+                <Button
+                  disabled={
+                    mutation.isPending || (formKind !== "village" && !catalog.villages.length)
+                  }
+                >
+                  <Plus className="size-4" />
+                  Créer en brouillon
+                </Button>
+              </div>
+            ) : null}
           </form>
         </CardContent>
       </Card>
@@ -335,7 +396,7 @@ export function MajlissAdmin({ organizationId, userId }: Props) {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{recording.original_file_name}</p>
                   <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                    <span>Assistant : {recording.uploaded_by}</span>
+                    <span>Déposé par : {recording.uploaded_by}</span>
                     <span>·</span>
                     <span>
                       Reçu{" "}
@@ -451,7 +512,50 @@ export function MajlissAdmin({ organizationId, userId }: Props) {
           <CardTitle className="text-lg">Contenus</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {rows.map((row) => (
+          <div className="grid gap-3 rounded-xl bg-muted/40 p-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-2">
+              <Label htmlFor="majliss-search">Rechercher un enregistrement</Label>
+              <Input
+                id="majliss-search"
+                value={recordingSearch}
+                onChange={(event) => setRecordingSearch(event.target.value)}
+                placeholder="Titre"
+              />
+            </div>
+            <SelectField
+              label="Village"
+              name="archiveVillage"
+              defaultValue={villageFilter}
+              options={catalog.villages.map((item) => ({ value: item.id, label: item.name }))}
+              onChange={setVillageFilter}
+              optional
+            />
+            <SelectField
+              label="Professeur"
+              name="archiveTeacher"
+              defaultValue={teacherFilter}
+              options={catalog.teachers.map((item) => ({
+                value: item.id,
+                label: item.display_name,
+              }))}
+              onChange={setTeacherFilter}
+              optional
+            />
+            <div className="grid gap-2">
+              <Label htmlFor="majliss-archive-date">Date du cours</Label>
+              <Input
+                id="majliss-archive-date"
+                type="date"
+                value={dateFilter}
+                onChange={(event) => setDateFilter(event.target.value)}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Audio archivé : {(storageBytes / 1024 / 1024).toFixed(1)} Mo référencés dans Supabase.
+            L’archivage conserve les fichiers.
+          </p>
+          {filteredRows.map((row) => (
             <div
               key={`${row.kind}-${row.id}`}
               className="flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center"
@@ -514,9 +618,9 @@ export function MajlissAdmin({ organizationId, userId }: Props) {
               </div>
             </div>
           ))}
-          {!rows.length ? (
+          {!filteredRows.length ? (
             <p className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-              Aucun contenu Majliss.
+              Aucun contenu Majliss correspondant.
             </p>
           ) : null}
         </CardContent>
@@ -568,11 +672,15 @@ function SelectField({
   name,
   options,
   defaultValue,
+  onChange,
+  optional,
 }: {
   label: string;
   name: string;
   options: Array<{ value: string; label: string }>;
   defaultValue?: string;
+  onChange?: (value: string) => void;
+  optional?: boolean;
 }) {
   return (
     <div className="grid gap-2">
@@ -580,11 +688,12 @@ function SelectField({
       <select
         id={`majliss-${name}`}
         name={name}
-        required
+        required={!optional}
         defaultValue={defaultValue ?? ""}
+        onChange={onChange ? (event) => onChange(event.target.value) : undefined}
         className="min-h-10 rounded-md border bg-background px-3 text-sm"
       >
-        <option value="">Sélectionner</option>
+        <option value="">{optional ? "Tous" : "Sélectionner"}</option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
