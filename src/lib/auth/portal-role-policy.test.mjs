@@ -43,6 +43,7 @@ test("les portails Staff restent accessibles uniquement aux rôles autorisés", 
 test("le mode Élève est explicite, et n'interfère pas avec les autres portails", () => {
   assert.equal(requestedPortalDestination("family", ["learner"]), "/eleve");
   assert.equal(requestedPortalDestination("family", ["parent"]), "/parent");
-  assert.equal(requestedPortalDestination("family", ["owner"]), "/eleve");
+  assert.equal(requestedPortalDestination("family", ["owner"]), null);
+  assert.equal(requestedPortalDestination("family", ["teacher"]), null);
   assert.equal(requestedPortalDestination("admin", ["parent"]), null);
 });

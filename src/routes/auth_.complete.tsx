@@ -147,7 +147,7 @@ function CompleteAuthPage() {
             </p>
             <Link
               to="/auth"
-              search={{ portal: portal ?? "family", target }}
+              search={{ portal, target }}
               className="mt-4 inline-block font-semibold text-primary underline underline-offset-4"
             >
               Retour à la connexion

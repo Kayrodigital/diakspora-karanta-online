@@ -28,6 +28,16 @@ test("AUTH-UI-03 @smoke : un lien d'activation absent est refusé", async ({ pag
   await page.goto("/auth/complete?flow=invite&portal=teacher");
   await expect(page.getByRole("alert")).toContainText("expiré ou invalide");
   await expect(page.getByRole("button", { name: "Enregistrer et continuer" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Retour à la connexion" })).toHaveAttribute(
+    "href",
+    "/auth?portal=teacher",
+  );
+
+  await page.goto("/auth/complete?flow=invite");
+  await expect(page.getByRole("link", { name: "Retour à la connexion" })).toHaveAttribute(
+    "href",
+    "/auth",
+  );
 });
 
 test("AUTH-UI-04 @smoke : Google reste désactivé par défaut", async ({ page }) => {
@@ -65,6 +75,22 @@ test("AUTH-UI-07 @smoke : un ancien lien de récupération sur / rejoint le form
   await expect(page).toHaveURL(/\/auth\/complete\?flow=recovery$/);
   await expect(page.getByRole("alert")).toContainText("expiré ou invalide");
   expect(new URL(page.url()).hash).toBe("");
+});
+
+test("AUTH-UI-08 @smoke : Mon espace reste neutre et les portails staff sont sur invitation", async ({
+  page,
+}) => {
+  await page.goto("/auth");
+  await expect(page.getByRole("heading", { name: "Accéder à mon espace Karanta" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Créer un compte famille" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "l’espace Familles & élèves" })).toHaveAttribute(
+    "href",
+    "/auth?portal=family",
+  );
+
+  await page.goto("/");
+  const accountLinks = page.locator("a").filter({ hasText: /^Mon espace$/ });
+  await expect(accountLinks.first()).toHaveAttribute("href", "/auth");
 });
 
 test("LANDING-UI-01 @smoke : la direction éditoriale reste lisible et navigable", async ({

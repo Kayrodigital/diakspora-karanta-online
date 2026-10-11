@@ -1,12 +1,12 @@
 # Rapport QA Karanta — M9
 
-- Date : 2026-10-10T17:29:37.931Z
-- Commit de base : 9fb9849 (les modifications QA locales peuvent être non commitées)
+- Date : 2026-10-11T09:47:56.907Z
+- Commit de base : 75fadae (les modifications QA locales peuvent être non commitées)
 - Environnement : UI locale hors ligne
 - Suite : M9 Auth UI smoke
 - Résultat Playwright : passed
-- Tests : 24 ; PASS 24 ; FAIL 0 ; SKIP 0
-- Durée cumulée : 29 s
+- Tests : 27 ; PASS 27 ; FAIL 0 ; SKIP 0
+- Durée cumulée : 41 s
 - Captures/traces : `playwright-report/` et `test-results/` pour l'UI non sensible uniquement ; désactivées pour les tests Auth réels.
 
 ## Échecs

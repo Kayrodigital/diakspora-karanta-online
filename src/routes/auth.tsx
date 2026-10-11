@@ -32,24 +32,31 @@ const portalContent: Record<Portal, { eyebrow: string; title: string; descriptio
   },
 };
 
+const genericContent = {
+  eyebrow: "Mon espace",
+  title: "Accéder à mon espace Karanta",
+  description:
+    "Connectez-vous avec votre compte Karanta pour rejoindre l’espace correspondant à votre rôle.",
+};
+
 const googleOAuthEnabled = import.meta.env.VITE_GOOGLE_OAUTH_ENABLED === "true";
 
 type AuthSearch = {
-  portal: Portal;
+  portal?: Portal;
   target?: "parent" | "learner";
   denied?: boolean;
 };
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>): AuthSearch => ({
-    portal: isPortal(search.portal) ? search.portal : ("family" as Portal),
+    portal: isPortal(search.portal) ? search.portal : undefined,
     target: search.target === "parent" || search.target === "learner" ? search.target : undefined,
     denied: search.denied === true || search.denied === "true" || undefined,
   }),
   head: () => ({
     meta: [
       { title: "Connexion — Diakspora Karanta" },
-      { name: "description", content: "Connectez-vous à votre espace élève." },
+      { name: "description", content: "Connectez-vous à votre espace Karanta." },
     ],
   }),
   component: AuthPage,
@@ -58,7 +65,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const { portal, target, denied } = Route.useSearch();
-  const content = portalContent[portal];
+  const content = portal ? portalContent[portal] : genericContent;
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [hydrated, setHydrated] = useState(false);
   const [email, setEmail] = useState("");
@@ -88,8 +95,9 @@ function AuthPage() {
       if (flow === "recovery" || flow === "invite" || hash.has("access_token")) {
         const callbackFlow = flow === "invite" ? "invite" : "recovery";
         const targetQuery = target ? `&target=${target}` : "";
+        const portalQuery = portal ? `&portal=${portal}` : "";
         window.location.replace(
-          `/auth/complete?flow=${callbackFlow}&portal=${portal}${targetQuery}${window.location.hash}`,
+          `/auth/complete?flow=${callbackFlow}${portalQuery}${targetQuery}${window.location.hash}`,
         );
         return;
       }
@@ -127,8 +135,9 @@ function AuthPage() {
     try {
       if (mode === "forgot") {
         const targetQuery = target ? `&target=${target}` : "";
+        const portalQuery = portal ? `&portal=${portal}` : "";
         const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-          redirectTo: `${window.location.origin}/auth/complete?flow=recovery&portal=${portal}${targetQuery}`,
+          redirectTo: `${window.location.origin}/auth/complete?flow=recovery${portalQuery}${targetQuery}`,
         });
         if (error) throw error;
         setNotice(
@@ -165,7 +174,9 @@ function AuthPage() {
           setError(
             portal === "family"
               ? "Connexion réussie, mais votre compte ne dispose pas encore d’un accès famille ou élève actif."
-              : "Connexion réussie, mais ce compte n’est pas autorisé à accéder à ce portail. Contactez votre administrateur.",
+              : portal
+                ? "Connexion réussie, mais ce compte n’est pas autorisé à accéder à ce portail. Contactez votre administrateur."
+                : "Connexion réussie, mais aucun accès actif n’est rattaché à ce compte. Contactez votre administrateur.",
           );
         }
       }
@@ -206,7 +217,7 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth?portal=${portal}${target ? `&target=${target}` : ""}`,
+        redirectTo: `${window.location.origin}/auth${portal ? `?portal=${portal}` : ""}${target ? `${portal ? "&" : "?"}target=${target}` : ""}`,
       },
     });
     if (error) {
@@ -391,6 +402,14 @@ function AuthPage() {
             >
               {mode === "signin" ? "Créer un compte famille" : "J'ai déjà un compte"}
             </button>
+          ) : !portal ? (
+            <p className="text-center text-xs text-muted-foreground">
+              Les accès équipe sont créés sur invitation. Pour une inscription familiale, utilisez{" "}
+              <Link to="/auth" search={{ portal: "family" }} className="font-semibold underline">
+                l’espace Familles & élèves
+              </Link>
+              .
+            </p>
           ) : (
             <p className="text-center text-xs text-muted-foreground">
               Les accès professeur et administration sont créés uniquement sur invitation.

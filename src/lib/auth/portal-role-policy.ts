@@ -42,7 +42,7 @@ export function requestedPortalDestination(
         : null;
     case "family":
       if (has("parent")) return "/parent";
-      if (has("learner") || hasAdmin) return "/eleve";
+      if (has("learner")) return "/eleve";
       return null;
     case "planning":
       if (hasAdmin) return "/admin";

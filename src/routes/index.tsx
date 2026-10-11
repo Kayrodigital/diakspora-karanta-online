@@ -542,7 +542,6 @@ function Home() {
               </Link>
               <Link
                 to="/auth"
-                search={{ portal: "family" }}
                 className="inline-flex min-h-13 items-center justify-center rounded-full border border-[#173F2B]/30 px-7 font-semibold text-[#173F2B]"
               >
                 Se connecter
@@ -588,11 +587,7 @@ function PublicHeader() {
           <Link to="/boutique" className="transition hover:text-[#C59A54]">
             Boutique
           </Link>
-          <Link
-            to="/auth"
-            search={{ portal: "family" }}
-            className="transition hover:text-[#C59A54]"
-          >
+          <Link to="/auth" className="transition hover:text-[#C59A54]">
             Mon espace
           </Link>
         </nav>
@@ -627,7 +622,6 @@ function PublicHeader() {
             </Link>
             <Link
               to="/auth"
-              search={{ portal: "family" }}
               className="mt-1 rounded-lg bg-[#103F30] px-4 py-3 text-center text-white"
             >
               Mon espace
