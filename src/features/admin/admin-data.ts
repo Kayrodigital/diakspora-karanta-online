@@ -141,6 +141,11 @@ export type AdminMemberAction =
       cohortId?: string;
     }
   | {
+      action: "resend_invite";
+      organizationId: string;
+      invitationId: string;
+    }
+  | {
       action: "create_managed_learner";
       organizationId: string;
       fullName: string;

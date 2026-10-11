@@ -44,7 +44,7 @@ const navigation = [
   { label: "Apprendre", href: "/apprendre", icon: GraduationCap },
   { label: "Majliss", href: "/majliss", icon: MessageCircleMore },
   { label: "Boutique", href: "/boutique", icon: ShoppingBag },
-  { label: "Mon espace", href: "/auth?portal=family", icon: UserRound },
+  { label: "Mon espace", href: "/auth", icon: UserRound },
 ];
 
 export function LearningShell({

@@ -2,12 +2,18 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { AdminWorkspace } from "@/features/admin/AdminWorkspace";
 import { loadPortalAccess } from "@/lib/auth/portal-access";
 import { organizationTheme } from "@/lib/organization-theme";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
   beforeLoad: async () => {
     const access = await loadPortalAccess("admin");
-    if (!access) throw redirect({ to: "/auth", search: { portal: "admin" } });
+    if (!access) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      throw redirect({ to: "/auth", search: { portal: "admin", denied: Boolean(user) } });
+    }
     return access;
   },
   head: () => ({
