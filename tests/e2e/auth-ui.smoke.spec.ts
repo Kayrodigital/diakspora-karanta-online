@@ -97,10 +97,10 @@ test("LANDING-UI-01 @smoke : la direction éditoriale reste lisible et navigable
   page,
 }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /Le savoir se reçoit/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Découvrir les cours/i })).toHaveAttribute(
+  await expect(page.getByRole("heading", { name: /Le savoir de nos anciens/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Commencer pour mon enfant/i })).toHaveAttribute(
     "href",
-    "/apprendre",
+    "/auth?portal=family&target=parent",
   );
   await expect(page.getByRole("heading", { name: "Nos disciplines" })).toBeVisible();
   await expect(

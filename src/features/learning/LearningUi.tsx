@@ -42,6 +42,7 @@ function sessionStatus(progress: SessionProgress[], sessionId: string): SessionP
 const navigation = [
   { label: "Accueil", href: "/", icon: Home },
   { label: "Apprendre", href: "/apprendre", icon: GraduationCap },
+  { label: "Professeurs", href: "/enseignants", icon: GraduationCap },
   { label: "Majliss", href: "/majliss", icon: MessageCircleMore },
   { label: "Boutique", href: "/boutique", icon: ShoppingBag },
   { label: "Mon espace", href: "/auth", icon: UserRound },
@@ -53,7 +54,7 @@ export function LearningShell({
   variant = "default",
 }: {
   children: ReactNode;
-  active?: "Apprendre" | "Majliss";
+  active?: "Apprendre" | "Majliss" | "Professeurs";
   variant?: "default" | "heritage";
 }) {
   const heritage = variant === "heritage";

@@ -406,3 +406,33 @@ export async function updateMajlissRecordingReview(
     .eq("id", id);
   fail(error);
 }
+
+// Narrow public directory: never resolve private media URLs or read family progress.
+export async function loadPublicTeacherCatalog() {
+  const { data: organization, error } = await supabase
+    .from("organizations")
+    .select("id")
+    .eq("slug", "diakspora")
+    .eq("status", "active")
+    .single();
+  fail(error);
+  if (!organization) throw new Error("Organisation introuvable.");
+  const [teachers, recordings] = await Promise.all([
+    db
+      .from("majliss_teachers")
+      .select("id, display_name, slug, biography, photo_url, status")
+      .eq("organization_id", organization.id)
+      .eq("status", "published")
+      .order("order_index"),
+    db
+      .from("majliss_recordings")
+      .select("id, teacher_id, title, language, access_tier, status, review_status")
+      .eq("organization_id", organization.id)
+      .eq("status", "published")
+      .eq("review_status", "approved")
+      .order("order_index"),
+  ]);
+  fail(teachers.error);
+  fail(recordings.error);
+  return { teachers: teachers.data ?? [], recordings: recordings.data ?? [] };
+}

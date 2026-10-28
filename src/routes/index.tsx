@@ -1,3 +1,4 @@
+import { KARANTA_IMAGES } from "@/lib/karanta-assets";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import {
@@ -167,9 +168,9 @@ function Home() {
                 id="karanta-hero-title"
                 className="mt-8 max-w-[670px] text-[clamp(2rem,4vw,3.15rem)] font-bold leading-[1.14] tracking-tight"
               >
-                Le savoir se reçoit,
+                Le savoir de nos anciens,
                 <br />
-                se pratique et <span className="text-[#C59A54]">se transmet.</span>
+                <span className="text-[#C59A54]">à portée de nos enfants.</span>
               </h1>
               <p className="mt-6 max-w-[35rem] text-sm leading-7 text-white/90 sm:text-base">
                 Une école numérique enracinée dans la tradition, pensée pour les familles
@@ -177,14 +178,15 @@ function Home() {
               </p>
               <div className="mt-7 flex flex-wrap items-center gap-5">
                 <Link
-                  to="/apprendre"
+                  to="/auth"
+                  search={{ portal: "family", target: "parent" }}
                   className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[9px] bg-[#C59A54] px-6 text-sm font-bold text-[#0A3026] transition hover:bg-[#E4C17F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:w-auto"
                 >
-                  Découvrir les cours <ArrowRight className="size-4" aria-hidden />
+                  Commencer pour mon enfant <ArrowRight className="size-4" aria-hidden />
                 </Link>
                 <Link
                   to="/majliss"
-                  className="hidden min-h-12 items-center text-sm font-semibold text-white underline-offset-4 hover:underline sm:inline-flex"
+                  className="inline-flex min-h-12 items-center text-sm font-semibold text-white underline-offset-4 hover:underline"
                 >
                   Écouter Majliss →
                 </Link>
@@ -198,6 +200,44 @@ function Home() {
                 fetchPriority="high"
               />
             </div>
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="family-transmission-title"
+          className="mx-auto grid max-w-5xl items-center gap-6 px-5 py-10 sm:grid-cols-2 sm:px-8"
+        >
+          <figure>
+            <img
+              src={KARANTA_IMAGES.homeFamily.src}
+              alt={KARANTA_IMAGES.homeFamily.alt}
+              width={KARANTA_IMAGES.homeFamily.width}
+              height={KARANTA_IMAGES.homeFamily.height}
+              loading="lazy"
+              decoding="async"
+              className="w-full rounded-2xl object-cover"
+            />
+            <figcaption className="mt-2 text-xs text-[#666A63]">
+              Illustration de la transmission en famille.
+            </figcaption>
+          </figure>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-[#9A7439]">
+              De nos racines à votre quotidien
+            </p>
+            <h2 id="family-transmission-title" className="mt-3 font-serif text-3xl">
+              En famille, en classe ou à votre rythme.
+            </h2>
+            <p className="mt-4 leading-7 text-[#565A54]">
+              Ajoutez le profil de votre enfant, découvrez les méthodes et retrouvez les
+              enseignements autorisés depuis votre espace famille.
+            </p>
+            <Link
+              to="/enseignants"
+              className="mt-4 inline-flex min-h-12 items-center gap-2 font-semibold underline underline-offset-4"
+            >
+              Rencontrer les professeurs <ArrowRight className="size-4" />
+            </Link>
           </div>
         </section>
 
@@ -581,6 +621,9 @@ function PublicHeader() {
           <Link to="/apprendre" className="transition hover:text-[#C59A54]">
             Apprendre
           </Link>
+          <Link to="/enseignants" className="transition hover:text-[#C59A54]">
+            Professeurs
+          </Link>
           <Link to="/majliss" className="transition hover:text-[#C59A54]">
             Majliss
           </Link>
@@ -599,7 +642,7 @@ function PublicHeader() {
             Explorer
           </Link>
         </div>
-        <details className="group relative sm:hidden">
+        <details className="group relative lg:hidden">
           <summary className="grid size-11 cursor-pointer list-none place-items-center rounded-[8px] border border-white/40 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
             <Menu className="size-5" />
             <span className="sr-only">Ouvrir le menu</span>
@@ -613,6 +656,9 @@ function PublicHeader() {
             </Link>
             <Link to="/apprendre" className="rounded-lg px-4 py-3 hover:bg-[#EFE7D6]">
               Apprendre
+            </Link>
+            <Link to="/enseignants" className="rounded-lg px-4 py-3 hover:bg-[#EFE7D6]">
+              Professeurs
             </Link>
             <Link to="/majliss" className="rounded-lg px-4 py-3 hover:bg-[#EFE7D6]">
               Majliss

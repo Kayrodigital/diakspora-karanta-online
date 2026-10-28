@@ -439,7 +439,12 @@ export function TeacherPage({
       {(catalog) => {
         const village = catalog.villages.find((item) => item.slug === villageSlug);
         const teacher = catalog.teachers.find((item) => item.slug === teacherSlug);
-        if (!village || !teacher)
+        if (
+          !village ||
+          !teacher ||
+          village.status !== "published" ||
+          teacher.status !== "published"
+        )
           return (
             <div className="mx-auto max-w-3xl px-4 py-16">
               <EmptyState
@@ -465,6 +470,14 @@ export function TeacherPage({
               description={teacher.biography}
             />
             <div className="mx-auto max-w-5xl px-4 py-10 sm:px-8">
+              <Link
+                to="/enseignants/$teacherSlug"
+                params={{ teacherSlug: teacher.slug }}
+                className="mb-6 inline-flex min-h-12 items-center rounded-xl border border-[#D8C8A8] bg-white px-5 font-semibold text-[#173F2B]"
+              >
+                Présentation du professeur →
+              </Link>
+
               <div className="flex items-center justify-between">
                 <h2 className="font-serif text-3xl font-semibold text-[#173F2B]">
                   Enregistrements

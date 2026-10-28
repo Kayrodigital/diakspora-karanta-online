@@ -4617,6 +4617,16 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      create_my_child_profile: {
+        Args: {
+          p_organization_id: string;
+          p_name: string;
+          p_guardian_consent: boolean;
+          p_request_id: string;
+        };
+        Returns: string;
+      };
+
       accept_my_organization_invitations: { Args: never; Returns: number };
       assign_learner_to_cohort: {
         Args: {
