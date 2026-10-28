@@ -1,19 +1,27 @@
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
-import { BookOpenCheck, LogOut, ShieldCheck } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { LearnerProgressDashboard } from "@/features/assessment/LearnerProgressDashboard";
 import { supabase } from "@/integrations/supabase/client";
 import { loadPortalAccess } from "@/lib/auth/portal-access";
 import { organizationTheme } from "@/lib/organization-theme";
 import { FamilySchedule } from "@/features/planning/FamilySchedule";
 import { ActiveProfileSwitcher } from "@/components/ActiveProfileSwitcher";
+import { FamilyOnboarding } from "@/features/family/FamilyOnboarding";
 import { LearningProgressOverview } from "@/features/learning/LearningProgressOverview";
 
 export const Route = createFileRoute("/parent")({
   ssr: false,
   beforeLoad: async () => {
-    const access = await loadPortalAccess("family");
-    if (!access) throw redirect({ to: "/auth", search: { portal: "family" } });
-    if (access.membership.role !== "parent") throw redirect({ to: "/eleve" });
+    const access = await loadPortalAccess("family", "parent");
+    if (!access) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      throw redirect({
+        to: "/auth",
+        search: { portal: "family", target: "parent", denied: Boolean(user) },
+      });
+    }
     return access;
   },
   head: () => ({
@@ -30,7 +38,8 @@ export const Route = createFileRoute("/parent")({
 
 function ParentPage() {
   const navigate = useNavigate();
-  const { organization, user, accessibleProfiles, activeProfileId } = Route.useRouteContext();
+  const { organization, user, ownProfile, accessibleProfiles, activeProfileId } =
+    Route.useRouteContext();
   const displayName =
     typeof user.user_metadata.full_name === "string" && user.user_metadata.full_name.trim()
       ? user.user_metadata.full_name.trim().split(" ")[0]
@@ -64,6 +73,7 @@ function ParentPage() {
           </div>
           <button
             type="button"
+            aria-label="Se déconnecter"
             onClick={signOut}
             className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[color:var(--cream-2)] bg-card px-4 text-sm font-semibold text-foreground shadow-sm hover:border-primary/30"
           >
@@ -80,50 +90,32 @@ function ParentPage() {
           />
         </div>
 
-        <section className="mt-8 grid gap-4 md:grid-cols-2" aria-label="Informations du suivi">
-          <article className="rounded-2xl border border-[color:var(--cream-2)] bg-card p-5 shadow-[var(--shadow-card)]">
-            <div className="flex items-start gap-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-                <BookOpenCheck className="size-5" aria-hidden />
-              </span>
-              <div>
-                <h2 className="font-semibold">Des résultats réellement publiés</h2>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  Les évaluations, compétences et bulletins ci-dessous proviennent directement du
-                  suivi pédagogique de votre organisation.
-                </p>
-              </div>
-            </div>
-          </article>
-          <article className="rounded-2xl border border-[color:var(--cream-2)] bg-card p-5 shadow-[var(--shadow-card)]">
-            <div className="flex items-start gap-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-                <ShieldCheck className="size-5" aria-hidden />
-              </span>
-              <div>
-                <h2 className="font-semibold">Un espace sans données simulées</h2>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  Si aucune information n’est encore disponible, un état vide est affiché jusqu’à la
-                  publication par l’équipe pédagogique.
-                </p>
-              </div>
-            </div>
-          </article>
-        </section>
+        <FamilyOnboarding
+          organization={organization}
+          ownProfileId={ownProfile.id}
+          profiles={accessibleProfiles}
+          activeProfileId={activeProfileId}
+        />
 
         <section className="mt-10" aria-labelledby="progress-title">
           <h2 id="progress-title" className="sr-only">
             Progression de mes enfants
           </h2>
           <LearnerProgressDashboard
+            key={activeProfileId}
             organizationId={organization.id}
             activeProfileId={activeProfileId}
           />
         </section>
         <div className="mt-8">
           <LearningProgressOverview
+            key={activeProfileId}
             profileId={activeProfileId}
-            title="Parcours d’apprentissage de l’enfant"
+            title={
+              activeProfileId === ownProfile.id
+                ? "Mes parcours d’apprentissage"
+                : "Parcours d’apprentissage de l’enfant"
+            }
           />
         </div>
         <FamilySchedule organizationId={organization.id} userId={user.id} />

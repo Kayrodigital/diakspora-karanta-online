@@ -16,6 +16,7 @@ import { Route as ApprendreRouteImport } from './routes/apprendre'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AvanceRouteImport } from './routes/avance'
 import { Route as BoutiqueRouteImport } from './routes/boutique'
+import { Route as EnseignantsRouteImport } from './routes/enseignants'
 import { Route as InscriptionsRouteImport } from './routes/inscriptions'
 import { Route as IntermediaireRouteImport } from './routes/intermediaire'
 import { Route as MajlissRouteImport } from './routes/majliss'
@@ -35,7 +36,10 @@ import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedProgressionRouteImport } from './routes/_authenticated/progression'
 import { Route as ApprendreIndexRouteImport } from './routes/apprendre/index'
 import { Route as ApprendreSubjectSlugRouteImport } from './routes/apprendre/$subjectSlug'
+import { Route as AuthCompleteRouteImport } from './routes/auth_.complete'
 import { Route as CoursCourseIdRouteImport } from './routes/cours/$courseId'
+import { Route as EnseignantsIndexRouteImport } from './routes/enseignants.index'
+import { Route as EnseignantsTeacherSlugRouteImport } from './routes/enseignants.$teacherSlug'
 import { Route as MajlissIndexRouteImport } from './routes/majliss/index'
 import { Route as MajlissVillageSlugRouteImport } from './routes/majliss/$villageSlug'
 import { Route as StaffDepotRouteImport } from './routes/staff/depot'
@@ -79,6 +83,11 @@ const AvanceRoute = AvanceRouteImport.update({
 const BoutiqueRoute = BoutiqueRouteImport.update({
   id: '/boutique',
   path: '/boutique',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnseignantsRoute = EnseignantsRouteImport.update({
+  id: '/enseignants',
+  path: '/enseignants',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InscriptionsRoute = InscriptionsRouteImport.update({
@@ -179,10 +188,25 @@ const ApprendreSubjectSlugRoute = ApprendreSubjectSlugRouteImport.update({
   path: '/$subjectSlug',
   getParentRoute: () => ApprendreRoute,
 } as any)
+const AuthCompleteRoute = AuthCompleteRouteImport.update({
+  id: '/auth_/complete',
+  path: '/auth/complete',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CoursCourseIdRoute = CoursCourseIdRouteImport.update({
   id: '/cours/$courseId',
   path: '/cours/$courseId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const EnseignantsIndexRoute = EnseignantsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => EnseignantsRoute,
+} as any)
+const EnseignantsTeacherSlugRoute = EnseignantsTeacherSlugRouteImport.update({
+  id: '/$teacherSlug',
+  path: '/$teacherSlug',
+  getParentRoute: () => EnseignantsRoute,
 } as any)
 const MajlissIndexRoute = MajlissIndexRouteImport.update({
   id: '/',
@@ -247,6 +271,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/avance': typeof AvanceRoute
   '/boutique': typeof BoutiqueRoute
+  '/enseignants': typeof EnseignantsRouteWithChildren
   '/inscriptions': typeof InscriptionsRoute
   '/intermediaire': typeof IntermediaireRoute
   '/majliss': typeof MajlissRouteWithChildren
@@ -265,10 +290,13 @@ export interface FileRoutesByFullPath {
   '/messages': typeof AuthenticatedMessagesRoute
   '/progression': typeof AuthenticatedProgressionRoute
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
+  '/auth/complete': typeof AuthCompleteRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
+  '/enseignants/$teacherSlug': typeof EnseignantsTeacherSlugRoute
   '/majliss/$villageSlug': typeof MajlissVillageSlugRoute
   '/staff/depot': typeof StaffDepotRoute
   '/apprendre/': typeof ApprendreIndexRoute
+  '/enseignants/': typeof EnseignantsIndexRoute
   '/majliss/': typeof MajlissIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/apprendre/chapitre/$chapterId': typeof ApprendreChapitreChapterIdRoute
@@ -301,10 +329,13 @@ export interface FileRoutesByTo {
   '/messages': typeof AuthenticatedMessagesRoute
   '/progression': typeof AuthenticatedProgressionRoute
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
+  '/auth/complete': typeof AuthCompleteRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
+  '/enseignants/$teacherSlug': typeof EnseignantsTeacherSlugRoute
   '/majliss/$villageSlug': typeof MajlissVillageSlugRoute
   '/staff/depot': typeof StaffDepotRoute
   '/apprendre': typeof ApprendreIndexRoute
+  '/enseignants': typeof EnseignantsIndexRoute
   '/majliss': typeof MajlissIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/apprendre/chapitre/$chapterId': typeof ApprendreChapitreChapterIdRoute
@@ -323,6 +354,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/avance': typeof AvanceRoute
   '/boutique': typeof BoutiqueRoute
+  '/enseignants': typeof EnseignantsRouteWithChildren
   '/inscriptions': typeof InscriptionsRoute
   '/intermediaire': typeof IntermediaireRoute
   '/majliss': typeof MajlissRouteWithChildren
@@ -341,10 +373,13 @@ export interface FileRoutesById {
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/progression': typeof AuthenticatedProgressionRoute
   '/apprendre/$subjectSlug': typeof ApprendreSubjectSlugRoute
+  '/auth_/complete': typeof AuthCompleteRoute
   '/cours/$courseId': typeof CoursCourseIdRoute
+  '/enseignants/$teacherSlug': typeof EnseignantsTeacherSlugRoute
   '/majliss/$villageSlug': typeof MajlissVillageSlugRoute
   '/staff/depot': typeof StaffDepotRoute
   '/apprendre/': typeof ApprendreIndexRoute
+  '/enseignants/': typeof EnseignantsIndexRoute
   '/majliss/': typeof MajlissIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/apprendre/chapitre/$chapterId': typeof ApprendreChapitreChapterIdRoute
@@ -363,6 +398,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/avance'
     | '/boutique'
+    | '/enseignants'
     | '/inscriptions'
     | '/intermediaire'
     | '/majliss'
@@ -381,10 +417,13 @@ export interface FileRouteTypes {
     | '/messages'
     | '/progression'
     | '/apprendre/$subjectSlug'
+    | '/auth/complete'
     | '/cours/$courseId'
+    | '/enseignants/$teacherSlug'
     | '/majliss/$villageSlug'
     | '/staff/depot'
     | '/apprendre/'
+    | '/enseignants/'
     | '/majliss/'
     | '/.mcp/invoke-tool/$tool'
     | '/apprendre/chapitre/$chapterId'
@@ -417,10 +456,13 @@ export interface FileRouteTypes {
     | '/messages'
     | '/progression'
     | '/apprendre/$subjectSlug'
+    | '/auth/complete'
     | '/cours/$courseId'
+    | '/enseignants/$teacherSlug'
     | '/majliss/$villageSlug'
     | '/staff/depot'
     | '/apprendre'
+    | '/enseignants'
     | '/majliss'
     | '/.mcp/invoke-tool/$tool'
     | '/apprendre/chapitre/$chapterId'
@@ -438,6 +480,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/avance'
     | '/boutique'
+    | '/enseignants'
     | '/inscriptions'
     | '/intermediaire'
     | '/majliss'
@@ -456,10 +499,13 @@ export interface FileRouteTypes {
     | '/_authenticated/messages'
     | '/_authenticated/progression'
     | '/apprendre/$subjectSlug'
+    | '/auth_/complete'
     | '/cours/$courseId'
+    | '/enseignants/$teacherSlug'
     | '/majliss/$villageSlug'
     | '/staff/depot'
     | '/apprendre/'
+    | '/enseignants/'
     | '/majliss/'
     | '/.mcp/invoke-tool/$tool'
     | '/apprendre/chapitre/$chapterId'
@@ -478,6 +524,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   AvanceRoute: typeof AvanceRoute
   BoutiqueRoute: typeof BoutiqueRoute
+  EnseignantsRoute: typeof EnseignantsRouteWithChildren
   InscriptionsRoute: typeof InscriptionsRoute
   IntermediaireRoute: typeof IntermediaireRoute
   MajlissRoute: typeof MajlissRouteWithChildren
@@ -489,6 +536,7 @@ export interface RootRouteChildren {
   RattrapageRoute: typeof RattrapageRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  AuthCompleteRoute: typeof AuthCompleteRoute
   CoursCourseIdRoute: typeof CoursCourseIdRoute
   StaffDepotRoute: typeof StaffDepotRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -543,6 +591,13 @@ declare module '@tanstack/react-router' {
       path: '/boutique'
       fullPath: '/boutique'
       preLoaderRoute: typeof BoutiqueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/enseignants': {
+      id: '/enseignants'
+      path: '/enseignants'
+      fullPath: '/enseignants'
+      preLoaderRoute: typeof EnseignantsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/inscriptions': {
@@ -678,12 +733,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApprendreSubjectSlugRouteImport
       parentRoute: typeof ApprendreRoute
     }
+    '/auth_/complete': {
+      id: '/auth_/complete'
+      path: '/auth/complete'
+      fullPath: '/auth/complete'
+      preLoaderRoute: typeof AuthCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cours/$courseId': {
       id: '/cours/$courseId'
       path: '/cours/$courseId'
       fullPath: '/cours/$courseId'
       preLoaderRoute: typeof CoursCourseIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/enseignants/': {
+      id: '/enseignants/'
+      path: '/'
+      fullPath: '/enseignants/'
+      preLoaderRoute: typeof EnseignantsIndexRouteImport
+      parentRoute: typeof EnseignantsRoute
+    }
+    '/enseignants/$teacherSlug': {
+      id: '/enseignants/$teacherSlug'
+      path: '/$teacherSlug'
+      fullPath: '/enseignants/$teacherSlug'
+      preLoaderRoute: typeof EnseignantsTeacherSlugRouteImport
+      parentRoute: typeof EnseignantsRoute
     }
     '/majliss/': {
       id: '/majliss/'
@@ -801,6 +877,20 @@ const ApprendreRouteWithChildren = ApprendreRoute._addFileChildren(
   ApprendreRouteChildren,
 )
 
+interface EnseignantsRouteChildren {
+  EnseignantsTeacherSlugRoute: typeof EnseignantsTeacherSlugRoute
+  EnseignantsIndexRoute: typeof EnseignantsIndexRoute
+}
+
+const EnseignantsRouteChildren: EnseignantsRouteChildren = {
+  EnseignantsTeacherSlugRoute: EnseignantsTeacherSlugRoute,
+  EnseignantsIndexRoute: EnseignantsIndexRoute,
+}
+
+const EnseignantsRouteWithChildren = EnseignantsRoute._addFileChildren(
+  EnseignantsRouteChildren,
+)
+
 interface MajlissRouteChildren {
   MajlissVillageSlugRoute: typeof MajlissVillageSlugRoute
   MajlissIndexRoute: typeof MajlissIndexRoute
@@ -826,6 +916,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   AvanceRoute: AvanceRoute,
   BoutiqueRoute: BoutiqueRoute,
+  EnseignantsRoute: EnseignantsRouteWithChildren,
   InscriptionsRoute: InscriptionsRoute,
   IntermediaireRoute: IntermediaireRoute,
   MajlissRoute: MajlissRouteWithChildren,
@@ -838,6 +929,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  AuthCompleteRoute: AuthCompleteRoute,
   CoursCourseIdRoute: CoursCourseIdRoute,
   StaffDepotRoute: StaffDepotRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,

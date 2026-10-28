@@ -12,10 +12,10 @@ export function ActiveProfileSwitcher({
 }) {
   if (profiles.length < 2) return null;
   return (
-    <label className="flex items-center gap-2 text-sm font-medium">
+    <label className="flex max-w-full flex-wrap items-center gap-2 text-sm font-medium">
       Profil actif
       <select
-        className="min-h-11 rounded-xl border bg-card px-3"
+        className="min-h-11 min-w-0 max-w-full rounded-xl border bg-card px-3"
         value={activeProfileId}
         onChange={(event) => {
           rememberActiveProfile(organizationId, event.target.value);

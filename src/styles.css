@@ -148,6 +148,14 @@
   letter-spacing: -0.02em;
 }
 
+/* Public teacher presentation, from the approved Figma trust profile.
+ * Keep these tokens scoped: the administration retains its validated design. */
+.karanta-public-profile {
+  --profile-forest: #123b2e;
+  --profile-gold: #c6a66a;
+  --profile-gold-text: #80622f;
+}
+
 .dark {
   --background: var(--anthracite);
   --foreground: var(--cream);

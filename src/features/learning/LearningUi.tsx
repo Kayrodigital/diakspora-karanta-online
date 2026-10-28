@@ -42,9 +42,10 @@ function sessionStatus(progress: SessionProgress[], sessionId: string): SessionP
 const navigation = [
   { label: "Accueil", href: "/", icon: Home },
   { label: "Apprendre", href: "/apprendre", icon: GraduationCap },
+  { label: "Professeurs", href: "/enseignants", icon: GraduationCap },
   { label: "Majliss", href: "/majliss", icon: MessageCircleMore },
   { label: "Boutique", href: "/boutique", icon: ShoppingBag },
-  { label: "Mon espace", href: "/auth?portal=family", icon: UserRound },
+  { label: "Mon espace", href: "/auth", icon: UserRound },
 ];
 
 export function LearningShell({
@@ -53,7 +54,7 @@ export function LearningShell({
   variant = "default",
 }: {
   children: ReactNode;
-  active?: "Apprendre" | "Majliss";
+  active?: "Apprendre" | "Majliss" | "Professeurs";
   variant?: "default" | "heritage";
 }) {
   const heritage = variant === "heritage";
@@ -132,7 +133,7 @@ export function LearningShell({
         </div>
       </footer>
       <nav
-        className={`fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 backdrop-blur-xl md:hidden ${heritage ? "border-[var(--learning-sand)] bg-[var(--learning-paper)]/95" : "border-[#D8C8A8] bg-[#FFFDF7]/95"}`}
+        className={`fixed inset-x-0 bottom-0 z-50 grid grid-cols-6 border-t px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 backdrop-blur-xl md:hidden ${heritage ? "border-[var(--learning-sand)] bg-[var(--learning-paper)]/95" : "border-[#D8C8A8] bg-[#FFFDF7]/95"}`}
         aria-label="Navigation mobile"
       >
         {navigation.map(({ label, href, icon: Icon }) => (
@@ -142,7 +143,7 @@ export function LearningShell({
             className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-semibold ${label === active ? (heritage ? "text-[var(--learning-green)]" : "text-[#173F2B]") : heritage ? "text-[var(--learning-muted)]" : "text-[#72766F]"}`}
           >
             <Icon className="size-5" aria-hidden="true" />
-            <span className="truncate">{label}</span>
+            <span className="max-w-full truncate px-0.5">{label}</span>
           </a>
         ))}
       </nav>

@@ -7,23 +7,20 @@ import {
   type MajlissTeacher,
   type MajlissVillage,
 } from "./majliss-data";
+import { mimeFor, validateAudioFile } from "./audio-validation";
 
 const BUCKET = "majliss-ingestion";
-const ACCEPTED_EXTENSIONS = ["opus", "ogg", "m4a", "mp3", "aac", "wav"];
-const ACCEPTED_MIMES = new Set([
-  "audio/opus",
-  "audio/ogg",
-  "audio/mp4",
-  "audio/x-m4a",
-  "audio/mpeg",
-  "audio/aac",
-  "audio/wav",
-  "audio/x-wav",
-]);
 
 export type AssignmentOption = MajlissTeacherAssignment & {
   teacher: MajlissTeacher;
   village: MajlissVillage;
+};
+
+export type MajlissUploadDestination = {
+  organizationId: string;
+  villageId: string;
+  teacherId: string;
+  assignmentId?: string;
 };
 
 function fail(error: { message: string } | null) {
@@ -76,28 +73,6 @@ export async function loadAssistantAssignments(): Promise<{
     userId: authData.user.id,
     assignments: resolved,
   };
-}
-
-function extensionOf(name: string) {
-  return name.toLowerCase().split(".").pop() ?? "";
-}
-
-export function validateAudioFile(file: File) {
-  if (!ACCEPTED_EXTENSIONS.includes(extensionOf(file.name))) {
-    throw new Error(`${file.name} : format non pris en charge.`);
-  }
-  if (file.type && !ACCEPTED_MIMES.has(file.type)) {
-    throw new Error(`${file.name} : type audio non reconnu (${file.type}).`);
-  }
-  if (file.size <= 0 || file.size > 500 * 1024 * 1024) {
-    throw new Error(`${file.name} : fichier vide ou supérieur à 500 Mo.`);
-  }
-}
-
-function mimeFor(file: File) {
-  if (file.type) return file.type;
-  const ext = extensionOf(file.name);
-  return ext === "mp3" ? "audio/mpeg" : ext === "m4a" ? "audio/mp4" : `audio/${ext}`;
 }
 
 async function fingerprint(file: File) {
@@ -160,11 +135,14 @@ function uploadOriginal(
   });
 }
 
-export async function uploadAssistantRecording(input: {
+export async function uploadMajlissAudio(input: {
+  uploadId: string;
   file: File;
   title?: string;
   recordedOn?: string;
-  assignment: AssignmentOption;
+  durationSeconds?: number;
+  orderIndex: number;
+  destination: MajlissUploadDestination;
   onProgress: (value: number) => void;
 }) {
   validateAudioFile(input.file);
@@ -174,8 +152,17 @@ export async function uploadAssistantRecording(input: {
   if (!session) throw new Error("Session expirée. Reconnectez-vous.");
 
   const contentFingerprint = await fingerprint(input.file);
-  const fileId = crypto.randomUUID();
-  const objectName = `${input.assignment.organization_id}/${input.assignment.id}/${session.user.id}/${contentFingerprint}-${safeFileName(input.file.name)}`;
+  const isAssistant = Boolean(input.destination.assignmentId);
+  const slug = `${isAssistant ? "assistant" : "whatsapp"}-${input.uploadId}`;
+  const { data: existing, error: existingError } = await majlissDb
+    .from("majliss_recordings")
+    .select("id")
+    .eq("organization_id", input.destination.organizationId)
+    .eq("slug", slug)
+    .maybeSingle();
+  fail(existingError);
+  if (existing) return;
+  const objectName = `${input.destination.organizationId}/${input.destination.assignmentId ?? "admin"}/${session.user.id}/${input.uploadId}-${safeFileName(input.file.name)}`;
   await uploadOriginal(input.file, objectName, session.access_token, input.onProgress);
 
   const fallbackTitle = input.file.name
@@ -184,15 +171,17 @@ export async function uploadAssistantRecording(input: {
     .trim();
   const mime = mimeFor(input.file);
   const { error } = await majlissDb.from("majliss_recordings").insert({
-    organization_id: input.assignment.organization_id,
-    village_id: input.assignment.village_id,
-    teacher_id: input.assignment.teacher_id,
+    organization_id: input.destination.organizationId,
+    village_id: input.destination.villageId,
+    teacher_id: input.destination.teacherId,
     title: input.title?.trim() || fallbackTitle || "Enregistrement reçu",
-    slug: `assistant-${fileId}`,
+    slug,
     media_type: "audio",
     media_url: `storage://${BUCKET}/${objectName}`,
     access_tier: "free",
     status: "draft",
+    duration_seconds: input.durationSeconds ?? null,
+    order_index: input.orderIndex,
     recorded_on: input.recordedOn || null,
     storage_bucket: BUCKET,
     storage_path: objectName,
@@ -201,7 +190,7 @@ export async function uploadAssistantRecording(input: {
     file_size_bytes: input.file.size,
     received_at: new Date().toISOString(),
     review_status: "pending",
-    upload_source: "assistant_upload",
+    upload_source: isAssistant ? "assistant_upload" : "whatsapp_import",
     uploaded_by: session.user.id,
     content_fingerprint: contentFingerprint,
     processing_status: ["audio/mpeg", "audio/mp4", "audio/x-m4a"].includes(mime)
@@ -210,5 +199,36 @@ export async function uploadAssistantRecording(input: {
     created_by: session.user.id,
     source_metadata: { client: "karanta-web", original_preserved: true },
   });
+  if (error?.code === "23505") {
+    const { data: retried, error: retryError } = await majlissDb
+      .from("majliss_recordings")
+      .select("id")
+      .eq("organization_id", input.destination.organizationId)
+      .eq("slug", slug)
+      .maybeSingle();
+    fail(retryError);
+    if (retried) return;
+  }
   fail(error);
+}
+
+export async function uploadAssistantRecording(input: {
+  uploadId: string;
+  file: File;
+  title?: string;
+  recordedOn?: string;
+  durationSeconds?: number;
+  orderIndex: number;
+  assignment: AssignmentOption;
+  onProgress: (value: number) => void;
+}) {
+  return uploadMajlissAudio({
+    ...input,
+    destination: {
+      organizationId: input.assignment.organization_id,
+      villageId: input.assignment.village_id,
+      teacherId: input.assignment.teacher_id,
+      assignmentId: input.assignment.id,
+    },
+  });
 }
