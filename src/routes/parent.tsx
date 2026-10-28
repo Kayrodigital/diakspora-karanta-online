@@ -73,6 +73,7 @@ function ParentPage() {
           </div>
           <button
             type="button"
+            aria-label="Se déconnecter"
             onClick={signOut}
             className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[color:var(--cream-2)] bg-card px-4 text-sm font-semibold text-foreground shadow-sm hover:border-primary/30"
           >
@@ -108,8 +109,13 @@ function ParentPage() {
         </section>
         <div className="mt-8">
           <LearningProgressOverview
+            key={activeProfileId}
             profileId={activeProfileId}
-            title="Parcours d’apprentissage de l’enfant"
+            title={
+              activeProfileId === ownProfile.id
+                ? "Mes parcours d’apprentissage"
+                : "Parcours d’apprentissage de l’enfant"
+            }
           />
         </div>
         <FamilySchedule organizationId={organization.id} userId={user.id} />

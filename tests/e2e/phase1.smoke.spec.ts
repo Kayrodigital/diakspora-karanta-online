@@ -104,6 +104,17 @@ test("PH1 annuaire, fiche et retour aux cours, publications uniquement", async (
     "href",
     "/apprendre",
   );
+  await expect(page.getByRole("heading", { name: "Qui enseigne ?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Quels ouvrages ?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Quelles sources ?" })).toBeVisible();
+  if ((page.viewportSize()?.width ?? 0) < 768) {
+    const links = page.getByRole("navigation", { name: "Navigation mobile" }).getByRole("link");
+    await expect(links).toHaveCount(6);
+    const positions = await links.evaluateAll((items) =>
+      items.map((item) => item.getBoundingClientRect().top),
+    );
+    expect(new Set(positions).size).toBe(1);
+  }
   await noOverflow(page);
   await page.screenshot({
     path: `docs/phase1/screenshots/professeur-${info.project.name}.png`,
@@ -164,10 +175,34 @@ test("PH1 parent : erreur conservée, création guidée et choix de parcours", a
   );
   let childProfile: typeof parentProfile | undefined;
   let attempts = 0;
+  let booksUnavailable = true;
+  const books = [
+    {
+      id: "qa-first-book",
+      subject_id: "qa-subject",
+      title: "Premier livre QA",
+      description: "Livre de recette uniquement",
+      level: "Débutant",
+    },
+    {
+      id: "qa-advanced-book",
+      subject_id: "qa-subject",
+      title: "Livre avancé QA",
+      description: null,
+      level: "Avancé",
+    },
+  ];
   await page.route("https://karanta-offline-ui.invalid/**", async (route) => {
     const url = new URL(route.request().url());
     const table = url.pathname.split("/").at(-1);
     if (url.pathname.includes("/auth/")) return route.fulfill({ json: user });
+    if (table === "books" && url.searchParams.has("organization_id")) {
+      expect(url.searchParams.get("organization_id")).toBe(`eq.${org}`);
+      expect(url.searchParams.get("status")).toBe("eq.published");
+      if (booksUnavailable)
+        return route.fulfill({ status: 403, json: { message: "QA books unavailable" } });
+      return route.fulfill({ json: books });
+    }
     if (table === "create_my_child_profile") {
       const input = route.request().postDataJSON();
       expect(input.p_guardian_consent).toBe(true);
@@ -195,9 +230,16 @@ test("PH1 parent : erreur conservée, création guidée et choix de parcours", a
           logo_url: null,
           primary_color: "#173F2B",
           accent_color: "#B56E26",
-          feature_flags: { profile_identity_v2: true, family_onboarding_v1: true },
+          feature_flags: {
+            profile_identity_v2: true,
+            family_onboarding_v1: true,
+            pedagogy_v1: true,
+          },
         },
       ];
+    if (table === "books") rows = books;
+    if (table === "subjects")
+      rows = [{ id: "qa-subject", name: "Discipline QA", slug: "qa-subject" }];
     if (table === "organization_memberships")
       rows = [
         {
@@ -244,6 +286,25 @@ test("PH1 parent : erreur conservée, création guidée et choix de parcours", a
     "aria-pressed",
     "true",
   );
+  await expect(
+    page.getByRole("region", { name: "Un premier livre pour Enfant QA" }).getByRole("alert"),
+  ).toContainText("pas disponibles");
+  booksUnavailable = false;
+  await page.getByRole("button", { name: "Réessayer les livres" }).click();
+  await expect(page.getByRole("radio")).toHaveCount(2);
+  await page.getByLabel("Niveau du parcours").selectOption("Débutant");
+  await expect(page.getByRole("radio")).toHaveCount(1);
+  await expect(page.getByRole("link", { name: "Découvrir le premier cours" })).toHaveCount(0);
+  await page.getByRole("radio", { name: /Premier livre QA/ }).check();
+  await expect(page.getByRole("link", { name: "Découvrir le premier cours" })).toHaveAttribute(
+    "href",
+    "/apprendre/livre/qa-first-book",
+  );
+  // Changing level must clear a previous choice rather than open the wrong book.
+  await page.getByLabel("Niveau du parcours").selectOption("Avancé");
+  await expect(page.getByRole("link", { name: "Découvrir le premier cours" })).toHaveCount(0);
+  await page.getByLabel("Niveau du parcours").selectOption("Débutant");
+  await page.getByRole("radio", { name: /Premier livre QA/ }).check();
   await expect(page.getByRole("link", { name: "Trouver une classe adaptée" })).toHaveAttribute(
     "href",
     "/parcours",
@@ -253,4 +314,14 @@ test("PH1 parent : erreur conservée, création guidée et choix de parcours", a
     path: `docs/phase1/screenshots/parent-${info.project.name}.png`,
     fullPage: true,
   });
+  await page.getByRole("link", { name: "Découvrir le premier cours" }).click();
+  await expect(page.getByRole("heading", { name: "Premier livre QA", exact: true })).toBeVisible();
+  await page.goto("/parent");
+  await page.getByLabel("Profil actif").selectOption(actor);
+  await expect(page.getByRole("region", { name: "Un premier livre pour Enfant QA" })).toHaveCount(
+    0,
+  );
+  await page.getByRole("button", { name: "Enfant QA", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Un premier livre pour Enfant QA" })).toBeVisible();
+  await expect(page.getByRole("radio", { checked: true })).toHaveCount(0);
 });

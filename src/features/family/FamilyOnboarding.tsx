@@ -5,6 +5,7 @@ import { Check, Plus, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { rememberActiveProfile, type AccessibleProfile } from "@/lib/identity/profile-identity";
 import type { OrganizationBrand } from "@/lib/auth/portal-access";
+import { FirstLearningPath } from "./FirstLearningPath";
 
 export function FamilyOnboarding({
   organization,
@@ -19,7 +20,10 @@ export function FamilyOnboarding({
 }) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const children = profiles.filter((profile) => profile.id !== ownProfileId);
+  const children = profiles.filter(
+    (profile) => profile.id !== ownProfileId && profile.status === "active",
+  );
+  const selectedChild = children.find((profile) => profile.id === activeProfileId);
   const flags = organization.feature_flags;
   const enabled = Boolean(
     flags &&
@@ -76,7 +80,7 @@ export function FamilyOnboarding({
       <ol className="mt-5 grid gap-3 text-sm sm:grid-cols-3" aria-label="Votre parcours">
         {[
           ["Compte parent connecté", true],
-          ["Ajouter un enfant", children.length > 0],
+          ["Choisir le profil de l’enfant", Boolean(selectedChild)],
           ["Choisir un premier parcours", false],
         ].map(([label, done], i) => (
           <li key={String(label)} className="flex items-center gap-2 rounded-xl bg-muted/60 p-3">
@@ -181,6 +185,13 @@ export function FamilyOnboarding({
             {mutation.isPending ? "Création en cours…" : "Créer le profil de mon enfant"}
           </button>
         </form>
+      )}
+      {selectedChild && (
+        <FirstLearningPath
+          key={selectedChild.id}
+          organizationId={organization.id}
+          childName={selectedChild.preferred_name || selectedChild.full_name || "votre enfant"}
+        />
       )}
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
         <Link

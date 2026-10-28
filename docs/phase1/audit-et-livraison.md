@@ -1,54 +1,59 @@
-# Karanta — audit court et phase 1
+# Karanta — audit et consolidation de la phase 1
 
-## État des branches inspectées
+État vérifié le 28 octobre 2026. Branche de travail : `codex/karanta-phase1-consolidation-20261028`.
 
-- `main` : `0e2100526b08f21e3750cc167b4e7ad5e5979f9f`.
-- `codex/karanta-v1-consolidation` : `c1bc48310bf08cb28c14ed6fa37d50620dcab47f`.
-- `codex/majliss-v2-r2-qa` : `9387b3b97609c0c62322f619a31501f1c8f79f23`, descendant de la consolidation.
-- Branche de travail : `codex/karanta-phase1-familles-professeurs`, avancée jusqu’au dernier commit Majliss pour conserver les travaux récents. Aucun changement sur `main`, aucune fusion distante ni déploiement de production.
+## Code conservé
 
-| Domaine | Existant dans le code | À corriger / manquant | Phase 1 |
-|---|---|---|---|
-| Auth | Portails stricts, invitations, récupération, fin d’activation, tests M9 | Validation réelle de la délivrabilité et comptes isolés | Conservé |
-| Parent | Profils canoniques, sélecteur, progression, évaluations, planning | Ajout guidé d’enfant absent ; longs messages internes dans l’espace famille | Nouveau composant guidé, sélection des enfants, liens vers méthodes et classes |
-| Catalogue | Discipline → Livre/Méthode → Chapitre → Leçon → Séance ; progression M8 | Vérifier les accès réels sur recette | Conservé, aucune modification d’identifiants ou de progression |
-| Professeurs publics | Biographie et enregistrements dans la page Majliss village/professeur | Pas d’annuaire transversal ni fiche dédiée | `/enseignants`, `/enseignants/$teacherSlug`, portrait publié, biographie, langues des audios et liens vers enseignements approuvés |
-| Références scientifiques | Ressources et contenu éditorial existants | Informations de formation, diplômes, références et associations professeur/cours à documenter | Aucune information inventée ni association déduite d’un nom |
-| Navigation | Accueil et shell apprentissage | Menu accueil absent entre 640 et 1023 px | Menu tablette rétabli, accès Professeurs ajouté |
-| Studio | `EditorialBookEditor` : drag/drop, ordre et aperçu ; RPC atomique `update_editorial_session` | Audit approfondi annulation, historique, droits et 57 séances Al-Akhdari | Préservé ; phase 2 à réaliser |
-| Majliss | Villages, professeurs, lecteur, progression, dépôt audio V2, contrôle de fichiers et plan de stockage privé QA | Validation réelle des transferts, interruptions, publication et permissions | Préservé ; lien vers fiche professeur et filtres explicites de publication |
-| Boutique / admissions | Boutique, classes publiques, demande d’inscription, CRM staff | Parcours réel à tester sur recette | Préservé |
-| Assets | Identité verte, ivoire et or | Nouveaux packs à intégrer progressivement | Pack centralisé WebP/SVG importé ; scène famille dans une carte à taille adaptée, sans portrait fictif de professeur |
+| Branche                                     | Commit inspecté | Relation et décision                                                                                        |
+| ------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------- |
+| `main`                                      | `0e21005`       | Base de production inchangée                                                                                |
+| `codex/karanta-v1-consolidation`            | `c1bc483`       | Auth M9, routage strict des portails, administration et accueil conservés                                   |
+| `codex/majliss-v2-r2-qa`                    | `9387b3b`       | Descend de la consolidation ; dépôts audio V2 conservés                                                     |
+| `codex/karanta-phase1-familles-professeurs` | `9ec8fb1`       | Descend de Majliss V2 ; base de la nouvelle branche, pour conserver le travail famille/professeurs existant |
 
-## Fonctionnement livré
+La nouvelle branche ne fusionne aucune branche distante. Elle conserve l’historique publié. La PR vise `main` et contient donc également les travaux antérieurs non fusionnés, dont ceux de la PR #8 ; ce point doit être pris en compte à la revue.
 
-L’accueil utilise la promesse demandée et un CTA vers le portail parent. L’ajout d’enfant demande seulement un nom d’usage et la confirmation du responsable légal. Il ne crée aucun compte Auth pour l’enfant et ne lui accorde aucun droit payant ou inscription de classe. Le parent retrouve les méthodes publiées et le parcours existant de choix d’une classe, qui conserve ses règles d’âge et de niveau. Les droits restent ceux du backend existant.
+## Existant / à corriger / manquant
 
-L’opération d’ajout est **désactivée par défaut**. L’interface l’affiche seulement lorsque `profile_identity_v2` et `family_onboarding_v1` sont vrais pour l’organisation. Le serveur vérifie aussi ces flags, le compte authentifié, le rôle parent actif, le profil canonique actif, l’organisation et le consentement. L’écriture crée profil, lien familial et pont `learner_profiles` dans une seule transaction. Un identifiant stable protège contre les doublons lors d’une reprise réseau. Les erreurs conservent le formulaire.
+| Domaine                | Existant vérifié dans le code                                                                            | Correction livrée dans cette consolidation                                                                                                                                     | Encore manquant                                                                                                                                         |
+| ---------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parent                 | Connexion, profils canoniques, lien familial, progression, devoirs et planning                           | Choix du niveau réel et d’un premier livre publié depuis l’enfant sélectionné ; retour vers le livre existant ; reprise après erreur réseau ; choix réinitialisé entre profils | Activation serveur de l’ajout d’enfant sur recette complète ; choix durable de parcours et qualification par âge                                        |
+| Ajout d’enfant         | Formulaire court, consentement, identifiant stable et plan RPC transactionnel dans la branche précédente | Vérification en lecture des colonnes, contraintes, triggers et flags en production ; maintien du verrou d’activation                                                           | RPC absente en production et flag `family_onboarding_v1` absent : création désactivée ; recette réelle obligatoire                                      |
+| Professeurs            | Annuaire, biographie, portraits publiés et audios approuvés                                              | Fiche responsive issue du Figma : présentation vert profond, trois blocs de confiance, liens vers les enseignements                                                            | Formation, maîtres, ouvrages, disciplines et associations professeur/cours non modélisés dans le catalogue Majliss actuel ; aucune association inventée |
+| Navigation             | Accueil, méthodes, Majliss, boutique et portails                                                         | Six liens de navigation mobile sur six colonnes ; textes contenus ; sélecteur de profil adapté aux petits écrans ; libellé accessible de déconnexion                           | Recette authentifiée de tous les rôles                                                                                                                  |
+| Pédagogie              | Discipline → Livre/Méthode → Chapitre → Leçon → Séance → Ressource ; progression canonique               | Structure, IDs, médias et progressions inchangés                                                                                                                               | Studio, annulation/historique et sauvegarde : phase 2                                                                                                   |
+| Al-Akhdari             | Requête agrégée en production : 57 séances, 57 IDs distincts, 57 positions distinctes, de 0 à 56         | Constat en lecture seulement                                                                                                                                                   | Vérification pédagogique de l’ordre des titres à partir des sources, et réorganisation en recette                                                       |
+| Professeur / assistant | Espaces existants, dépôt guidé et workflow audio V2                                                      | Conservés                                                                                                                                                                      | Recette de transfert, interruption, doublons et validation : phase 2                                                                                    |
+| Accueil et images      | Landing éditoriale et packs WebP/SVG de la branche précédente                                            | Conservés et retestés sur trois formats                                                                                                                                        | Consolidation visuelle complète de l’accueil selon Figma : phase 3                                                                                      |
 
-## Proposition de migration et limites de schéma
+## Figma et intégration
 
-`supabase/plans/phase1/create_my_child_profile.sql` est un **plan SQL**, pas une migration automatiquement appliquée. Aucun flag n’a été activé ni SQL exécuté sur Supabase. Le dépôt utilise des colonnes et fonctions canoniques M4 (`profiles.auth_user_id`, `profile_type`, `family_relationships.parent_profile_id`, `private.can_act_as_profile`) dont le DDL complet n’apparaît pas dans l’historique de migrations. Rejouer cet historique seul ne prouve donc pas la compatibilité avec la base de production.
+Les nœuds `32:3` (parent) et `32:39` (fiche professeur) du fichier `dYByPMucwnpdwXKPfwz5tT` ont été lus via le connecteur Figma avec leur code et leurs captures. Les composants existants et les polices déjà déclarées sont réutilisés. Le nom, les titres et les cours d’exemple du wireframe ne sont pas copiés comme des données réelles. La fiche reprend la composition du wireframe, adaptée aux données publiées disponibles. Il ne s’agit pas d’une conformité pixel à pixel de l’ensemble de la plateforme. Les styles nouveaux sont limités à la fiche publique ; l’administration n’est pas modifiée.
 
-Les tests PGlite utilisent un schéma minimal avec les colonnes canoniques connues. Ils démontrent le contrat de la nouvelle RPC, ses droits EXECUTE, les contrôles métier, l’atomicité et l’idempotence. Ils **ne remplacent pas** un test sur une copie complète du schéma canonique et de ses triggers/RLS. Avant activation : revoir la migration sur recette isolée, vérifier les clés étrangères de `profiles.id` (l’enfant ne doit pas référencer `auth.users`), les contraintes des tables et les policies existantes ; appliquer uniquement à cette recette ; vérifier création, sélection, accès autorisé et refus inter-familles avec des comptes QA. Les flags restent faux jusqu’à cette recette.
+Le premier parcours charge uniquement les champs utiles de `books`, avec les filtres d’organisation et de publication. Les niveaux proviennent des données, sans classement pédagogique inventé. Le choix ouvre la page de livre existante ; il ne crée ni inscription en classe, ni droit premium, ni progression artificielle. Il reste temporaire et doit être refait à la prochaine visite. Les contrôles d’accès aux séances restent ceux du backend existant.
 
-## Fichiers principaux
+## Accès externes constatés
 
-- `src/features/family/FamilyOnboarding.tsx`, `src/routes/parent.tsx` : parcours parent.
-- `src/features/teachers/PublicTeachers.tsx`, `src/routes/enseignants*.tsx` : annuaire et fiches.
-- `src/features/majliss/majliss-data.ts` : requêtes publiques limitées aux champs utiles ; aucune signature d’URL privée ni lecture de progression familiale dans l’annuaire.
-- `src/features/majliss/MajlissUi.tsx`, `src/features/learning/LearningUi.tsx`, `src/routes/index.tsx` : navigation et accueil.
-- `public/assets/karanta/`, `src/lib/karanta-assets.ts` : 25 visuels WebP et icônes des packs fournis. Images illustratives générées, jamais traitées comme archives ou preuves religieuses. Seule la scène famille a été intégrée dans cette phase ; les écritures décoratives des autres images nécessitent une revue avant usage.
-- `tests/unit/family-onboarding-sql.test.mjs`, `tests/e2e/phase1.smoke.spec.ts` : tests serveur isolés et contrats UI avec données fictives explicitement réservées à la recette.
+- GitHub : dépôt et branches accessibles par le connecteur ; clone local effectué. Les modifications sont publiées sur la branche dédiée, avec une PR de revue, sans fusion.
+- Vercel : projet `diakspora-karanta-online`, équipe Kayro Digital, Node 24 ; variables Supabase présentes pour Preview, Development et Production. Aucune valeur secrète publiée et aucune variable modifiée. La prévisualisation est protégée par l’authentification Vercel. Son URL et le commit construit sont indiqués dans la PR.
+- Supabase production `tcbxscwgorxixlwyiico` : état `ACTIVE_HEALTHY`. Uniquement des requêtes SELECT de métadonnées, flags, catalogue publié et comptage des séances ont été exécutées. Aucune lecture de fiches d’enfants, aucune écriture ni migration.
+- Supabase `Karanta QA`, référence `wtwrxxuqdvtfkkeimird` : projet isolé existant, inactif. La tentative de remise en service a été refusée par Supabase, qui indique la limite de deux projets gratuits actifs atteinte. Aucun projet actif n’a été suspendu, supprimé ou changé d’offre. Aucune recette distante avec écritures n’a pu être effectuée.
 
-## Accès externes
+## Fichiers modifiés dans cette consolidation
 
-- Figma : aucun outil du plugin disponible ; accès HTTP refusé par la politique réseau. Les exigences du document servent de référence ; aucune conformité pixel à pixel revendiquée.
-- Supabase : aucune variable Supabase disponible dans le processus ou dans les bindings de l’environnement. Aucun accès production validé, aucune écriture distante effectuée.
-- Vercel : connexion décrite par `docs/VERCEL_DEPLOYMENT.md`, mais aucun binding/outil Vercel ni configuration locale `.vercel`. Aucune URL de prévisualisation vérifiée.
-- GitHub : lecture Git et branches accessibles via le proxy ; API `api.github.com` refusée par la politique réseau lors de la vérification. La création de PR dépend de cet accès.
-- Les domaines nécessaires ont été ajoutés au brouillon de configuration, sans application ni publication automatique. Une sauvegarde du brouillon ne prouve pas leur accès runtime.
+- `src/features/family/FirstLearningPath.tsx` : nouveau choix du niveau et du livre, chargement, erreur et reprise.
+- `src/features/family/FamilyOnboarding.tsx` : rattachement du choix au profil actif et exclusion des profils suspendus de la liste d’enfants affichée.
+- `src/routes/parent.tsx` : titre de progression adapté au profil et nom accessible de déconnexion.
+- `src/components/ActiveProfileSwitcher.tsx` : largeur responsive.
+- `src/features/teachers/PublicTeachers.tsx`, `src/styles.css` : fiche publique et tokens locaux.
+- `src/features/learning/LearningUi.tsx` : navigation mobile.
+- `tests/e2e/phase1.smoke.spec.ts` : contrats et scénarios de régression enrichis.
+- Rapports et captures dans `docs/phase1/`.
 
-## Prochaines phases
+## SQL proposé et condition de lancement
 
-Phase 2 : contrôler le studio existant et la restauration, tester les 57 séances sans altérer leurs IDs, simplifier l’édition et les validations professeur/assistant, éprouver les transferts et les droits sur recette isolée. Phase 3 : consolidation visuelle complète selon Figma après accès, placements éditoriaux des visuels approuvés et mesure des performances mobiles. Aucun lancement production avant validation explicite.
+Aucune migration nouvelle dans cette consolidation. Le plan existant `supabase/plans/phase1/create_my_child_profile.sql` est conservé sans application. Les métadonnées observées confirment les colonnes canoniques et les triggers M2/M3 ; la clé primaire `profiles.id` n’est pas liée à `auth.users`. Cela ne valide pas le comportement de tous les triggers, policies et contraintes en recette réelle.
+
+Les 40 tests unitaires, dont le contrat SQL PGlite, ne reconstruisent pas tout le schéma Supabase. Il faut rendre un environnement QA disponible, y revoir et tester le plan RPC avec les policies et triggers réels, vérifier les refus inter-familles, puis décider de son activation. Ne pas activer le flag en production avant cette étape.
+
+La phase 1 est livrée pour revue du code et de l’interface ; l’ajout autonome d’enfant n’est pas prêt à être activé en production. Les phases 2 et 3 restent à réaliser. Aucun déploiement de production ni fusion sans autorisation explicite.

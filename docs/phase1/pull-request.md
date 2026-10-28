@@ -1,9 +1,5 @@
-# Simplifier le parcours famille et présenter les professeurs publiés
+La consolidation permet au parent de choisir un niveau et un premier livre publié depuis le profil enfant sélectionné. Elle reprend la fiche professeur Figma avec les données publiques disponibles et corrige la navigation mobile. Elle conserve les travaux Auth/Admin et Majliss des branches antérieures.
 
-Le parent dispose de premiers pas guidés, d’un ajout minimal d’enfant protégé par des flags désactivés par défaut et d’accès directs aux méthodes et aux classes existantes. Un annuaire public et une fiche professeur présentent les biographies, portraits publiés et enseignements Majliss approuvés. Le menu accueil fonctionne désormais sur tablette ; la promesse et un premier visuel famille sont intégrés.
+Validation : TypeScript, ESLint, build, 40 tests unitaires et 39 scénarios navigateur sur trois formats réussis ; contrôle mobile supplémentaire réussi. Captures et audit : `docs/phase1/`.
 
-Cette branche reprend les évolutions `codex/majliss-v2-r2-qa` (incluant la consolidation V1) encore absentes de `main`, afin de conserver l’authentification stricte, l’administration validée et les dépôts audio récents. Aucun changement de l’architecture pédagogique ni des progressions.
-
-La nouvelle RPC parent reste une proposition dans `supabase/plans/phase1/`, hors migrations automatiques. Ses tests utilisent PostgreSQL isolé en mémoire. Son activation exige une recette sur le schéma canonique complet, dont des prérequis historiques M4 ne figurent pas dans les migrations du dépôt. Aucun SQL distant appliqué, aucun flag activé, aucune fusion ni production déployée.
-
-Validation et captures : voir `docs/phase1/audit-et-livraison.md` et `docs/phase1/validation.md`. Les tests UI utilisent exclusivement des données QA interceptées et ne prouvent pas l’Auth, les policies ou les médias réels de Supabase.
+Aucune migration appliquée et aucune écriture en production. La RPC d’ajout d’enfant reste un plan désactivé. La recette Supabase est bloquée par la limite de projets gratuits actifs. Les associations professeur/cours et références documentées restent à compléter. Phases 2 et 3 à réaliser. Ne pas fusionner ni déployer en production sans validation explicite.
